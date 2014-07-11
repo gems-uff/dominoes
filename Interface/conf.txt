@@ -1,0 +1,8 @@
+fullscreen:		false
+autosave:			false
+visibilityhistoric:	true
+resizable:			false
+width:			800.0
+height:			600.0
+listwidth:			130.0
+accessmode:		TXT
