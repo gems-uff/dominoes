@@ -1,7 +1,9 @@
 package dao;
 
 import domain.Dominoes;
+
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public interface DominoesDao {
@@ -10,9 +12,9 @@ public interface DominoesDao {
      * database.
      *
      * @return Dominoes List
-     * @throws IOException
+     * @throws IOException, SQLException
      */
-    public ArrayList<Dominoes> loadAllMatrices()throws IOException;
+    public ArrayList<Dominoes> loadAllMatrices()throws IOException, SQLException;
     
     /**This function has begin when the user want using a matrix in Dominoes 
      * database.

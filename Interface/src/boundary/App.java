@@ -1,8 +1,12 @@
 package boundary;
 
+import dao.DominoesSQLDao;
 import domain.Configuration;
 import domain.Dominoes;
+
 import java.io.IOException;
+import java.sql.SQLException;
+
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.event.EventHandler;
@@ -148,6 +152,17 @@ public class App extends Application {
     public static void set() {
         App.stage.setTitle("Dominoes Interface");
         App.stage.setResizable(Configuration.resizable);
+        
+        // Open database
+        try {
+			DominoesSQLDao.openDatabase();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
         App.list = new ListViewDominoes();
         App.visual = new Visual();

@@ -1,13 +1,16 @@
 package dao;
 
 import domain.Dominoes;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
+
 import javax.imageio.IIOException;
 
 public class DominoesTXTDao implements DominoesDao {
@@ -21,7 +24,7 @@ public class DominoesTXTDao implements DominoesDao {
     }
 
     @Override
-    public ArrayList<Dominoes> loadAllMatrices() throws IOException {
+    public ArrayList<Dominoes> loadAllMatrices() throws IOException, SQLException {
         String separator = "/";
         String matrixSeparator = ",";
 

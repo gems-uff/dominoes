@@ -5,7 +5,9 @@ import dao.DominoesDao;
 import dao.FactoryDao;
 import domain.Configuration;
 import domain.Dominoes;
+
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Controller {
@@ -26,6 +28,8 @@ public class Controller {
             return result.loadAllMatrices();
         } catch (IOException ex) {
             return null;
+        } catch (SQLException ex){
+        	return null;
         }
     }
     

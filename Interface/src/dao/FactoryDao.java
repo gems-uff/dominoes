@@ -11,7 +11,7 @@ public class FactoryDao {
         if (type.toUpperCase().equals("TXT")) {
             return new DominoesTXTDao();
         }else if (type.toUpperCase().equals("SQL")) {
-//            return new DominoesSQLDao();
+            return new DominoesSQLDao();
         }
         return null;
     }

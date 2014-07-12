@@ -9,7 +9,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public final class Dominoes {
-
     public final static double GRAPH_WIDTH = 100;
     public final static double GRAPH_HEIGHT = 50;
 
@@ -70,11 +69,14 @@ public final class Dominoes {
 
     private String idRow;
     private String idCol;
+    private String rowFullName;
+	private String colFullName;
     private ArrayList<String> historic;
     private int type;
     private int width;
     private int height;
     private byte[][] mat;
+    private int idMatrix;
 
     public Dominoes() {
     }
@@ -125,6 +127,32 @@ public final class Dominoes {
             throw new IllegalArgumentException("Invalid argument.\nThe Type attribute not is defined or not is valid");
         }
         this.type = type;
+    }
+    
+    /**
+     * Class build. The type, for default, is Derived
+     *
+     * @param type
+     * @param idRow - identifier row of the Dominos matrix
+     * @param idCol - identifier row of the Dominos matrix
+     * @param idMatrix - identifier of this matrix in the database
+     * @param rowFullName - descriptor of this row
+     * @param colFullName - descriptor of this column
+     * @throws IllegalArgumentException - in case of invalid parameters
+     */
+    public Dominoes(int type, String idRow, String idCol, int idMatrix, 
+    		String rowFullName, String colFullName) throws IllegalArgumentException {
+    	this.setIdRow(idRow);
+        this.setIdCol(idCol);
+        this.colFullName = colFullName;
+        this.rowFullName = rowFullName;
+
+        this.historic = new ArrayList<>();
+        this.historic.add(idRow);
+        this.historic.add(idCol);
+
+        this.type = Dominoes.TYPE_BASIC;
+        this.idMatrix = idMatrix;
     }
 
     /**
@@ -386,6 +414,14 @@ public final class Dominoes {
         }
         this.width = width;
     }
+    
+    public String getRowFullName() {
+		return rowFullName;
+	}
+
+	public String getColFullName() {
+		return colFullName;
+	}
 
     /**
      * This function just invert the Historic
@@ -429,4 +465,6 @@ public final class Dominoes {
             this.type = Dominoes.TYPE_SUPPORT;
         }
     }
+    
+    
 }
