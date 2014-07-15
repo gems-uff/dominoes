@@ -1,6 +1,9 @@
 package domain;
 
 import java.util.ArrayList;
+
+import arch.IMatrix2D;
+import arch.Matrix2D;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -69,14 +72,9 @@ public final class Dominoes {
 
     private String idRow;
     private String idCol;
-    private String rowFullName;
-	private String colFullName;
     private ArrayList<String> historic;
     private int type;
-    private int width;
-    private int height;
-    private byte[][] mat;
-    private int idMatrix;
+    private IMatrix2D mat = null;
 
     public Dominoes() {
     }
@@ -86,10 +84,10 @@ public final class Dominoes {
      *
      * @param idRow - identifier row of the Dominos matrix
      * @param idCol - identifier row of the Dominos matrix
-     * @param mat - matrix, in byte
+     * @param mat - matrix2D
      * @throws IllegalArgumentException - in case of invalid parameters
      */
-    public Dominoes(String idRow, String idCol, byte[][] mat) throws IllegalArgumentException {
+    public Dominoes(String idRow, String idCol, IMatrix2D mat) throws IllegalArgumentException {
         this.setIdRow(idRow);
         this.setIdCol(idCol);
 
@@ -109,10 +107,10 @@ public final class Dominoes {
      * @param idRow - identifier row of the Dominos matrix
      * @param idCol - identifier row of the Dominos matrix
      * @param historic - The dominoes historic derivated
-     * @param mat - matrix, in byte
+     * @param mat - matrix2D
      * @throws IllegalArgumentException - in case of invalid parameters
      */
-    public Dominoes(int type, String idRow, String idCol, ArrayList<String> historic, byte[][] mat) throws IllegalArgumentException {
+    public Dominoes(int type, String idRow, String idCol, ArrayList<String> historic, Matrix2D mat) throws IllegalArgumentException {
         this.setIdRow(idRow);
         this.setIdCol(idCol);
 
@@ -135,24 +133,17 @@ public final class Dominoes {
      * @param type
      * @param idRow - identifier row of the Dominos matrix
      * @param idCol - identifier row of the Dominos matrix
-     * @param idMatrix - identifier of this matrix in the database
-     * @param rowFullName - descriptor of this row
-     * @param colFullName - descriptor of this column
      * @throws IllegalArgumentException - in case of invalid parameters
      */
-    public Dominoes(int type, String idRow, String idCol, int idMatrix, 
-    		String rowFullName, String colFullName) throws IllegalArgumentException {
+    public Dominoes(int type, String idRow, String idCol) throws IllegalArgumentException {
     	this.setIdRow(idRow);
         this.setIdCol(idCol);
-        this.colFullName = colFullName;
-        this.rowFullName = rowFullName;
 
         this.historic = new ArrayList<>();
         this.historic.add(idRow);
         this.historic.add(idCol);
 
         this.type = Dominoes.TYPE_BASIC;
-        this.idMatrix = idMatrix;
     }
 
     /**
@@ -165,7 +156,7 @@ public final class Dominoes {
      * @param mat
      * @return A new matrix
      */
-    public Dominoes(Dominoes firstOperator, Dominoes secondOperator, byte[][] mat) throws IllegalArgumentException {
+   /* public Dominoes(Dominoes firstOperator, Dominoes secondOperator, byte[][] mat) throws IllegalArgumentException {
         this.historic = new ArrayList<>();
 
         this.historic.addAll(firstOperator.getHistoric());
@@ -176,7 +167,7 @@ public final class Dominoes {
 
         this.setMat(mat);
         this.type = firstOperator.getType();
-    }
+    }*/
 
     /**
      * From this Dominoes, this function will build a piece (graphically)
@@ -267,14 +258,6 @@ public final class Dominoes {
         return new Group(border, back, line, historic, new Group(circle, type),idRow, idCol);
     }
 
-    /**
-     * Used to obtain the Height this Domino
-     *
-     * @return Return the Height value
-     */
-    public int getHeight() {
-        return this.height;
-    }
 
     /**
      * User to obtain the complete historic this
@@ -308,7 +291,7 @@ public final class Dominoes {
      *
      * @return Return the Matrix value
      */
-    public byte[][] getMat() {
+    public IMatrix2D getMat() {
         return this.mat;
     }
 
@@ -321,27 +304,7 @@ public final class Dominoes {
         return type;
     }
 
-    /**
-     * Used to obtain the Width this Domino
-     *
-     * @return Return the Width value
-     */
-    public int getWidth() {
-        return this.width;
-    }
 
-    /**
-     * Used to change the Height this Domino
-     *
-     * @param height The Height value
-     * @throws IllegalArgumentException
-     */
-    public void setHeight(int height) {
-        if (height <= 0) {
-            throw new IllegalArgumentException("Invalid argument.\nThe Height attribute is negative or ");
-        }
-        this.height = height;
-    }
 
     /**
      * Used to change the Historic of this Domino
@@ -390,38 +353,13 @@ public final class Dominoes {
      * @param mat The Matrix value
      * @throws IllegalArgumentException
      */
-    public void setMat(byte[][] mat) {
+    public void setMat(IMatrix2D mat){
         if (mat == null) {
             throw new IllegalArgumentException("Invalid argument.\nThe Mat attribute is null");
         }
-        if (mat.length <= 0 || mat[0].length <= 0) {
-            throw new IllegalArgumentException("Invalid argument.\nThe Mat attribute has amount of row or column equal zero");
-        }
-        this.setHeight(mat.length);
-        this.setWidth(mat[0].length);
+        
         this.mat = mat;
     }
-
-    /**
-     * Used to change the Width this Domino
-     *
-     * @param width The width value
-     * @throws IllegalArgumentException
-     */
-    public void setWidth(int width) {
-        if (width <= 0) {
-            throw new IllegalArgumentException("Invalid argument.\nThe Width attribute is negative or zero");
-        }
-        this.width = width;
-    }
-    
-    public String getRowFullName() {
-		return rowFullName;
-	}
-
-	public String getColFullName() {
-		return colFullName;
-	}
 
     /**
      * This function just invert the Historic
@@ -438,10 +376,6 @@ public final class Dominoes {
         this.setIdRow(this.getIdCol());
         this.setIdCol(swapId);
 
-        swapSide = this.getWidth();
-        this.setWidth(this.getHeight());
-        this.setHeight(swapSide);
-
         this.type = Dominoes.TYPE_DERIVED;
         if(this.getIdRow().equals(this.getIdCol())){
             this.type = Dominoes.TYPE_SUPPORT;
@@ -456,14 +390,46 @@ public final class Dominoes {
             }
             this.historic = newHistoric;
         }
+        
+        IMatrix2D _newMat = mat.transpose();
+        setMat(_newMat);
     }
 
-    public void multiply(String idRow, String idCol) {
-        this.type = Dominoes.TYPE_DERIVED;
-        System.out.println(idCol + " " + idCol);
-        if (idCol.equals(idCol)) {
-            this.type = Dominoes.TYPE_SUPPORT;
+    public Dominoes multiply(Dominoes dom2) {
+    	
+    	Dominoes domResult = new Dominoes();
+    	
+    	domResult.type = Dominoes.TYPE_DERIVED;
+
+        if (idCol.equals(dom2.getIdRow())) {
+            domResult.type = Dominoes.TYPE_SUPPORT;
         }
+        
+        try {
+			domResult.setMat(
+					getMat().multiply(
+							dom2.getMat(), false));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        
+        
+        domResult.historic = new ArrayList<>();
+        domResult.historic.addAll(getHistoric());
+        domResult.historic.addAll(domResult.historic.size(), dom2.getHistoric());
+        
+        domResult.setIdRow(getIdRow());
+        domResult.setIdCol(dom2.getIdCol());
+        
+        return domResult;
+    }
+    
+    public Dominoes cloneNoMatrix(){
+    	Dominoes cloned = new Dominoes(getIdRow(), getIdCol(), getMat());
+    	
+    	return cloned;
     }
     
     

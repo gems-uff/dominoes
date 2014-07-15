@@ -9,6 +9,12 @@
 #include <stdio.h>
 #include "armadillo"
 
+struct MatrixInfo {
+	int rows;
+	int cols;
+	float *data;
+};
+
 using namespace arma;
 
 extern "C" {
@@ -167,4 +173,151 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 }
 
 
+
+
+
+
+
+
+
+
+JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_createMatrixData
+  (JNIEnv *env, jclass obj, jint rows, jint cols){
+
+	sp_fmat *mat = new sp_fmat(rows, cols);
+
+	return (long) mat;
+}
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setData
+  (JNIEnv *env, jclass obj, jlong mat, jfloatArray data){
+
+//	fprintf(stderr, "Chegou\n");
+
+	sp_fmat *_mat = (sp_fmat*) mat;
+	fprintf(stderr, "rows: %d, cols: %d\n", _mat->n_rows, _mat->n_cols);
+	jfloat* _data = env->GetFloatArrayElements(data, NULL);
+
+	for (int i = 0; i < _mat->n_rows; i++){
+		for (int j = 0; j < _mat->n_cols; j++){
+			(*_mat)(i, j) = _data[i * _mat->n_cols + j];
+		}
+	}
+
+
+	env->ReleaseFloatArrayElements(data, _data, 0);
+	env->DeleteLocalRef(data);
+
+	//fprintf(stderr, "saiu\n");
+}
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setRowData
+  (JNIEnv *env, jclass obj, jlong mat, jfloatArray dataRow, jint row){
+
+	MatrixInfo *_mat = (MatrixInfo*) mat;
+
+	jfloat* _dataRow = env->GetFloatArrayElements(dataRow, NULL);
+
+	memcpy(&_mat->data[_mat->cols * row], _dataRow, sizeof(float) * _mat->cols);
+
+
+	env->ReleaseFloatArrayElements(dataRow, _dataRow, 0);
+	env->DeleteLocalRef(dataRow);
+}
+
+
+JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getRow
+  (JNIEnv *env, jclass obj, jlong pointer, jint row){
+
+	sp_fmat* _matrix = (sp_fmat*) pointer;
+
+	//fprintf(stderr, "row\n");
+	//fprintf(stderr, "cols: %d\n", _matrix->n_cols);
+	jfloatArray jres = env->NewFloatArray(_matrix->n_cols);
+	//fprintf(stderr, "float array created!\n");
+
+	float *res = new float[_matrix->n_cols];
+
+	for (int i = 0; i < _matrix->n_cols; i++){
+		res[i] = _matrix->at(row, i);
+	}
+	env->SetFloatArrayRegion(jres, 0, _matrix->n_cols, res);
+	//fprintf(stderr, "float array set!\n");
+	//fprintf(stderr, "row end\n");
+
+	delete res;
+	return jres;
+}
+
+JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getData
+  (JNIEnv *env, jclass obj, jlong pointer){
+
+	MatrixInfo* _matrix = (MatrixInfo*) pointer;
+
+	jfloatArray jres = env->NewFloatArray(_matrix->rows * _matrix->cols);
+	env->SetFloatArrayRegion(jres, 0, _matrix->rows * _matrix->cols, _matrix->data);
+
+	return jres;
+}
+
+
+JNIEXPORT jboolean JNICALL Java_com_josericardojunior_Native_MatrixProcessor_deleteMatrixData
+  (JNIEnv *env, jclass obj, jlong pointer){
+
+	sp_fmat* _matrix = (sp_fmat*) pointer;
+
+	delete _matrix;
+
+	fprintf(stderr, "Matrix deleted!\n");
+
+	return true;
+}
+
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_multiply
+  (JNIEnv *env, jclass obj, jlong mat1, jlong mat2, jlong result, jboolean useGPU){
+
+	//fprintf(stderr, "mul\n");
+
+	sp_fmat* _matrix1 = (sp_fmat*) mat1;
+	sp_fmat* _matrix2 = (sp_fmat*) mat2;
+	sp_fmat* _matResult = (sp_fmat*) result;
+
+	//fprintf(stderr, "mul new float\n");
+
+	if (useGPU){
+			//g_MatMul(_matrix1->data, _matrix2->data, _matResult->data,
+				//	_matrix1->rows, _matrix1->cols, _matrix2->cols);
+	} else {
+
+		(*_matResult) = (*_matrix1) * (*_matrix2);
+		/*for (int y = 0; y < _matrix1->rows; y++){
+
+			for (int x = 0; x < _matrix2->cols; x++){
+
+				float sum = 0;
+
+				for (int k = 0; k < _matrix1->cols; k++){
+					sum += _matrix1->data[y*_matrix1->cols + k] *
+						_matrix2->data[k*_matrix2->cols+x];
+				}
+
+				_matResult->data[y * _matrix2->cols + x] = sum;
+			}
+		}*/
+	}
+
+	//fprintf(stderr, "saiu mul\n");
+
+}
+
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_transpose
+  (JNIEnv *env, jclass obj, jlong pointerMat, jlong pointerRes){
+
+	sp_fmat* _matrix = (sp_fmat*) pointerMat;
+	sp_fmat* _res = (sp_fmat*) pointerRes;
+
+	(*_res) = _matrix->t();
+}
 

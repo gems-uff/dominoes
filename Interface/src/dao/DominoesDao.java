@@ -14,7 +14,7 @@ public interface DominoesDao {
      * @return Dominoes List
      * @throws IOException, SQLException
      */
-    public ArrayList<Dominoes> loadAllMatrices()throws IOException, SQLException;
+    public ArrayList<Dominoes> loadAllMatrices()throws IOException, SQLException, Exception;
     
     /**This function has begin when the user want using a matrix in Dominoes 
      * database.

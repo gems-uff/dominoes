@@ -63,6 +63,70 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_CPUMeanSD
   (JNIEnv *, jclass, jfloatArray, jint, jint, jint, jboolean);
 
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    createMatrixData
+ * Signature: (II)J
+ */
+JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_createMatrixData
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    setData
+ * Signature: (J[F)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setData
+  (JNIEnv *, jclass, jlong, jfloatArray);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    setRowData
+ * Signature: (J[FI)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setRowData
+  (JNIEnv *, jclass, jlong, jfloatArray, jint);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    getRow
+ * Signature: (JI)[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getRow
+  (JNIEnv *, jclass, jlong, jint);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    getData
+ * Signature: (J)[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getData
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    deleteMatrixData
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_josericardojunior_Native_MatrixProcessor_deleteMatrixData
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    multiply
+ * Signature: (JJJZ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_multiply
+  (JNIEnv *, jclass, jlong, jlong, jlong, jboolean);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    transpose
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_transpose
+  (JNIEnv *, jclass, jlong, jlong);
+
 #ifdef __cplusplus
 }
 #endif

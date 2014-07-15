@@ -53,7 +53,7 @@ public class GraphPane extends Pane {
 
     public GraphPane(Dominoes domino) {
 
-        if (!isAValidDomino(domino)) {
+        /*if (!isAValidDomino(domino)) {
             throw new IllegalArgumentException("Invalid argument.\nThe Domino parameter not is valid");
         }
         Group viz1 = new Group();
@@ -135,7 +135,7 @@ public class GraphPane extends Pane {
 
                 cursorProperty().set(Cursor.OPEN_HAND);
             }
-        });
+        });*/
 
     }
 
@@ -148,7 +148,7 @@ public class GraphPane extends Pane {
      */
     private void renderGraph(Dominoes domino, Graph<String, Number> graph, Layout<String, Number> layout, Group viz) {
         
-        byte max = findMaxValue(domino);
+      /*  byte max = findMaxValue(domino);
         byte min = findMinValue(domino);
         
         int i = 0, j = 1;
@@ -211,18 +211,20 @@ public class GraphPane extends Pane {
                 viz.getChildren().add(line);
                 viz.getChildren().add(text);
             }
-        }
+        }*/
     }
 
     private boolean isAValidDomino(Dominoes domino) {
-        return ((domino.getWidth() == domino.getWidth())
+        /*return ((domino.getMat().getMatrixDescriptor().getNumCols() == 
+        		domino.getMat().getMatrixDescriptor().getNumCols())
                 && (domino.getIdRow().equals(domino.getIdCol()))
-                && (domino.getMat().length == domino.getMat()[0].length));
+                && (domino.getMat().length == domino.getMat()[0].length));*/
+    	return true;
     }
     
     private byte findMaxValue(Dominoes domino) {
 
-        byte[][] mat = domino.getMat();
+       /* byte[][] mat = domino.getMat();
         byte result = mat[0][0];
 
         for (int i = 0; i < domino.getHeight(); i++) {
@@ -233,10 +235,12 @@ public class GraphPane extends Pane {
 
             }
         }
-        return result;
+        return result;*/
+    	return 1;
     }
 
     private byte findMinValue(Dominoes domino) {
+    /*	domino.getMat().get
         byte[][] mat = domino.getMat();
         byte result = mat[0][0];
 
@@ -248,6 +252,7 @@ public class GraphPane extends Pane {
 
             }
         }
-        return result;
+        return result;*/
+    	return 0;
     }
 }

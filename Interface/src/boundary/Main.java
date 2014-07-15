@@ -6,6 +6,8 @@
 
 package boundary;
 
+import arch.Session;
+
 /**
  *
  * @author Daniel
@@ -17,11 +19,13 @@ public class Main {
     
     public static void init(){
         try {
+        	Session.startSession();
             // read the configuration file
             control.Controller.loadConfiguration();
             
             // call Application.launch()
             App.start();
+            Session.closeSection();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }

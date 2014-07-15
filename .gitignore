@@ -2,3 +2,4 @@ Interface/target
 gitdataminer/target
 JNIGPUMatrix/kernel.o
 JNIGPUMatrix/libMatrixProcessor.o
+*.log

@@ -89,9 +89,9 @@ public class DominoesTXTDao implements DominoesDao {
             }
             Dominoes domino;
             if (type == Dominoes.TYPE_BASIC) {
-                domino = new Dominoes(idRow, idCol, mat);
+                domino = null;//new Dominoes(idRow, idCol, mat);
             } else {
-                domino = new Dominoes(type, idRow, idCol, historic, mat);
+                domino = null;///new Dominoes(type, idRow, idCol, historic, mat);
             }
             result.add(domino);
 
@@ -170,7 +170,7 @@ public class DominoesTXTDao implements DominoesDao {
                 }
             }
 
-            result = new Dominoes(type, idRow, idCol, historic, mat);
+            result = null;//new Dominoes(type, idRow, idCol, historic, mat);
 
             line = br.readLine();
             break;
@@ -275,10 +275,10 @@ public class DominoesTXTDao implements DominoesDao {
                         for (int j = 0; j < width; j++) {
                             mat[i][j] = Byte.parseByte(auxMatrix[count++]);
                             bw.write(String.valueOf((int) mat[i][j]));
-                            if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
-                                bw.write(matrixSeparator);
+                            //if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
+                              //  bw.write(matrixSeparator);
 
-                            }
+                            //}
                         }
                     }
                     bw.write("\n");
@@ -379,10 +379,10 @@ public class DominoesTXTDao implements DominoesDao {
 
                     historic = domino.getHistoric();
 
-                    height = domino.getHeight();
-                    width = domino.getWidth();
+                    height = 0;//domino.getHeight();
+                    width = 0;//domino.getWidth();
 
-                    mat = domino.getMat();
+                    //mat = domino.getMat();
 
                     System.out.println(mat.length);
 
@@ -415,9 +415,9 @@ public class DominoesTXTDao implements DominoesDao {
                         for (int j = 0; j < width; j++) {
                             mat[i][j] = Byte.parseByte(auxMatrix[count++]);
                             bw.write(String.valueOf((int) mat[i][j]));
-                            if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
-                                bw.write(matrixSeparator);
-                            }
+                           // if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
+                             //   bw.write(matrixSeparator);
+                            //}
                         }
                     }
                     bw.write("\n");
@@ -471,9 +471,9 @@ public class DominoesTXTDao implements DominoesDao {
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
                         bw.write(String.valueOf((int) mat[i][j]));
-                        if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
-                            bw.write(matrixSeparator);
-                        }
+                        //if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
+                          //  bw.write(matrixSeparator);
+                        //}
                     }
                 }
                 bw.write("\n");
@@ -491,12 +491,12 @@ public class DominoesTXTDao implements DominoesDao {
 
                 type = domino.getType();
 
-                height = domino.getHeight();
-                width = domino.getWidth();
+                height = 0;// domino.getHeight();
+                width = 0;//domino.getWidth();
 
                 historic = domino.getHistoric();
 
-                mat = domino.getMat();
+               // mat = domino.getMat();
 
                 bw.write(type
                         + separator
@@ -521,9 +521,9 @@ public class DominoesTXTDao implements DominoesDao {
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
                         bw.write(String.valueOf((int) mat[i][j]));
-                        if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
-                            bw.write(matrixSeparator);
-                        }
+                        //if (i < domino.getHeight() - 1 || j < domino.getWidth() - 1) {
+                          //  bw.write(matrixSeparator);
+                        //}
                     }
                 }
                 bw.write("\n");

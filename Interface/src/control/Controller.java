@@ -27,8 +27,13 @@ public class Controller {
         try {
             return result.loadAllMatrices();
         } catch (IOException ex) {
+        	ex.printStackTrace();
             return null;
         } catch (SQLException ex){
+        	ex.printStackTrace();
+        	return null;
+        } catch (Exception ex){
+        	ex.printStackTrace();
         	return null;
         }
     }
@@ -69,22 +74,7 @@ public class Controller {
      */
     public static Dominoes MultiplyMatrices(Dominoes dom1, Dominoes dom2) {
         // call dominoes
-        
-        // test
-        byte[][] resultMat = new byte[dom1.getMat().length][dom2.getMat()[0].length];
-        
-        for (int i = 0; i < dom1.getMat()[0].length; i++) {
-            for (int j = 0; j < dom2.getMat().length; j++) {
-                for (int k = 0; k < resultMat.length; k++) {
-                    resultMat[i][j] += dom1.getMat()[i][k] * dom2.getMat()[k][j];
-                }
-                
-            }
-        }
-        // end test
-
-        Dominoes result = new Dominoes(dom1, dom2, resultMat);
-        result.multiply(dom1.getIdRow(), dom2.getIdCol());
+        Dominoes result = dom1.multiply(dom2);
         return result;
     }
     
@@ -126,23 +116,10 @@ public class Controller {
      */
     public static Dominoes tranposeDominoes(Dominoes domino) {
         
-        // call dominoes
-        
-        // test
-        byte swap;
-        byte[][] resultMat = new byte[domino.getWidth()][domino.getHeight()];
-        for (int i = 0; i < domino.getHeight(); i++) {
-            for (int j = 0; j < domino.getWidth(); j++) {
-                resultMat[j][i] = domino.getMat()[i][j];
-            }
-        }
-        // end test
-        
-        domino.setMat(resultMat);
-        
-        domino.transpose();
-
+    	domino.transpose();
+    	
         return domino;
+
     }
     
 }

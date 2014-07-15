@@ -373,7 +373,7 @@ public class AreaMove extends Pane {
                 && g1.getTranslateY() <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
             if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).getText())
-                    && d1.getHeight() == d2.getWidth()) {
+                    && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows() ) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
                 ((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -398,7 +398,7 @@ public class AreaMove extends Pane {
                 + Dominoes.GRAPH_HEIGHT)) {
 
             if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).getText())
-                    && d1.getHeight() == d2.getWidth()) {
+                    && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
                 ((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -423,7 +423,7 @@ public class AreaMove extends Pane {
                 && g1.getTranslateY() <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
             if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText())
-                    && d1.getWidth() == d2.getHeight()) {
+                    && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
                 ((Text) g2.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -447,7 +447,7 @@ public class AreaMove extends Pane {
                 && g1.getTranslateY() + Dominoes.GRAPH_HEIGHT <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
             if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText())
-                    && d1.getWidth() == d2.getHeight()) {
+                    && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
                 ((Text) g2.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -687,6 +687,7 @@ public class AreaMove extends Pane {
         if (Configuration.autoSave) {
             this.saveAndSendToList(piece);
         }
+
 
         // remove
         this.dominoes.set(this.pieces.indexOf(piece), domino);

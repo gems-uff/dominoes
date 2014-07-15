@@ -45,8 +45,7 @@ public class Visual extends BorderPane {
         tab.setContent(graphPane);
         Tooltip.install(tab.getGraphic(), new Tooltip(domino.getHistoric().toString()));
         
-        this.tabPane.getTabs().add(tab);
-        
+        this.tabPane.getTabs().add(tab);       
     }
 
     void addTabMatrix(Dominoes domino) {
@@ -58,7 +57,6 @@ public class Visual extends BorderPane {
 
         this.tabPane.getTabs().add(tab);
         this.tabPane.getSelectionModel().selectLast();
-        
     }
     
     

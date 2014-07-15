@@ -228,4 +228,12 @@ public class App extends Application {
         App.area.setSize(App.width, App.height - padding);
 
     }
+    
+    @Override
+    public void stop(){
+    	// Destroy all remaining dominoes
+    	
+
+    	
+    }
 }

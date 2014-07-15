@@ -5,6 +5,7 @@
  */
 package boundary;
 
+import arch.MatrixDescriptor;
 import domain.Dominoes;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
@@ -31,26 +32,33 @@ public class MatrixPane extends Pane {
     private double srcTranslateY;
 
     public MatrixPane(Dominoes domino) {
+    	
+        System.out.println("Rows: " + domino.getMat().getMatrixDescriptor().getNumRows() +
+        		" Cols: " + domino.getMat().getMatrixDescriptor().getNumCols());
+        
         Group group = new Group();
 
-        byte max = findMaxValue(domino);
-        byte min = findMinValue(domino);
+        float max = domino.getMat().findMaxValue();
+        float min = domino.getMat().findMinValue();
 
         double padding = 0;
         double cellSpace = 20;
 
-        byte[][] mat = domino.getMat();
-        for (int i = 0; i < domino.getHeight(); i++) {
-            for (int j = 0; j < domino.getWidth(); j++) {
+        MatrixDescriptor _descriptor = domino.getMat().getMatrixDescriptor();
+
+        for (int i = 0; i < _descriptor.getNumRows(); i++) {
+        	float[] _row = domino.getMat().getRow(_descriptor.getRowAt(i));
+        	
+            for (int j = 0; j < _descriptor.getNumCols(); j++) {
                 Rectangle back = new Rectangle(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding, cellSpace, cellSpace);
                 back.setFill(new Color(0, 0, 0, 0.1));
                 Rectangle front = new Rectangle(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding, cellSpace, cellSpace);
-                front.setFill(new Color(0, 0, 0, (mat[i][j] - min) / (max - min)));
+                front.setFill(new Color(0, 0, 0, (_row[j] - min) / (max - min)));
                 front.toFront();
 
                 Group cell = new Group(back, front);
                 
-                Text text = new Text(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding + 20, String.valueOf(domino.getMat()[i][j]));
+                Text text = new Text(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding + 20, String.valueOf(_row[j]));
 //                text.setFont(new Font("Arial", 20));
                 text.setFill(Color.WHITE);
                 text.toFront();
@@ -127,7 +135,7 @@ public class MatrixPane extends Pane {
         this.getChildren().add(group);
     }
 
-    private byte findMaxValue(Dominoes domino) {
+   /* private byte findMaxValue(Dominoes domino) {
 
         byte[][] mat = domino.getMat();
         byte result = mat[0][0];
@@ -156,6 +164,6 @@ public class MatrixPane extends Pane {
             }
         }
         return result;
-    }
+    }*/
 
 }

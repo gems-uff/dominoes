@@ -9,7 +9,7 @@ public class GPUBenchmark {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		int [] sizes = {1, 1024, 2048, 4096, 8192, 16484, 32768};
+		int [] sizes = {1, 4};//1024, 2048, 4096, 8192, 16484, 32768};
 		StopWatch timer = new StopWatch();
 		
 		for (int i = 0; i < sizes.length; i++){

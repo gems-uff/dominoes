@@ -243,23 +243,9 @@ public class ListViewDominoes extends ListView<Group> {
     private void copyFromListToAreaMove(Group group) {
 
         Dominoes auxDomino = this.dominoes.get(this.pieces.indexOf(group));
-        byte[][] mat = new byte[auxDomino.getHeight()][auxDomino.getWidth()];
-        ArrayList<String> historic = (ArrayList<String>) auxDomino.getHistoric().clone();
 
-        for (int i = 0; i < mat.length; i++) {
-            for (int j = 0; j < mat[0].length; j++) {
-                mat[i][j] = auxDomino.getMat()[i][j];
-
-            }
-        }
-        Dominoes domino;
-        if (auxDomino.getType() == Dominoes.TYPE_BASIC) {
-            domino = new Dominoes(auxDomino.getIdRow(), auxDomino.getIdCol(), mat);
-        } else {
-            domino = new Dominoes(auxDomino.getType(), auxDomino.getIdRow(), auxDomino.getIdCol(), historic, mat);
-        }
         // adding in area move
-        App.copyToArea(domino);
+        App.copyToArea(auxDomino.cloneNoMatrix());
     }
 
     /**
