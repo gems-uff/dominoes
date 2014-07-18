@@ -37,9 +37,10 @@ public class Matrix2DJava implements IMatrix2D {
 	
 	public float[] getRow(String row){
 		int _rowIndex = matrixDescriptor.getRowElementIndex(row);
-		
 		return Arrays.copyOfRange(data, _rowIndex * matrixDescriptor.getNumCols(),
-				matrixDescriptor.getNumCols());
+//				_rowIndex * matrixDescriptor.getNumCols());
+				(1 + _rowIndex) * matrixDescriptor.getNumCols());
+		
 	}
 	
 	public float getElement(String row, String col){
@@ -207,7 +208,7 @@ public class Matrix2DJava implements IMatrix2D {
 		
 		for (int i = 0; i < matrixDescriptor.getNumRows(); i++){
 			float[] _row = getRow(matrixDescriptor.getRowAt(i));
-			
+//			
 			for (int k = 0; k < matrixDescriptor.getNumCols(); k++){
 				
 				if (i == 0){
@@ -233,6 +234,7 @@ public class Matrix2DJava implements IMatrix2D {
 				if (i == 0){
 					_max = _row[0];
 				} else {
+					
 					if (_row[k] > _max)
 						_max = _row[k];
 				}

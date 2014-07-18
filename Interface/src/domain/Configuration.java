@@ -13,7 +13,8 @@ public class Configuration {
     public static double height = 600.0f;
     public static double listWidth = 130.0f;
     
-    public static String accessMode = "TXT";
+    public static String accessMode = "SQL";
+    public static String processingUnit = "GPU";
     
     public static final int amont = 9;
 }

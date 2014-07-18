@@ -80,7 +80,7 @@ public final class Dominoes {
     }
 
     /**
-     * Class build. The type, for default, is Derived.
+     * Class build. The type, for default, is Basic.
      *
      * @param idRow - identifier row of the Dominos matrix
      * @param idCol - identifier row of the Dominos matrix
@@ -127,24 +127,26 @@ public final class Dominoes {
         this.type = type;
     }
     
-    /**
-     * Class build. The type, for default, is Derived
-     *
-     * @param type
-     * @param idRow - identifier row of the Dominos matrix
-     * @param idCol - identifier row of the Dominos matrix
-     * @throws IllegalArgumentException - in case of invalid parameters
-     */
-    public Dominoes(int type, String idRow, String idCol) throws IllegalArgumentException {
-    	this.setIdRow(idRow);
-        this.setIdCol(idCol);
-
-        this.historic = new ArrayList<>();
-        this.historic.add(idRow);
-        this.historic.add(idCol);
-
-        this.type = Dominoes.TYPE_BASIC;
-    }
+//    /**
+//     * Class build. The type, for default, is Derived
+//     *
+//     * @param type
+//     * @param idRow - identifier row of the Dominos matrix
+//     * @param idCol - identifier row of the Dominos matrix
+//     * @throws IllegalArgumentException - in case of invalid parameters
+//     */
+//    public Dominoes(int type, String idRow, String idCol) throws IllegalArgumentException {
+//    	this.setIdRow(idRow);
+//        this.setIdCol(idCol);
+//
+//        this.historic = new ArrayList<>();
+//        this.historic.add(idRow);
+//        this.historic.add(idCol);
+//
+//        this.type = Dominoes.TYPE_BASIC;
+//        
+//        this.mat = null;
+//    }
 
     /**
      * Class Builder This function is used when the user to do a multiplication,
@@ -216,13 +218,14 @@ public final class Dominoes {
         String auxHistoric = "";
         for (int i = 0; i < this.historic.size(); i++) {
             auxHistoric += this.historic.get(i);
-            if (i < this.historic.size() - 1) {
-                auxHistoric += ",";
-            }
+
         }
         Text historic = new Text(auxHistoric);
         historic.setFont(new Font("Arial", 10));
         historic.setFill(Dominoes.COLOR_HISTORIC);
+        if(this.type == Dominoes.TYPE_BASIC){
+        	historic.setFill(Dominoes.COLOR_INIVISIBLE);
+        }
         historic.setX(2);
         historic.setY(3 * Dominoes.GRAPH_HEIGHT / 5);
         historic.setWrappingWidth(Dominoes.GRAPH_WIDTH - 2);
@@ -231,12 +234,19 @@ public final class Dominoes {
         Circle circle = new Circle(back.getX() + back.getWidth() / 2, back.getY() + back.getHeight() / 2, 5, Dominoes.COLOR_TYPE);
 
         Text type = new Text();
+        type.setFill(Dominoes.COLOR_NORMAL_FONT);
         switch (this.getType()) {
             case Dominoes.TYPE_BASIC:
                 type.setText(Dominoes.TYPE_BASIC_CODE);
+                
+                circle.setFill(COLOR_INIVISIBLE);
+            	type.setFill(COLOR_INIVISIBLE);
                 break;
             case Dominoes.TYPE_DERIVED:
                 type.setText(Dominoes.TYPE_DERIVED_CODE);
+                
+                circle.setFill(COLOR_INIVISIBLE);
+                type.setStroke(COLOR_INIVISIBLE);
                 break;
             case Dominoes.TYPE_SUPPORT:
                 type.setText(Dominoes.TYPE_SUPPORT_CODE);
@@ -248,7 +258,6 @@ public final class Dominoes {
                 type.setText(Dominoes.TYPE_LIFT_CODE);
                 break;
         }
-        type.setFill(Dominoes.COLOR_NORMAL_FONT);
         type.setX(circle.getCenterX() - circle.getRadius()/2 - padding);
         type.setY(circle.getCenterY() + circle.getRadius()/2 + padding);
         

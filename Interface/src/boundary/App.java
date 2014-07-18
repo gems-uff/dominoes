@@ -7,6 +7,8 @@ import domain.Dominoes;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import arch.Matrix2D;
+import arch.MatrixDescriptor;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.event.EventHandler;
@@ -152,7 +154,7 @@ public class App extends Application {
     public static void set() {
         App.stage.setTitle("Dominoes Interface");
         App.stage.setResizable(Configuration.resizable);
-        
+
         // Open database
         try {
 			DominoesSQLDao.openDatabase();
@@ -163,15 +165,16 @@ public class App extends Application {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
         App.list = new ListViewDominoes();
         App.visual = new Visual();
         App.area = new AreaMove();
         
+        //App.list.add(new Dominoes("R","C", new Matrix2D(new MatrixDescriptor("R", "C"))));
+        
         App.scene = new Scene(new Group());
         VBox back = new VBox(2);
         splitPane = new SplitPane();
-//        HBox splitPane = new HBox(3);
         
         App.scene.setOnMouseReleased(new EventHandler<MouseEvent>() {
 

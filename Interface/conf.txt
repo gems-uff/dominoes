@@ -1,8 +1,9 @@
-fullscreen:		false
-autosave:			false
-visibilityhistoric:	true
+fullscreen:			false
+autoSave:			false
+visibilityHistoric:	true
 resizable:			false
-width:			800.0
-height:			600.0
-listwidth:			130.0
-accessmode:		SQL
+width:				800.0
+height:				600.0
+listWidth:			130.0
+accessMode:			SQL
+processingUnit:		CPU

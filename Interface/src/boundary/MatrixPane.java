@@ -8,9 +8,11 @@ package boundary;
 import arch.MatrixDescriptor;
 import domain.Dominoes;
 import javafx.event.EventHandler;
+import javafx.scene.control.Tooltip;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -38,33 +40,107 @@ public class MatrixPane extends Pane {
         
         Group group = new Group();
 
-        float max = domino.getMat().findMaxValue();
         float min = domino.getMat().findMinValue();
+        float max = domino.getMat().findMaxValue();
+        
 
         double padding = 0;
         double cellSpace = 20;
-
+        double charSpace = 7;
+        double largerSize = 0;
+        
         MatrixDescriptor _descriptor = domino.getMat().getMatrixDescriptor();
-
+        //ArrayList<String> row = _descriptor.get
         for (int i = 0; i < _descriptor.getNumRows(); i++) {
         	float[] _row = domino.getMat().getRow(_descriptor.getRowAt(i));
         	
             for (int j = 0; j < _descriptor.getNumCols(); j++) {
-                Rectangle back = new Rectangle(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding, cellSpace, cellSpace);
+            	
+            }
+        }
+        
+        
+        
+        // draw the label of the matrix row/columns
+        for (int i = 0; i < _descriptor.getNumRows(); i++) {
+        	largerSize = domino.getMat().getMatrixDescriptor().getRowAt(i).length();
+        	Rectangle back = new Rectangle((-1) * (largerSize*charSpace + cellSpace + padding) + padding, i * (cellSpace + padding) + padding, cellSpace + largerSize*charSpace, cellSpace);
+            back.setFill(new Color(0, 0, 0, 0.1));
+            Rectangle front = new Rectangle((-1) * (largerSize*charSpace + cellSpace + padding) + padding, i * (cellSpace + padding) + padding, cellSpace + largerSize*charSpace, cellSpace);
+            front.setFill(new Color(0, 0, 0, 0.5 + (0.5 * ((-1) * i%2))));
+            //front.setFill(new Color(0, 0, 0, 0.5));
+            front.toFront();
+
+            Group cell = new Group(back, front);
+            
+            Text text = new Text((-1) * (largerSize*charSpace + cellSpace + padding) + padding, i * (cellSpace + padding) + padding + 20, domino.getMat().getMatrixDescriptor().getRowAt(i));
+//            text.setFont(new Font("Arial", 20));
+            text.setFill(Color.WHITE);
+            text.toFront();
+
+            group.getChildren().add(new Group(cell, text));
+        	
+        }
+        
+        for (int i = 0; i < _descriptor.getNumCols(); i++) {
+    		if(domino.getMat().getMatrixDescriptor().getColumnAt(i).length() > largerSize){
+    			largerSize = domino.getMat().getMatrixDescriptor().getRowAt(i).length(); 
+    		}
+    	}
+        
+        double width = cellSpace + largerSize*charSpace;
+    	double height = cellSpace;
+        
+        for (int i = 0; i < _descriptor.getNumCols(); i++) {
+        	Rectangle back = new Rectangle(width, height);
+        	back.setTranslateX(i * (cellSpace + padding) + padding - width/2 + height/2);
+        	back.setTranslateY((-1) * (cellSpace + padding) + padding - width/2 + height/2);
+            back.setFill(new Color(0, 0, 0, 0.1));
+
+            Rectangle front = new Rectangle(width, height);
+            front.setTranslateX(i * (cellSpace + padding) + padding - width/2 + height/2);
+        	front.setTranslateY((-1) * (cellSpace + padding) + padding - width/2 + height/2);
+            front.setFill(new Color(0, 0, 0, 0.5 + (0.5 * ((-1) * i%2))));
+        	//front.setFill(new Color(0, 0, 0, 0.5));
+            front.toFront();
+
+            Group cell = new Group(back, front);
+            
+            Text text = new Text(domino.getMat().getMatrixDescriptor().getColumnAt(i));
+            text.setTranslateX(i * (cellSpace + padding) + padding - width/2 + height/2);
+            text.setTranslateY(back.getTranslateY() + text.getFont().getSize());
+//            text.setFont(new Font("Arial", 20));
+            text.setFill(Color.WHITE);
+            text.toFront();
+            
+            Group g = new Group(cell, text);
+            g.setRotate(-90);
+            
+            group.getChildren().add(g);
+        }
+        
+        // draw the matrix information
+        for (int i = 0; i < _descriptor.getNumRows(); i++) {
+        	float[] _row = domino.getMat().getRow(_descriptor.getRowAt(i));
+        	
+            for (int j = 0; j < _descriptor.getNumCols(); j++) {
+                Rectangle back = new Rectangle(j * (cellSpace + padding) + padding, i * (cellSpace + padding) + padding, cellSpace, cellSpace);
                 back.setFill(new Color(0, 0, 0, 0.1));
-                Rectangle front = new Rectangle(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding, cellSpace, cellSpace);
+                Rectangle front = new Rectangle(j * (cellSpace + padding) + padding, i * (cellSpace + padding) + padding, cellSpace, cellSpace);
                 front.setFill(new Color(0, 0, 0, (_row[j] - min) / (max - min)));
                 front.toFront();
 
                 Group cell = new Group(back, front);
                 
-                Text text = new Text(i * (cellSpace + padding) + padding, j * (cellSpace + padding) + padding + 20, String.valueOf(_row[j]));
+                Text text = new Text(j * (cellSpace + padding) + padding, i * (cellSpace + padding) + padding + 20, String.valueOf(_row[j]));
 //                text.setFont(new Font("Arial", 20));
                 text.setFill(Color.WHITE);
                 text.toFront();
 
-                group.getChildren().add(cell);
-                group.getChildren().add(text);
+                Group g = new Group(cell, text);
+                Tooltip.install(g, new Tooltip(domino.getMat().getMatrixDescriptor().getRowAt(i) + " | " + domino.getMat().getMatrixDescriptor().getColumnAt(j)));
+                
+                group.getChildren().add(g);
             }
         }
 
@@ -131,39 +207,8 @@ public class MatrixPane extends Pane {
                 cursorProperty().set(Cursor.OPEN_HAND);
             }
         });
-
+        
         this.getChildren().add(group);
     }
-
-   /* private byte findMaxValue(Dominoes domino) {
-
-        byte[][] mat = domino.getMat();
-        byte result = mat[0][0];
-
-        for (int i = 0; i < domino.getHeight(); i++) {
-            for (int j = 0; j < domino.getWidth(); j++) {
-                if (mat[i][j] > result) {
-                    result = mat[i][j];
-                }
-
-            }
-        }
-        return result;
-    }
-
-    private byte findMinValue(Dominoes domino) {
-        byte[][] mat = domino.getMat();
-        byte result = mat[0][0];
-
-        for (int i = 0; i < domino.getHeight(); i++) {
-            for (int j = 0; j < domino.getWidth(); j++) {
-                if (mat[i][j] < result) {
-                    result = mat[i][j];
-                }
-
-            }
-        }
-        return result;
-    }*/
 
 }

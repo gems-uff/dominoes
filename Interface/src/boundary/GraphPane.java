@@ -6,35 +6,25 @@
 package boundary;
 
 import domain.Dominoes;
-import edu.uci.ics.jung.algorithms.layout.BalloonLayout;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.DAGLayout;
-import edu.uci.ics.jung.algorithms.layout.FRLayout;
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
-import edu.uci.ics.jung.algorithms.layout.KKLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Pair;
-import edu.uci.ics.jung.graph.util.TestGraphs;
-import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
-import edu.uci.ics.jung.visualization.VisualizationModel;
-import edu.uci.ics.jung.visualization.layout.CachingLayout;
+import edu.uci.ics.jung.graph.DelegateForest;
+//import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.UndirectedGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
+import edu.uci.ics.jung.graph.Forest;
+import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.geom.Point2D;
-import java.util.Random;
-import javafx.event.EventHandler;
-import javafx.scene.Cursor;
-import javafx.scene.Group;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
+import java.awt.Paint;
+import javafx.embed.swing.SwingNode;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.CircleBuilder;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
-import javafx.scene.text.Text;
+import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.functors.ConstantTransformer;
 
 /**
  *
@@ -42,217 +32,89 @@ import javafx.scene.text.Text;
  */
 public class GraphPane extends Pane {
 
-    private int CIRCLE_SIZE = 15;
-    private double maxZoom = 5;
-    private double minZoom = 0.1;
+    /**
+     * the graph
+     */
+    Forest<String, Integer> graph;
 
-    private double srcSceneX;
-    private double srcSceneY;
-    private double srcTranslateX;
-    private double srcTranslateY;
+    Factory<UndirectedGraph<String, Integer>> graphFactory
+            = new Factory<UndirectedGraph<String, Integer>>() {
+
+                public UndirectedGraph<String, Integer> create() {
+                    return new UndirectedSparseMultigraph<String, Integer>();
+                }
+            };
+
+    Factory<Integer> edgeFactory = new Factory<Integer>() {
+        int i = 0;
+
+        public Integer create() {
+            return i++;
+        }
+    };
+
+    /**
+     * the visual component and renderer for the graph
+     */
+    VisualizationViewer<String, Integer> vv;
+
+    CircleLayout<String, Integer> treeLayout;
 
     public GraphPane(Dominoes domino) {
 
-        /*if (!isAValidDomino(domino)) {
+        if (!isAValidDomino(domino)) {
             throw new IllegalArgumentException("Invalid argument.\nThe Domino parameter not is valid");
         }
-        Group viz1 = new Group();
+        // create a simple graph for the demo
+        graph = new DelegateForest<String, Integer>();
 
-        Graph<String, Number> graph1 = TestGraphs.createChainPlusIsolates(0, domino.getMat().length);
+        createTree(domino);
 
-//        Layout<String, Number> circleLayout = new CircleLayout<>(graph1);
-        Layout<String, Number> circleLayout = new CircleLayout<>(graph1);
-//        Layout<String, Number> circleLayout = new ISOMLayout<>(graph1);
+//        treeLayout = new TreeLayout<String, Integer>(graph);
+        treeLayout = new CircleLayout<>(graph);
 
-        VisualizationModel<String, Number> vm1 = new DefaultVisualizationModel<>(circleLayout, new Dimension(400, 400));
+        vv = new VisualizationViewer<String, Integer>(treeLayout, new Dimension(600, 600));
 
-        renderGraph(domino, graph1, circleLayout, viz1);
-
-        maxZoom *= viz1.getScaleX();
-        minZoom *= viz1.getScaleX();
-
-        this.getChildren().add(viz1);
-
-        this.setOnScroll(new EventHandler<ScrollEvent>() {
-
-            @Override
-            public void handle(ScrollEvent event) {
-                double srcX = event.getX() - viz1.getTranslateX() - viz1.prefWidth(-1) / 2;
-                double srcY = event.getY() - viz1.getTranslateY() - viz1.prefHeight(-1) / 2;
-                double trgX = srcX;
-                double trgY = srcY;
-
-                double factor = 0.05;
-
-                if (event.getDeltaY() < 0 && viz1.getScaleX() > minZoom) {
-                    viz1.setScaleX(viz1.getScaleX() * (1 - factor));
-                    viz1.setScaleY(viz1.getScaleY() * (1 - factor));
-                    trgX = srcX * (1 - factor);
-                    trgY = srcY * (1 - factor);
-                } else if (event.getDeltaY() > 0 && viz1.getScaleX() < maxZoom) {
-                    viz1.setScaleX(viz1.getScaleX() * (1 + factor));
-                    viz1.setScaleY(viz1.getScaleY() * (1 + factor));
-                    trgX = srcX * (1 + factor);
-                    trgY = srcY * (1 + factor);
-                }
-                viz1.setTranslateX(viz1.getTranslateX() - (trgX - srcX));
-                viz1.setTranslateY(viz1.getTranslateY() - (trgY - srcY));
-
+        vv.getRenderContext().setVertexFillPaintTransformer(new Transformer<String, Paint>() {
+            public Paint transform(String i) {
+                return Color.BLACK;
             }
         });
-        this.setOnMouseDragged(new EventHandler<MouseEvent>() {
+        vv.setBackground(Color.white);
+        vv.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
+        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+        // add a listener for ToolTips
+        vv.getRenderContext().setArrowFillPaintTransformer(new ConstantTransformer(Color.lightGray));
 
-            @Override
-            public void handle(MouseEvent event) {
+        final GraphZoomScrollPane panel = new GraphZoomScrollPane(vv);
 
-                double offsetX = event.getSceneX() - srcSceneX;
-                double offsetY = event.getSceneY() - srcSceneY;
-                double newTranslateX = srcTranslateX + offsetX;
-                double newTranslateY = srcTranslateY + offsetY;
+        final DefaultModalGraphMouse graphMouse = new DefaultModalGraphMouse();
 
-                viz1.setTranslateX(newTranslateX);
-                viz1.setTranslateY(newTranslateY);
+        vv.setGraphMouse(graphMouse);
 
-            }
-        });
-        this.setOnMousePressed(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent event) {
-
-                srcSceneX = event.getSceneX();
-                srcSceneY = event.getSceneY();
-                srcTranslateX = viz1.getTranslateX();
-                srcTranslateY = viz1.getTranslateY();
-
-                cursorProperty().set(Cursor.CLOSED_HAND);
-            }
-        });
-        this.setOnMouseReleased(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent event) {
-
-                cursorProperty().set(Cursor.OPEN_HAND);
-            }
-        });*/
+        SwingNode s = new SwingNode();
+        s.setContent(panel);
+        this.getChildren().add(s);
 
     }
 
-    /**
-     * Render a graph to a particular <code>Group</code>
-     *
-     * @param graph
-     * @param layout
-     * @param viz
-     */
-    private void renderGraph(Dominoes domino, Graph<String, Number> graph, Layout<String, Number> layout, Group viz) {
-        
-      /*  byte max = findMaxValue(domino);
-        byte min = findMinValue(domino);
-        
-        int i = 0, j = 1;
-        for (String v : graph.getVertices()) {
-            String id = "[" + domino.getIdRow() + " " + i++ + "]";
-
-            Point2D p = layout.transform(v);
-            Circle circle = CircleBuilder.create()
-                    .centerX(p.getX())
-                    .centerY(p.getY())
-                    .radius(CIRCLE_SIZE)
-                    .build();
-
-            Text text = new Text(id);
-            text.setFill(Dominoes.COLOR_TYPE);
-            text.setX(circle.getCenterX());
-            text.setY(circle.getCenterY());
-            text.toFront();
-            
-            viz.getChildren().add(circle);
-            viz.getChildren().add(text);
-        }
-        i = 0;
-        j = 0;
-        for (String v : graph.getVertices()) {
-            j = 0;
-            for (String v2 : graph.getVertices()) {
-                if(i == j){
-                    i++;
-                    j = 0;
-                    break;
+    private void createTree(Dominoes domino) {
+        for (int i = 0; i < domino.getMat().getMatrixDescriptor().getNumRows(); i++) {
+            graph.addVertex(domino.getIdCol() + " " + i);
+            for (int j = 0; j < i; j++) {
+                if (graph.addEdge(edgeFactory.create(), domino.getIdCol() + " " + i, domino.getIdCol() + " " + j)) {
+                    graph.addEdge(edgeFactory.create(), domino.getIdCol() + " " + j, domino.getIdCol() + " " + i);
                 }
-                if (v.equals(v2)) {
-                    j++;
-                    continue;
-                }
-                String id = "[" + domino.getMat()[i][j] + "]";
 
-
-                Point2D pStart = layout.transform(v);
-                Point2D pEnd = layout.transform(v2);
-                
-                Path line = new Path();
-                line.getElements().add(new MoveTo(pStart.getX(), pStart.getY()));
-
-                line.getElements().add(new LineTo(pEnd.getX(), pEnd.getY()));
-                
-                line.setStrokeWidth(1 + 10*(domino.getMat()[i][j] - min)/(max - min));
-                Tooltip.install(line, new Tooltip(id));
-                line.toBack();
-
-                Text text = new Text(id);
-                text.setFill(Dominoes.COLOR_TYPE);
-                text.setTranslateX((pStart.getX() + pEnd.getX()) / 2);
-                text.setTranslateY((pStart.getY() + pEnd.getY()) / 2);
-                text.toFront();
-                
-                j++;
-
-                viz.getChildren().add(line);
-                viz.getChildren().add(text);
             }
-        }*/
+
+        }
+
     }
 
     private boolean isAValidDomino(Dominoes domino) {
-        /*return ((domino.getMat().getMatrixDescriptor().getNumCols() == 
-        		domino.getMat().getMatrixDescriptor().getNumCols())
-                && (domino.getIdRow().equals(domino.getIdCol()))
-                && (domino.getMat().length == domino.getMat()[0].length));*/
-    	return true;
-    }
-    
-    private byte findMaxValue(Dominoes domino) {
-
-       /* byte[][] mat = domino.getMat();
-        byte result = mat[0][0];
-
-        for (int i = 0; i < domino.getHeight(); i++) {
-            for (int j = 0; j < domino.getWidth(); j++) {
-                if (mat[i][j] > result) {
-                    result = mat[i][j];
-                }
-
-            }
-        }
-        return result;*/
-    	return 1;
+        return ((domino.getMat().getMatrixDescriptor().getNumRows() == domino.getMat().getMatrixDescriptor().getNumCols())
+                && (domino.getIdRow().equals(domino.getIdCol())));
     }
 
-    private byte findMinValue(Dominoes domino) {
-    /*	domino.getMat().get
-        byte[][] mat = domino.getMat();
-        byte result = mat[0][0];
-
-        for (int i = 0; i < domino.getHeight(); i++) {
-            for (int j = 0; j < domino.getWidth(); j++) {
-                if (mat[i][j] < result) {
-                    result = mat[i][j];
-                }
-
-            }
-        }
-        return result;*/
-    	return 0;
-    }
 }

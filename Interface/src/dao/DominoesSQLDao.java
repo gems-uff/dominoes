@@ -1,5 +1,6 @@
 package dao;
 
+import domain.Configuration;
 import domain.Dominoes;
 
 import java.io.IOException;
@@ -9,9 +10,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
+import arch.IMatrix2D;
 import arch.Matrix2D;
+import arch.Matrix2DFactory;
 
 public class DominoesSQLDao implements DominoesDao{
 	
@@ -23,11 +25,9 @@ public class DominoesSQLDao implements DominoesDao{
 	public static final int Developer_Commit = 1;
 	public static final int Commit_File = 2;
 	
-	
-	
 	public static void openDatabase() throws ClassNotFoundException, SQLException{
 		Class.forName("org.sqlite.JDBC");
-		conn = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
+		conn = DriverManager.getConnection("jdbc:sqlite:" + databaseName);		
 	}
 
     @Override
@@ -50,7 +50,9 @@ public class DominoesSQLDao implements DominoesDao{
 				String _row_ab = rs.getString("row_abbreviate");
 				String _col_ab = rs.getString("column_abbreviate");
 				
-				Matrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name);
+				//Matrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name);
+				
+				IMatrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name);
 				
 				Dominoes _dom = new Dominoes(_row_ab, _col_ab, _mat);
 				_dominoesList.add(_dom);
@@ -63,8 +65,9 @@ public class DominoesSQLDao implements DominoesDao{
     	return _dominoesList;
     }
 
-    private Matrix2D loadMatrixFromDatabase(int id, String row_name, String col_name) throws Exception{
+    private IMatrix2D loadMatrixFromDatabase(int id, String row_name, String col_name) throws Exception{
 
+    	
     	switch (id){
     	case Developer_Commit:
     		return loadDeveloperCommit(row_name, col_name);
@@ -76,7 +79,7 @@ public class DominoesSQLDao implements DominoesDao{
     	return null;
     }
     
-    private Matrix2D loadCommitFile(String row, String col) throws Exception {
+    private IMatrix2D loadCommitFile(String row, String col) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -104,7 +107,8 @@ public class DominoesSQLDao implements DominoesDao{
 			descriptor.AddColDesc(rs.getString("NewName"));
 						
 		// Build Matrix
-		Matrix2D mat = new Matrix2D(descriptor);
+		//IMatrix2D mat = new Matrix2D(descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 
 		sql = "SELECT TC.HashCode, TF.NewName FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR " +
 				"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' " +
@@ -132,7 +136,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
     
-    private Matrix2D loadDeveloperCommit(String row, String col) throws Exception{
+    private IMatrix2D loadDeveloperCommit(String row, String col) throws Exception{
     	
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(
@@ -162,7 +166,8 @@ public class DominoesSQLDao implements DominoesDao{
 		}
 		
 		// Build Matrix
-		Matrix2D mat = new Matrix2D(descriptor);
+		//Matrix2D mat = new Matrix2D(descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		
 		// Get all commits
 		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +

@@ -70,6 +70,8 @@ public class ConfigurationFile {
                         Configuration.listWidth = Double.parseDouble(valueVariable);
                     } else if (nameVariable.equals("accessmode")) {
                         Configuration.accessMode = valueVariable;
+                    } else if (nameVariable.equals("processingunit")) {
+                        Configuration.processingUnit = valueVariable;
                     }
                 }
                 line = br.readLine();

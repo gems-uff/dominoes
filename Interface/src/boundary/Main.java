@@ -22,7 +22,6 @@ public class Main {
         	Session.startSession();
             // read the configuration file
             control.Controller.loadConfiguration();
-            
             // call Application.launch()
             App.start();
             Session.closeSection();

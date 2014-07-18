@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="arch.Matrix2D"/>
+<fullyQualifiedTypeName name="arch.MatrixDescriptor"/>
+<fullyQualifiedTypeName name="java.sql.Connection"/>
+<fullyQualifiedTypeName name="dao.DominoesSQLDao"/>
+<fullyQualifiedTypeName name="arch.IMatrix2D"/>
+<fullyQualifiedTypeName name="arch.Matrix2DFactory"/>
+<fullyQualifiedTypeName name="domain.Configuration"/>
+<fullyQualifiedTypeName name="java.security.acl.Group"/>
+<fullyQualifiedTypeName name="javafx.event.EventHandler"/>
+<fullyQualifiedTypeName name="domain.Dominoes"/>
+</qualifiedTypeNameHistroy>

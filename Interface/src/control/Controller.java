@@ -2,7 +2,7 @@ package control;
 
 import util.ConfigurationFile;
 import dao.DominoesDao;
-import dao.FactoryDao;
+import dao.DaoFactory;
 import domain.Configuration;
 import domain.Dominoes;
 
@@ -20,7 +20,7 @@ public class Controller {
      * @throws IOException
      */
     public static ArrayList<Dominoes> loadAllMatrices() {
-        DominoesDao result = FactoryDao.getDominoesDao(Configuration.accessMode);
+        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }
@@ -59,7 +59,7 @@ public class Controller {
      * @throws IOException
      */
     public static Dominoes loadMatrix(Dominoes dominoes) throws IOException {
-        DominoesDao result = FactoryDao.getDominoesDao(Configuration.accessMode);
+        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }
@@ -85,7 +85,7 @@ public class Controller {
      * @throws IOException 
      */
     public static boolean removeMatrix(Dominoes dominoes) throws IOException {
-        DominoesDao result = FactoryDao.getDominoesDao(Configuration.accessMode);
+        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
 
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
@@ -102,7 +102,7 @@ public class Controller {
      * @throws IOException
      */
     public static boolean saveMatrix(Dominoes dominoes) throws IOException {
-        DominoesDao result = FactoryDao.getDominoesDao(Configuration.accessMode);
+        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }

@@ -91,7 +91,7 @@ public class DominoesTXTDao implements DominoesDao {
             if (type == Dominoes.TYPE_BASIC) {
                 domino = null;//new Dominoes(idRow, idCol, mat);
             } else {
-                domino = null;///new Dominoes(type, idRow, idCol, historic, mat);
+                domino = null;//new Dominoes(type, idRow, idCol, historic, mat);
             }
             result.add(domino);
 
