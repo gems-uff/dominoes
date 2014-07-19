@@ -198,11 +198,23 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setData
 	fprintf(stderr, "rows: %d, cols: %d\n", _mat->n_rows, _mat->n_cols);
 	jfloat* _data = env->GetFloatArrayElements(data, NULL);
 
+	int count = 0;
 	for (int i = 0; i < _mat->n_rows; i++){
 		for (int j = 0; j < _mat->n_cols; j++){
-			(*_mat)(i, j) = _data[i * _mat->n_cols + j];
+
+			float d = _data[i * _mat->n_cols + j];
+
+			if (fabsf(d) > 0.00000001f){
+				(*_mat)(i, j) = _data[i * _mat->n_cols + j];
+				count++;
+			}
 		}
 	}
+
+	//uvec indices = find((*_mat), 0);
+	//indices.print();
+
+	fprintf(stderr, "count: %d\n", count);
 
 
 	env->ReleaseFloatArrayElements(data, _data, 0);
@@ -307,7 +319,7 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_multipl
 		}*/
 	}
 
-	//fprintf(stderr, "saiu mul\n");
+	fprintf(stderr, "non-zeros: %d\n", _matResult->n_nonzero);
 
 }
 

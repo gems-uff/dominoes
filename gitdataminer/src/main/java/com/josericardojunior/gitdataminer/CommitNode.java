@@ -230,11 +230,12 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 						f.Parse(repoNode.getRepository());
 					}
 				
-				
+					
 					commit.user = UserNode.AddOrRetrieveUser(c.getAuthorIdent().getName());
 					commit.logMessage = c.getFullMessage();
 					commit.id = c.getId().toString();
 					System.out.println("Processados: " + counter);
+					System.out.println("Msg: " + commit.logMessage);
 					Database.AddCommit(commit, repoNode);
 					counter++;
 				}

@@ -2,6 +2,7 @@ package com.josericardojunior.gitdataminer;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,8 +69,15 @@ public class RepositoryNode {
 		
 		Database.Open();
 		Date lastCommitDate = Database.AddRepository(repoNode);
-		CommitNode.SaveToDatabase(repoNode, lastCommitDate);	
+		CommitNode.SaveToDatabase(repoNode, lastCommitDate);
+		
+		try {
+			Database.MineBugs("derby-", repoNode);
+		} catch (SQLException ex){
+			ex.printStackTrace();
+		}
 		Database.UpdateRepoToLastCommit(repoNode);
+		
 		Database.Close();
 		
 	}

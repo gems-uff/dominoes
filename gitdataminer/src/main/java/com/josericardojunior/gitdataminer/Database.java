@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -20,13 +21,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.crypto.Data;
+
+import org.eclipse.jdt.core.dom.ThrowStatement;
 
 import com.josericardojunior.gitdataminer.Analyzer.Grain;
 import com.josericardojunior.gitdataminer.Analyzer.InfoType;
 
 public class Database {
+	
+	public static String database_file = "data/gitdataminer.sqlite";
 	
 	public enum CubeOptions {
 		All,		
@@ -44,7 +50,7 @@ public class Database {
 	
 	public static void Open(){
 		
-		File f = new File("gitdataminer.sqlite");
+		File f = new File(database_file);
 		boolean createStructure = false;
 		
 		if (!f.exists())
@@ -53,7 +59,7 @@ public class Database {
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
-			conn = DriverManager.getConnection("jdbc:sqlite:gitdataminer.sqlite");
+			conn = DriverManager.getConnection("jdbc:sqlite:" + database_file);
 			
 			if (createStructure)
 				CreateGitMinerRepoStructure();
@@ -412,6 +418,7 @@ public class Database {
 							"NewName STRING NOT NULL," +
 							"OldName STRING NOT NULL," +
 							"NewObjId STRING NOT NULL," +
+							"PackageName STRING NOT NULL," +
 							"ChangeType STRING NOT NULL);" +
 					
 					"CREATE TABLE TCLASS(" +
@@ -428,7 +435,12 @@ public class Database {
 							"Name STRING NOT NULL," +
 							"LineStart INT NOT NULL," +
 							"LineEnd INT NOT NULL," +
-							"ChangeType STRING NOT NULL);";
+							"ChangeType STRING NOT NULL);" +
+							
+							
+					"CREATE TABLE TBUG(" +
+						"id STRING NOT NULL," +
+						"CommitID STRING NOT NULL);";
 			
 			
 			smt.executeUpdate(sql);
@@ -1220,7 +1232,7 @@ public class Database {
 					+ "');";
 
 			for (FileNode fileNode : commit.getFiles()) {
-				sql += "INSERT INTO TFILE (CommitId, NewName, OldName, NewObjId, ChangeType)"
+				sql += "INSERT INTO TFILE (CommitId, NewName, OldName, NewObjId, PackageName, ChangeType)"
 						+ " VALUES ("
 						+ "(SELECT id FROM TCOMMIT TC WHERE TC.HashCode = '"
 						+ commit.getId()
@@ -1233,6 +1245,9 @@ public class Database {
 						+ "',"
 						+ "'"
 						+ fileNode.newObjId
+						+ "',"
+						+ "'"
+						+ fileNode.packageName
 						+ "',"
 						+ "'"
 						+ fileNode.changeType + "');";
@@ -1280,6 +1295,69 @@ public class Database {
 		} catch (Exception e){
 			e.printStackTrace();
 		}
+	}
+	
+	public static void MineBugs(String bugMatch, RepositoryNode repository) throws SQLException {
+		
+		String sql;
+		MatrixDescriptor descriptor = new MatrixDescriptor(InfoType.USER, InfoType.COMMIT);
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+		
+		// Get all commits
+		sql = "SELECT TC.HashCode, TC.Message FROM TCommit TC, TRepository TR "
+				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + repository.getName() + "' "
+				+ "ORDER BY TC.Date;";
+		rs = smt.executeQuery(sql);
+		
+		
+		List<Entry<String, String>> bugCommit = new ArrayList<Map.Entry<String,String>>(); 
+		
+		while (rs.next())
+		{
+			String hashCode = rs.getString("HashCode");
+			String message = rs.getString("Message");
+			
+			String bugId = extractBugId(message, bugMatch);
+			
+			if (bugId != null){
+				Map.Entry<String,String> pair = new AbstractMap.SimpleEntry(bugId, hashCode);
+				
+				bugCommit.add(pair);
+			}
+		}
+		
+		
+		// Add found bugs
+		for (Entry<String, String> record : bugCommit){
+			sql = "INSERT INTO TBUG (id, commitId)"
+					+ " VALUES ('" + record.getKey() + "', '" + record.getValue() + "');";
+
+			smt.executeUpdate(sql);
+		} 
+		
+		rs.close();
+		smt.close();
+	}
+	
+	private static String extractBugId(String text, String match){
+		
+		String idBug = "derby-";
+		String res = idBug;
+		
+		int start = text.toLowerCase().indexOf(idBug);
+		
+		for (int i = start + idBug.length(); i < text.length(); i++){
+			if (!Character.isDigit(text.charAt(i))){
+				break;
+			}
+			res += text.charAt(i);
+		}
+		
+		if (idBug.equals(res))
+			return null;
+		
+		return res;
 	}
 
 	public static Matrix2D ExtractCommitSubMatrix(Grain grain,
