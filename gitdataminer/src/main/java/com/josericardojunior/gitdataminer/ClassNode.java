@@ -113,7 +113,7 @@ public class ClassNode  {
 		switch (_file.changeType) {
 		case ADD: {
 			ObjectLoader newFile = _repo.open(_file.newObjId);
-			String newData = readStream(newFile.openStream());
+			String newData = FileNode.readStream(newFile.openStream());
 
 			resultClass.addAll(ExtractClasses(newData).values());
 
@@ -129,10 +129,10 @@ public class ClassNode  {
 			// Extract classes from all files in order to see if there is any
 			// modification on it
 			ObjectLoader oldFile = _repo.open(_file.oldObjId);
-			String oldData = readStream(oldFile.openStream());
+			String oldData = FileNode.readStream(oldFile.openStream());
 
 			ObjectLoader newFile = _repo.open(_file.newObjId);
-			String newData = readStream(newFile.openStream());
+			String newData = FileNode.readStream(newFile.openStream());
 
 			Map<String, ClassNode> oldClasses = ExtractClasses(oldData);
 			Map<String, ClassNode> newClasses = ExtractClasses(newData);
@@ -179,22 +179,6 @@ public class ClassNode  {
 		}
 		
 		return _res;
-	}
-
-	private static String readStream(InputStream iStream) throws IOException {
-		// build a Stream Reader, it can read char by char
-		InputStreamReader iStreamReader = new InputStreamReader(iStream);
-		// build a buffered Reader, so that i can read whole line at once
-		BufferedReader bReader = new BufferedReader(iStreamReader);
-		String line = null;
-		StringBuilder builder = new StringBuilder();
-		while ((line = bReader.readLine()) != null) { // Read till end
-			builder.append(line + '\n');
-		}
-		bReader.close(); // close all opened stuff
-		iStreamReader.close();
-		iStream.close();
-		return builder.toString();
 	}
 
 }

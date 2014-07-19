@@ -149,8 +149,8 @@ public class MatrixTable extends AbstractTableModel {
 	 */
 	public static void main(String[] args) {
 		
-		String projName = "Math-Game";
-		String repoPath = "//home/josericardo/Projects/" 
+		String projName = "derby";
+		String repoPath = "/Users/josericardo/tmp/repos/" 
 				+ projName + "/";
 				
 

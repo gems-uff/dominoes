@@ -300,4 +300,9 @@ extern "C" {
     	
     }
     
+    
+    void g_SparseMultiplication(){
+    
+    }
+    
 } 
