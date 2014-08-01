@@ -24,6 +24,8 @@
 	</section>
 	<section name="RenameInformationPopup">
 	</section>
+	<section name="OccurrencesSearchResultPage">
+	</section>
 	<section name="OptionalMessageDialog.hide.">
 		<item value="true" key="org.eclipse.jdt.ui.typecomment.deprecated"/>
 	</section>

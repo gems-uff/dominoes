@@ -50,6 +50,14 @@ public class App extends Application {
     static void drawMatrix(Dominoes domino) {
         visual.addTabMatrix(domino);
     }
+    
+    static void drawChart(Dominoes domino) {
+        visual.addTabChart(domino);
+    }
+    
+    static void drawTree(Dominoes domino) {
+        visual.addTabTree(domino);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {

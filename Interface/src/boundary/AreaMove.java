@@ -83,6 +83,8 @@ public class AreaMove extends Pane {
         MenuItem menuItemSaveInList = new MenuItem("Save");
         MenuItem menuItemViewGraph = new MenuItem("View Graph");
         MenuItem menuItemViewMatrix = new MenuItem("View Matrix");
+        MenuItem menuItemViewChart = new MenuItem("View Chart");
+        MenuItem menuItemViewTree = new MenuItem("View Tree");
         MenuItem menuItemClose = new MenuItem("Close");
 
         Group group = domino.drawDominoes();
@@ -211,7 +213,6 @@ public class AreaMove extends Pane {
             public void handle(MouseEvent event) {
                 cursorProperty().set(Cursor.OPEN_HAND);
                 try {
-                    //                System.out.println("multiplying");
                     multiply();
                 } catch (IOException ex) {
                     System.err.println(ex.getMessage());
@@ -232,7 +233,6 @@ public class AreaMove extends Pane {
 
                     if (mouseEvent.getClickCount() == 2) {
                         try {
-                            //                        System.out.println("transposing");
                             transpose(group);
                         } catch (IOException ex) {
                             System.err.println(ex.getMessage());
@@ -290,6 +290,10 @@ public class AreaMove extends Pane {
                     drawGraph(domino);
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewMatrix.getText())) {
                     drawMatrix(domino);
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewChart.getText())) {
+                    drawChart(domino);
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewTree.getText())) {
+                    drawTree(domino);
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemClose.getText())) {
 //                    System.out.println("closing");
                     closePiece(group);
@@ -297,7 +301,7 @@ public class AreaMove extends Pane {
             }
         });
 
-        minimenu.getItems().addAll(menuItemTranspose, menuItemMultiply, menuItemSaveInList, menuItemViewGraph, menuItemViewMatrix, menuItemClose);
+        minimenu.getItems().addAll(menuItemTranspose, menuItemMultiply, menuItemViewChart, menuItemViewMatrix, menuItemViewGraph, menuItemViewTree, menuItemSaveInList, menuItemClose);
 
     }
 
@@ -700,5 +704,13 @@ public class AreaMove extends Pane {
 
     private void drawMatrix(Dominoes domino) {
         App.drawMatrix(domino);
+    }
+    
+    private void drawChart(Dominoes domino) {
+        App.drawChart(domino);
+    }
+    
+    private void drawTree(Dominoes domino) {
+        App.drawTree(domino);
     }
 }
