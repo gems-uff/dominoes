@@ -5,6 +5,10 @@
  */
 package boundary;
 
+import java.sql.NClob;
+import java.util.ArrayList;
+
+import arch.Cell;
 import arch.MatrixDescriptor;
 import domain.Dominoes;
 import javafx.event.EventHandler;
@@ -50,14 +54,14 @@ public class MatrixPane extends Pane {
         double largerSize = 0;
         
         MatrixDescriptor _descriptor = domino.getMat().getMatrixDescriptor();
-        //ArrayList<String> row = _descriptor.get
+       /* //ArrayList<String> row = _descriptor.get
         for (int i = 0; i < _descriptor.getNumRows(); i++) {
         	float[] _row = domino.getMat().getRow(_descriptor.getRowAt(i));
         	
             for (int j = 0; j < _descriptor.getNumCols(); j++) {
             	
             }
-        }
+        }*/
         
         
         
@@ -82,11 +86,10 @@ public class MatrixPane extends Pane {
         	
         }
         
-        for (int i = 0; i < _descriptor.getNumCols(); i++) {
-    		if(domino.getMat().getMatrixDescriptor().getColumnAt(i).length() > largerSize){
-    			largerSize = domino.getMat().getMatrixDescriptor().getRowAt(i).length(); 
-    		}
-    	}
+        int _nRows = _descriptor.getNumRows();
+        int _nCols = _descriptor.getNumCols();
+        largerSize = _nRows > _nCols ? _nRows : _nCols;
+        
         
         double width = cellSpace + largerSize*charSpace;
     	double height = cellSpace;
@@ -120,28 +123,26 @@ public class MatrixPane extends Pane {
         }
         
         // draw the matrix information
-        for (int i = 0; i < _descriptor.getNumRows(); i++) {
-        	float[] _row = domino.getMat().getRow(_descriptor.getRowAt(i));
-        	
-            for (int j = 0; j < _descriptor.getNumCols(); j++) {
-                Rectangle back = new Rectangle(j * (cellSpace + padding) + padding, i * (cellSpace + padding) + padding, cellSpace, cellSpace);
-                back.setFill(new Color(0, 0, 0, 0.1));
-                Rectangle front = new Rectangle(j * (cellSpace + padding) + padding, i * (cellSpace + padding) + padding, cellSpace, cellSpace);
-                front.setFill(new Color(0, 0, 0, (_row[j] - min) / (max - min)));
-                front.toFront();
+        ArrayList<Cell> cells = domino.getMat().getNonZeroData();
+        
+        for (Cell _matCell : cells){
+        	Rectangle back = new Rectangle(_matCell.col * (cellSpace + padding) + padding, _matCell.row * (cellSpace + padding) + padding, cellSpace, cellSpace);
+            back.setFill(new Color(0, 0, 0, 0.1));
+            Rectangle front = new Rectangle(_matCell.col * (cellSpace + padding) + padding, _matCell.row * (cellSpace + padding) + padding, cellSpace, cellSpace);
+            front.setFill(new Color(0, 0, 0, (_matCell.value - min) / (max - min)));
+            front.toFront();
 
-                Group cell = new Group(back, front);
+            Group cell = new Group(back, front);
                 
-                Text text = new Text(j * (cellSpace + padding) + padding, i * (cellSpace + padding) + padding + 20, String.valueOf(_row[j]));
-//                text.setFont(new Font("Arial", 20));
-                text.setFill(Color.WHITE);
-                text.toFront();
+            Text text = new Text(_matCell.col * (cellSpace + padding) + padding, _matCell.row * (cellSpace + padding) + padding + 20, String.valueOf(_matCell.value));
+//          text.setFont(new Font("Arial", 20));
+            text.setFill(Color.WHITE);
+            text.toFront();
 
-                Group g = new Group(cell, text);
-                Tooltip.install(g, new Tooltip(domino.getMat().getMatrixDescriptor().getRowAt(i) + " | " + domino.getMat().getMatrixDescriptor().getColumnAt(j)));
+            Group g = new Group(cell, text);
+            //Tooltip.install(g, new Tooltip(domino.getMat().getMatrixDescriptor().getRowAt(i) + " | " + domino.getMat().getMatrixDescriptor().getColumnAt(j)));
                 
-                group.getChildren().add(g);
-            }
+            group.getChildren().add(g);
         }
 
         this.setOnScroll(new EventHandler<ScrollEvent>() {

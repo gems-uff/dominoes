@@ -9,6 +9,11 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <cusp/format.h>
+#include <cusp/complex.h>
+#include <cusp/coo_matrix.h>
+#include <cusp/multiply.h>
+
 #include <helper_cuda.h>
 #include <stdio.h>
 
@@ -113,34 +118,50 @@ __global__ void StandardScoreKernel(float* _mat, int rows, int cols,
 }
 
 extern "C" {
-    void g_MatMul(float* _mat1, float *_mat2, float *_res, 
-		int rows1, int cols, int cols2){
+    void g_MatMul(int n_rowsA, int n_colsA, int n_colsB, int nzA, int nzB,
+    	int *rowsA, int *colsA, float *valuesA,
+    	int *rowsB, int *colsB, float *valuesB,
+    	int **row_res, int **col_res, float **value_res,
+    	int& res_nz){
     
-    	float *d_mat1;
-    	float *d_mat2;
-    	float *d_result;
+    	cusp::coo_matrix<int,float,cusp::host_memory> matA(n_rowsA,n_colsA,nzA);
+    	for (int i = 0; i < nzA; i++){
+    		matA.row_indices[i] = rowsA[i]; matA.column_indices[i] = colsA[i]; matA.values[i] = valuesA[i];
+    	}
+    	cusp::coo_matrix<int,float,cusp::device_memory> matA_d = matA;
     	
-    	checkCudaErrors(cudaMalloc(&d_mat1, sizeof(float) * rows1 * cols));
-    	checkCudaErrors(cudaMemcpy(d_mat1, _mat1, sizeof(float) * rows1 * cols, cudaMemcpyHostToDevice));
+    	cusp::coo_matrix<int,float,cusp::host_memory> matB(n_colsA,n_colsB,nzB);
+    	for (int i = 0; i < nzB; i++){
+    		matB.row_indices[i] = rowsB[i]; matB.column_indices[i] = colsB[i]; matB.values[i] = valuesB[i];
+    	}
+    	cusp::coo_matrix<int,float,cusp::device_memory> matB_d = matB;
     	
-    	checkCudaErrors(cudaMalloc(&d_mat2, sizeof(float) * cols * cols2));
-    	checkCudaErrors(cudaMemcpy(d_mat2, _mat2, sizeof(float) * cols * cols2, cudaMemcpyHostToDevice));
+    	cusp::coo_matrix<int,float,cusp::device_memory> matRes_d(n_rowsA,n_colsB, n_rowsA * n_colsB);
     	
-    	checkCudaErrors(cudaMalloc(&d_result, sizeof(float) * rows1 * cols2));
-        
-       
-        dim3 blockDim(N_THREADS_X, N_THREADS_Y, 1);
-        dim3 gridDim( ceil((float)cols2/N_THREADS_X), ceil((float)rows1/N_THREADS_Y), 1);
-        printf("gridx: %d, gridy: %d\n", gridDim.x, gridDim.y);
-
-        AddKernel<<<gridDim, blockDim>>>(d_mat1, d_mat2, d_result, rows1, cols, cols2);
-        
-            
-        checkCudaErrors(cudaDeviceSynchronize());
-    	checkCudaErrors(cudaMemcpy(_res, d_result, sizeof(float) * rows1 * cols2, cudaMemcpyDeviceToHost));
-    	checkCudaErrors(cudaFree(d_mat1));
-    	checkCudaErrors(cudaFree(d_mat2));
-    	checkCudaErrors(cudaFree(d_result));
+    	
+    	cusp::multiply(matA_d, matB_d, matRes_d);
+    	
+    	cusp::coo_matrix<int,float,cusp::host_memory> matRes = matRes_d;
+    	
+    	res_nz = matRes.num_entries;
+    	int *_row_res = new int[res_nz];
+    	int *_col_res = new int[res_nz];
+    	float *_value_res = new float[res_nz];
+    	
+    	fprintf(stderr, "cco_nz: %d\n", res_nz);
+    	
+    	for(size_t n = 0; n < res_nz; n++)
+  		{
+    		_row_res[n] = matRes.row_indices[n];
+    		_col_res[n] = matRes.column_indices[n];
+   		 	_value_res[n] = matRes.values[n];
+   		}
+   		
+   		row_res = &_row_res;
+   		col_res = &_col_res;
+   		value_res = &_value_res; 
+   		 
+   		fprintf(stderr, "cco_nz: %d\n", res_nz);
     }
     
     

@@ -74,33 +74,17 @@ JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_create
 /*
  * Class:     com_josericardojunior_Native_MatrixProcessor
  * Method:    setData
- * Signature: (J[F)V
+ * Signature: (J[I[I[F)V
  */
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setData
-  (JNIEnv *, jclass, jlong, jfloatArray);
+  (JNIEnv *, jclass, jlong, jintArray, jintArray, jfloatArray);
 
 /*
  * Class:     com_josericardojunior_Native_MatrixProcessor
- * Method:    setRowData
- * Signature: (J[FI)V
+ * Method:    getNonZeroData
+ * Signature: (J)[Lcom/josericardojunior/Native/java_to_c_info;
  */
-JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setRowData
-  (JNIEnv *, jclass, jlong, jfloatArray, jint);
-
-/*
- * Class:     com_josericardojunior_Native_MatrixProcessor
- * Method:    getRow
- * Signature: (JI)[F
- */
-JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getRow
-  (JNIEnv *, jclass, jlong, jint);
-
-/*
- * Class:     com_josericardojunior_Native_MatrixProcessor
- * Method:    getData
- * Signature: (J)[F
- */
-JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getData
+JNIEXPORT jobjectArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getNonZeroData
   (JNIEnv *, jclass, jlong);
 
 /*
@@ -110,6 +94,46 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
  */
 JNIEXPORT jboolean JNICALL Java_com_josericardojunior_Native_MatrixProcessor_deleteMatrixData
   (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    getMin
+ * Signature: (J)F
+ */
+JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMin
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    getMax
+ * Signature: (J)F
+ */
+JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMax
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    mean
+ * Signature: (JJZ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_mean
+  (JNIEnv *, jclass, jlong, jlong, jboolean);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    standard_deviation
+ * Signature: (JJZ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standard_1deviation
+  (JNIEnv *, jclass, jlong, jlong, jboolean);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    standard_score
+ * Signature: (JJZ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standard_1score
+  (JNIEnv *, jclass, jlong, jlong, jboolean);
 
 /*
  * Class:     com_josericardojunior_Native_MatrixProcessor

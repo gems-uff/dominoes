@@ -76,7 +76,7 @@ public class AreaMove extends Pane {
         double thisTranslateY = y;
 
         ContextMenu minimenu = new ContextMenu();
-
+        
         MenuItem menuItemTranspose = new MenuItem("Transpose");
         MenuItem menuItemMultiply = new MenuItem("Multiply");
         menuItemMultiply.setDisable(true);
@@ -297,6 +297,7 @@ public class AreaMove extends Pane {
             }
         });
 
+        
         minimenu.getItems().addAll(menuItemTranspose, menuItemMultiply, menuItemSaveInList, menuItemViewGraph, menuItemViewMatrix, menuItemClose);
 
     }

@@ -417,7 +417,7 @@ public final class Dominoes {
         try {
 			domResult.setMat(
 					getMat().multiply(
-							dom2.getMat(), false));
+							dom2.getMat(), Configuration.processingUnit.equalsIgnoreCase("GPU")));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

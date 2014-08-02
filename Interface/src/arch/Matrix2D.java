@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Native;
+import java.util.ArrayList;
 
 import com.josericardojunior.Native.*;
 
@@ -36,23 +38,6 @@ public class Matrix2D implements IMatrix2D {
 	}
 	
 	
-	public void setData(float[] data){
-		MatrixProcessor.setData(matPointer, data);
-	}
-	
-	public float[] getRow(String row){
-		int _rowIndex = matrixDescriptor.getRowElementIndex(row);
-		
-		return MatrixProcessor.getRow(matPointer, _rowIndex);
-	}
-	
-	public float getElement(String row, String col){
-		
-		int _colIndex = matrixDescriptor.getColElementIndex(col);
-		
-		float[] rowData = getRow(row);
-		return rowData[_colIndex];
-	}
 	
 	public IMatrix2D multiply(IMatrix2D other, boolean useGPU) throws Exception{
 		MatrixDescriptor otherDescriptor = other.getMatrixDescriptor();
@@ -106,7 +91,7 @@ public class Matrix2D implements IMatrix2D {
 	
 	public void Debug(){
 		
-		for (int i = 0; i < matrixDescriptor.getNumRows(); i++){
+		/*for (int i = 0; i < matrixDescriptor.getNumRows(); i++){
 			
 			float[] rowData = getRow(matrixDescriptor.getRowAt(i));
 			
@@ -114,12 +99,12 @@ public class Matrix2D implements IMatrix2D {
 				System.out.print(rowData[j] + "\t");
 			}
 			System.out.println();
-		}
+		}*/
 	}
 	
 	public void ExportCSV(String filename){
 		
-		StringBuffer out = new StringBuffer();
+		/*StringBuffer out = new StringBuffer();
 		
 		for (int j = 0; j < matrixDescriptor.getNumCols(); j++){
 			out.append(";");
@@ -150,13 +135,13 @@ public class Matrix2D implements IMatrix2D {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}	*/
 	}
 	
 	public StringBuffer ExportCSV(){
 		
 		StringBuffer out = new StringBuffer();
-		
+		/*
 		for (int j = 0; j < matrixDescriptor.getNumCols(); j++){
 			out.append(";");
 			out.append(matrixDescriptor.getColumnAt(j));
@@ -171,7 +156,7 @@ public class Matrix2D implements IMatrix2D {
 				out.append(rowData[j] + ";");
 			}
 			out.append("\n");
-		}
+		}*/
 		
 		return out;
 	}
@@ -227,42 +212,41 @@ public class Matrix2D implements IMatrix2D {
 	}*/
 	
 	public float findMinValue(){
-		float _min = 0;
-		
-		for (int i = 0; i < matrixDescriptor.getNumRows(); i++){
-			float[] _row = getRow(matrixDescriptor.getRowAt(i));
-			
-			for (int k = 0; k < matrixDescriptor.getNumCols(); k++){
-				
-				if (i == 0){
-					_min = _row[0];
-				} else {
-					if (_row[k] < _min)
-						_min = _row[k];
-				}
-			}
-		}
-		
-		return _min;
+		return MatrixProcessor.getMin(matPointer);
 	}
 	
 	public float findMaxValue(){
-		float _max = 0;
+		return MatrixProcessor.getMax(matPointer);
+	}
+
+	@Override
+	public void setData(ArrayList<Cell> cells) {
 		
-		for (int i = 0; i < matrixDescriptor.getNumRows(); i++){
-			float[] _row = getRow(matrixDescriptor.getRowAt(i));
+		int[] rows = new int[cells.size()];
+		int[] cols = new int[cells.size()];
+		float[] data = new float[cells.size()];
+		
+		for (int i = 0; i < cells.size(); i++){
+			Cell cell = cells.get(i);
 			
-			for (int k = 0; k < matrixDescriptor.getNumCols(); k++){
-				
-				if (i == 0){
-					_max = _row[0];
-				} else {
-					if (_row[k] > _max)
-						_max = _row[k];
-				}
-			}
+			rows[i] = cell.row;
+			cols[i] = cell.col;
+			data[i] = cell.value;		
 		}
 		
-		return _max;
+		MatrixProcessor.setData(matPointer, rows, cols, data);
+	}
+
+	@Override
+	public ArrayList<Cell> getNonZeroData() {
+		
+		java_to_c_info[] nzList = MatrixProcessor.getNonZeroData(matPointer);
+		ArrayList<Cell> cellList = new ArrayList<Cell>();
+		
+		for (java_to_c_info nz : nzList){
+			cellList.add(new Cell(nz.row, nz.col, nz.value));
+		}
+		
+		return cellList;
 	}		
 }

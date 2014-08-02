@@ -7,7 +7,18 @@
 #include <jni.h>
 #include "com_josericardojunior_Native_MatrixProcessor.h"
 #include <stdio.h>
+#include <Eigen/SparseCore>
 #include "armadillo"
+#include <vector>
+
+typedef Eigen::SparseMatrix<float,Eigen::RowMajor> SpMatf;
+typedef Eigen::Triplet<float> Tf;
+
+struct NonZeroInfo {
+	int row;
+	int col;
+	float value;
+};
 
 struct MatrixInfo {
 	int rows;
@@ -15,11 +26,13 @@ struct MatrixInfo {
 	float *data;
 };
 
-using namespace arma;
 
 extern "C" {
-	void g_MatMul(float* _mat1, float *_mat2, float *_res,
-			int rows1, int cols, int cols2);
+	void g_MatMul(int n_rowsA, int n_colsA, int n_colsB, int nzA, int nzB,
+	    	int *rowsA, int *colsA, float *valuesA,
+	    	int *rowsB, int *colsB, float *valuesB,
+	    	int **row_res, int **cols_res, float **values_res,
+	    	int& res_nz);
 
 	void g_StandardDeviation(float* mat, int rows, int cols, 
 		float* meanSD, float* result);
@@ -29,7 +42,10 @@ extern "C" {
 }
 
 
-JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_GPUMatMult
+
+using namespace arma;
+
+/*JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_GPUMatMult
   (JNIEnv *env, jclass obj, jfloatArray m1, jfloatArray m2, jint rows1, jint cols1, jint cols2)
 {
 	jfloat* _m1Data= env->GetFloatArrayElements(m1, NULL);
@@ -52,7 +68,7 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 	env->DeleteLocalRef(m1);
 	env->DeleteLocalRef(m2);
 	return jres;
-}
+}*/
 
 JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_BLASMatMult
   (JNIEnv *env, jclass obj, jfloatArray m1, jfloatArray m2, jint rows1, jint cols1, jint cols2)
@@ -177,50 +193,266 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 
 
 
+SpMatf *createMatrix(int rows, int cols){
+	SpMatf *mat = new SpMatf(rows, cols);
 
-
-
-
-JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_createMatrixData
-  (JNIEnv *env, jclass obj, jint rows, jint cols){
-
-	sp_fmat *mat = new sp_fmat(rows, cols);
-
-	return (long) mat;
+	return mat;
 }
 
-JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setData
-  (JNIEnv *env, jclass obj, jlong mat, jfloatArray data){
+void deleteMatrix(SpMatf *matrix){
+	delete matrix;
+	matrix = NULL;
 
-//	fprintf(stderr, "Chegou\n");
+	fprintf(stderr, "Matrix deleted!\n");
+}
 
-	sp_fmat *_mat = (sp_fmat*) mat;
-	fprintf(stderr, "rows: %d, cols: %d\n", _mat->n_rows, _mat->n_cols);
-	jfloat* _data = env->GetFloatArrayElements(data, NULL);
+void setNonZeroData(SpMatf *mat, int *rows, int *cols, float *values, int size){
+	//fprintf(stderr, "Setting data: %d\n", size);
 
-	int count = 0;
-	for (int i = 0; i < _mat->n_rows; i++){
-		for (int j = 0; j < _mat->n_cols; j++){
+	std::vector<Tf> tripletList;
 
-			float d = _data[i * _mat->n_cols + j];
+	for (int i = 0; i < size; i++){
+		tripletList.push_back(Tf(rows[i], cols[i], values[i]));
+	}
 
-			if (fabsf(d) > 0.00000001f){
-				(*_mat)(i, j) = _data[i * _mat->n_cols + j];
-				count++;
+	mat->setFromTriplets(tripletList.begin(), tripletList.end());
+}
+
+void calculateMean(SpMatf *matrix, SpMatf *result, bool useGPU){
+
+	float sumRows[matrix->cols()];
+	memset(sumRows, 0, sizeof(sumRows));
+
+	if (useGPU){
+
+	} else {
+		for (int i = 0; i < matrix->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*matrix), i); it; ++it){
+				sumRows[it.col()] += it.value();
 			}
 		}
 	}
 
-	//uvec indices = find((*_mat), 0);
-	//indices.print();
+	std::vector<Tf> tripletList;
 
-	fprintf(stderr, "count: %d\n", count);
+	for (int i = 0; i < matrix->cols(); i++){
+		tripletList.push_back(Tf(0, i, sumRows[i] / (float) matrix->rows()));
+	}
+
+	result->setFromTriplets(tripletList.begin(), tripletList.end());
+}
+
+void calculateSD(SpMatf *matrix, SpMatf *mean, SpMatf *result, bool useGPU){
+	float variance[mean->cols()];
+	float matrixToArray[matrix->rows() * matrix->cols()];
+	memset(matrixToArray, 0, sizeof(matrixToArray));
+	memset(variance, 0, sizeof(variance));
+
+	int matrixRows = matrix->rows();
+	int matrixCols = matrix->cols();
+
+	for (int i = 0; i < matrix->outerSize(); i++){
+		for (SpMatf::InnerIterator it((*matrix), i); it; ++it){
+			matrixToArray[it.row() * matrixCols + it.col()] = it.value();
+		}
+	}
+
+	for (int j = 0; j < matrixCols; j++){
+		float colMean = mean->coeff(0, j);
+
+		for (int i = 0; i < matrixRows; i++){
+			float deviate = matrixToArray[i * matrixCols + j] - colMean;
+			variance[j] += deviate * deviate;
+		}
+	}
+
+	std::vector<Tf> tripletList;
+
+	for (int i = 0; i < result->cols(); i++){
+		tripletList.push_back(Tf(0, i, sqrtf(variance[i] / (float) matrixRows)));
+	}
+
+	result->setFromTriplets(tripletList.begin(), tripletList.end());
+}
+
+void standardScore(SpMatf *matrix, SpMatf *mean, SpMatf *sd, SpMatf *result, bool useGPU){
+
+	float matrixToArray[matrix->rows() * matrix->cols()];
+	memset(matrixToArray, 0, sizeof(matrixToArray));
+
+	int matrixRows = matrix->rows();
+	int matrixCols = matrix->cols();
+
+	for (int i = 0; i < matrix->outerSize(); i++){
+		for (SpMatf::InnerIterator it((*matrix), i); it; ++it){
+			matrixToArray[it.row() * matrixCols + it.col()] = it.value();
+		}
+	}
 
 
-	env->ReleaseFloatArrayElements(data, _data, 0);
-	env->DeleteLocalRef(data);
+	float epsilon = std::numeric_limits<float>::epsilon();
 
-	//fprintf(stderr, "saiu\n");
+	std::vector<Tf> tripletList;
+
+	for (int j = 0; j < matrixCols; j++){
+		float colMean = mean->coeff(0, j);
+		float colSD = sd->coeff(0, j);
+
+		for (int i = 0; i < matrixRows; i++){
+			float value = matrixToArray[i * matrixCols + j];
+			value = (value - colMean) / colSD;
+
+			if (fabs(value) > epsilon){
+				tripletList.push_back(Tf(i, j, value));
+			}
+		}
+	}
+
+	result->setFromTriplets(tripletList.begin(), tripletList.end());
+}
+
+void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
+
+	//fprintf(stderr, "mul new float\n");
+
+	if (useGPU){
+		int nonZeros_1 = mat1->nonZeros();
+		int nonZeros_2 = mat2->nonZeros();
+
+		int rows_1[nonZeros_1], cols_1[nonZeros_1], rows_2[nonZeros_2], cols_2[nonZeros_2];
+		float values_1[nonZeros_1], values_2[nonZeros_2];
+
+		int k = 0;
+		for (int i = 0; i < mat1->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*mat1), i); it; ++it){
+				rows_1[k] = it.row();
+				cols_1[k] = it.col();
+				values_1[k] = it.value();
+				k++;
+			}
+		}
+
+		k = 0;
+		for (int i = 0; i < mat2->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*mat2), i); it; ++it){
+				rows_2[k] = it.row();
+				cols_2[k] = it.col();
+				values_2[k] = it.value();
+				k++;
+			}
+		}
+
+
+		int *res_rows, *res_cols, res_nz;
+		float *res_data;
+
+		g_MatMul(mat1->rows(), mat1->cols(), mat2->cols(), nonZeros_1, nonZeros_2,
+				rows_1, cols_1, values_1, rows_2, cols_2, values_2, &res_rows, &res_cols, &res_data, res_nz);
+
+		fprintf(stderr, "nz1\n");;
+
+
+		setNonZeroData(result, res_rows, res_cols, res_data, res_nz);
+
+		fprintf(stderr, "nz2\n");
+		free(res_rows);
+		free(res_cols);
+		free(res_data);
+	} else {
+		(*result) = (*mat1) * (*mat2);
+	}
+}
+
+JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_createMatrixData
+  (JNIEnv *env, jclass obj, jint rows, jint cols){
+
+	SpMatf *mat = createMatrix(rows, cols);
+
+	return (long) mat;
+}
+
+JNIEXPORT jobjectArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getNonZeroData
+  (JNIEnv *env, jclass obj, jlong pointer){
+
+	SpMatf *mat = (SpMatf*) pointer;
+
+	std::vector<NonZeroInfo> nonZeros;
+
+	fprintf(stderr, "pointer: %d\n", mat);
+
+	//fprintf(stderr, "rows: %d - cols: %d - NZ: %d\n", mat->rows(), mat->cols(), mat->nonZeros());
+
+
+	for (int i = 0; i < mat->outerSize(); ++i){
+		for (SpMatf::InnerIterator it((*mat), i); it; ++it){
+			NonZeroInfo nz;
+			nz.row = it.row();
+			nz.col = it.col();
+			nz.value = it.value();
+			//fprintf(stderr, "row: %d - col: %d - value: %f\n", nz.row, nz.col, nz.value);
+			nonZeros.push_back(nz);
+		}
+	}
+
+	fprintf(stderr, "Num nonzeros: %d\n", nonZeros.size());
+
+
+	jclass java_to_c_info_class = env->FindClass("com/josericardojunior/Native/java_to_c_info");
+	jmethodID defConstructor = env->GetMethodID(java_to_c_info_class, "<init>", "()V");
+	jfieldID jav_to_c_info_row = env->GetFieldID(java_to_c_info_class, "row", "I");
+	jfieldID jav_to_c_info_col = env->GetFieldID(java_to_c_info_class, "col", "I");
+	jfieldID jav_to_c_info_value = env->GetFieldID(java_to_c_info_class, "value", "F");
+	// find the class constructor
+
+
+	fprintf(stderr, "class: %d!\n", jav_to_c_info_row);
+	fprintf(stderr, "row: %d!\n", jav_to_c_info_row);
+	fprintf(stderr, "col: %d!\n", jav_to_c_info_col);
+	fprintf(stderr, "value: %d!\n", jav_to_c_info_value);
+	fprintf(stderr, "constructor: %d!\n", defConstructor);
+
+
+	jobjectArray jNonZeroArray = env->NewObjectArray(nonZeros.size(),
+			java_to_c_info_class, NULL);
+
+	fprintf(stderr, "Created object array!\n");
+
+	for (int i = 0; i < nonZeros.size(); i++){
+
+		fprintf(stderr, "Creating obj...\n");
+		jobject obj = env->NewObject(java_to_c_info_class,
+				defConstructor);
+
+		fprintf(stderr, "Object: %d!\n", obj);
+
+		env->SetIntField(obj, jav_to_c_info_row, nonZeros[i].row);
+		env->SetIntField(obj, jav_to_c_info_col, nonZeros[i].col);
+		env->SetFloatField(obj, jav_to_c_info_value, nonZeros[i].value);
+
+		env->SetObjectArrayElement(jNonZeroArray, i, obj);
+	}
+
+	return jNonZeroArray;
+}
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setData
+  (JNIEnv *env, jclass obj, jlong pointer, jintArray rows, jintArray cols, jfloatArray values){
+
+	SpMatf *mat = (SpMatf*) pointer;
+
+	jsize nzSize = env->GetArrayLength(rows);
+	jint* _rowsData = env->GetIntArrayElements(rows, NULL);
+	jint* _colsData = env->GetIntArrayElements(cols, NULL);
+	jfloat* _valuesData = env->GetFloatArrayElements(values, NULL);
+
+	setNonZeroData(mat, _rowsData, _colsData, _valuesData, nzSize);
+
+	env->ReleaseIntArrayElements(rows, _rowsData, 0);
+	env->ReleaseIntArrayElements(cols, _colsData, 0);
+	env->ReleaseFloatArrayElements(values, _valuesData, 0);
+	env->DeleteLocalRef(rows);
+	env->DeleteLocalRef(cols);
+	env->DeleteLocalRef(values);
 }
 
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setRowData
@@ -276,11 +508,9 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 JNIEXPORT jboolean JNICALL Java_com_josericardojunior_Native_MatrixProcessor_deleteMatrixData
   (JNIEnv *env, jclass obj, jlong pointer){
 
-	sp_fmat* _matrix = (sp_fmat*) pointer;
+	SpMatf* _matrix = (SpMatf*) pointer;
 
-	delete _matrix;
-
-	fprintf(stderr, "Matrix deleted!\n");
+	deleteMatrix(_matrix);
 
 	return true;
 }
@@ -291,45 +521,91 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_multipl
 
 	//fprintf(stderr, "mul\n");
 
-	sp_fmat* _matrix1 = (sp_fmat*) mat1;
-	sp_fmat* _matrix2 = (sp_fmat*) mat2;
-	sp_fmat* _matResult = (sp_fmat*) result;
+	SpMatf* _matrix1 = (SpMatf*) mat1;
+	SpMatf* _matrix2 = (SpMatf*) mat2;
+	SpMatf* _matResult = (SpMatf*) result;
 
-	//fprintf(stderr, "mul new float\n");
-
-	if (useGPU){
-			//g_MatMul(_matrix1->data, _matrix2->data, _matResult->data,
-				//	_matrix1->rows, _matrix1->cols, _matrix2->cols);
-	} else {
-
-		(*_matResult) = (*_matrix1) * (*_matrix2);
-		/*for (int y = 0; y < _matrix1->rows; y++){
-
-			for (int x = 0; x < _matrix2->cols; x++){
-
-				float sum = 0;
-
-				for (int k = 0; k < _matrix1->cols; k++){
-					sum += _matrix1->data[y*_matrix1->cols + k] *
-						_matrix2->data[k*_matrix2->cols+x];
-				}
-
-				_matResult->data[y * _matrix2->cols + x] = sum;
-			}
-		}*/
-	}
-
-	fprintf(stderr, "non-zeros: %d\n", _matResult->n_nonzero);
-
+	matrixMult(_matrix1, _matrix2, _matResult, useGPU);
 }
 
 
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_transpose
   (JNIEnv *env, jclass obj, jlong pointerMat, jlong pointerRes){
 
-	sp_fmat* _matrix = (sp_fmat*) pointerMat;
-	sp_fmat* _res = (sp_fmat*) pointerRes;
+	SpMatf* _matrix = (SpMatf*) pointerMat;
+	SpMatf* _res = (SpMatf*) pointerRes;
 
-	(*_res) = _matrix->t();
+	(*_res) = _matrix->transpose();
 }
 
+JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMin
+  (JNIEnv *env, jclass obj, jlong pointer){
+
+	SpMatf* _matrix = (SpMatf*) pointer;
+
+	float min = 0;
+
+	for (int i = 0; i < _matrix->outerSize(); i++){
+		for (SpMatf::InnerIterator it((*_matrix), i); it; ++it){
+
+			if (i == 0)
+				min = it.value();
+
+			if (it.value() < min)
+				min = it.value();
+		}
+	}
+
+	return min;
+}
+
+
+JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMax
+  (JNIEnv *env, jclass obj, jlong pointer){
+	SpMatf* _matrix = (SpMatf*) pointer;
+
+	float max = 0;
+
+	for (int i = 0; i < _matrix->outerSize(); i++){
+		for (SpMatf::InnerIterator it((*_matrix), i); it; ++it){
+
+			if (i == 0)
+				max = it.value();
+
+			if (it.value() > max)
+				max = it.value();
+		}
+	}
+
+	return max;
+}
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_mean
+  (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
+
+	SpMatf* _matrix = (SpMatf*) pointer;
+	SpMatf* _res = (SpMatf*) result;
+
+	calculateMean(_matrix, _res, useGPU);
+}
+
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standard_1deviation
+  (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
+
+	SpMatf* _matrix = (SpMatf*) pointer;
+	SpMatf* _res = (SpMatf*) result;
+
+	SpMatf* _mean = createMatrix(1, _matrix->cols());
+	calculateMean(_matrix, _mean, useGPU);
+
+	calculateSD(_matrix, _mean, _res, useGPU);
+
+	deleteMatrix(_mean);
+}
+
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standard_1score
+  (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
+
+}
