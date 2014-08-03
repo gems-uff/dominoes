@@ -72,7 +72,7 @@ public final class Dominoes {
 
     private String idRow;
     private String idCol;
-    private ArrayList<String> historic;
+    private Historic historic;
     private int type;
     private IMatrix2D mat = null;
 
@@ -93,9 +93,7 @@ public final class Dominoes {
 
         this.setMat(mat);
 
-        this.historic = new ArrayList<>();
-        this.historic.add(idRow);
-        this.historic.add(idCol);
+        this.setHistoric(new Historic(idRow, idCol));
 
         this.type = Dominoes.TYPE_BASIC;
     }
@@ -110,7 +108,7 @@ public final class Dominoes {
      * @param mat - matrix2D
      * @throws IllegalArgumentException - in case of invalid parameters
      */
-    public Dominoes(int type, String idRow, String idCol, ArrayList<String> historic, Matrix2D mat) throws IllegalArgumentException {
+    public Dominoes(int type, String idRow, String idCol, Historic historic, Matrix2D mat) throws IllegalArgumentException {
         this.setIdRow(idRow);
         this.setIdCol(idCol);
 
@@ -215,11 +213,7 @@ public final class Dominoes {
         idCol.setY(2 * Dominoes.GRAPH_HEIGHT / 5);
         idCol.toFront();
 
-        String auxHistoric = "";
-        for (int i = 0; i < this.historic.size(); i++) {
-            auxHistoric += this.historic.get(i);
-
-        }
+        String auxHistoric = this.historic.toString();
         Text historic = new Text(auxHistoric);
         historic.setFont(new Font("Arial", 10));
         historic.setFill(Dominoes.COLOR_HISTORIC);
@@ -273,7 +267,7 @@ public final class Dominoes {
      *
      * @return this Historic
      */
-    public ArrayList<String> getHistoric() {
+    public Historic getHistoric() {
         return this.historic;
     }
 
@@ -321,11 +315,13 @@ public final class Dominoes {
      * @param historic The Historic value
      * @throws IllegalArgumentException
      */
-    private void setHistoric(ArrayList<String> historic) {
-        if (historic == null || historic.size() == 0) {
-            historic = new ArrayList<>();
-            historic.add(this.idRow);
-            historic.add(this.idCol);
+    private void setHistoric(Historic historic) {
+        if (historic == null
+                || historic.toString() == null
+                || historic.toString().trim().equals("")
+                || (!historic.getFirstItem().equals(this.idRow) 
+                && !historic.getLastItem().equals(this.idCol))) {
+            throw new IllegalArgumentException("Invalid argument.\nThe Historic attribute is null, void or invalid");
         }
         this.historic = historic;
     }
@@ -377,7 +373,7 @@ public final class Dominoes {
      */
     public void transpose() {
         
-        // transpose the row with column
+    	// transpose the row with column
         Integer swapSide = new Integer(0);
         String swapId = new String("");
 
@@ -386,31 +382,24 @@ public final class Dominoes {
         this.setIdCol(swapId);
 
         this.type = Dominoes.TYPE_DERIVED;
-        if(this.getIdRow().equals(this.getIdCol())){
+        if (this.getIdRow().equals(this.getIdCol())) {
             this.type = Dominoes.TYPE_SUPPORT;
         }
-        
+
         // transpose this historic
-        while (!(this.getIdRow().equals(this.getHistoric().get(0))
-                && this.getIdCol().equals(this.getHistoric().get(this.historic.size() - 1)))) {
-            ArrayList<String> newHistoric = new ArrayList<>();
-            for (int i = this.historic.size() - 1; i >= 0; i--) {
-                newHistoric.add(this.historic.get(i));
-            }
-            this.historic = newHistoric;
-        }
+        this.getHistoric().reverse();
         
         IMatrix2D _newMat = mat.transpose();
         setMat(_newMat);
     }
 
-    public Dominoes multiply(Dominoes dom2) {
+    public Dominoes multiply(Dominoes dom) {
     	
     	Dominoes domResult = new Dominoes();
     	
     	domResult.type = Dominoes.TYPE_DERIVED;
 
-        if (idCol.equals(dom2.getIdRow())) {
+        if (idCol.equals(dom.getIdRow())) {
             domResult.type = Dominoes.TYPE_SUPPORT;
         }
         
@@ -423,14 +412,10 @@ public final class Dominoes {
 			e.printStackTrace();
 		}
         
-        
-        
-        domResult.historic = new ArrayList<>();
-        domResult.historic.addAll(getHistoric());
-        domResult.historic.addAll(domResult.historic.size(), dom2.getHistoric());
+        domResult.historic = new Historic(this.getHistoric(), dom.getHistoric());
         
         domResult.setIdRow(getIdRow());
-        domResult.setIdCol(dom2.getIdCol());
+        domResult.setIdCol(dom.getIdCol());
         
         return domResult;
     }
