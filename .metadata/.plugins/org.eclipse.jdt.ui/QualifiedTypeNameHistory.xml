@@ -18,8 +18,6 @@
 <fullyQualifiedTypeName name="java.sql.NClob"/>
 <fullyQualifiedTypeName name="com.josericardojunior.Native.MatrixProcessor.java_structure"/>
 <fullyQualifiedTypeName name="java.lang.annotation.Native"/>
-<fullyQualifiedTypeName name="arch.Cell"/>
-<fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="com.josericardojunior.Native.MatrixProcessor"/>
 <fullyQualifiedTypeName name="com.josericardojunior.Native.java_to_c_info"/>
 <fullyQualifiedTypeName name="com.josericardojunior.Native.MatrixProcessor.java_to_c_info"/>
@@ -29,4 +27,7 @@
 <fullyQualifiedTypeName name="java.text.SimpleDateFormat"/>
 <fullyQualifiedTypeName name="dao.DominoesSQLDao"/>
 <fullyQualifiedTypeName name="domain.Configuration"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="arch.Cell"/>
+<fullyQualifiedTypeName name="domain.Historic"/>
 </qualifiedTypeNameHistroy>

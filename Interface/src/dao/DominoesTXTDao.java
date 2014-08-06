@@ -317,7 +317,7 @@ public class DominoesTXTDao implements DominoesDao {
 
     @Override
     public boolean saveMatrix(Dominoes domino) throws IOException {
-        String separator = "/";
+        /*String separator = "/";
         String matrixSeparator = ",";
 
         String[] auxMatrix = null;
@@ -556,6 +556,8 @@ public class DominoesTXTDao implements DominoesDao {
             throw new IOException(ex.getMessage());
         } finally {
             fileTemp.delete();
-        }
+        }*/
+    	
+    	return true;
     }
 }

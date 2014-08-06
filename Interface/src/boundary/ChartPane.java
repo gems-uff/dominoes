@@ -5,6 +5,9 @@
  */
 package boundary;
 
+import java.util.ArrayList;
+
+import arch.Cell;
 import domain.Dominoes;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -152,13 +155,16 @@ public class ChartPane extends Pane {
         
         series = new XYChart.Series();
         series.setName("row " + itemSelected); //row name
-
-        for (int j = 0; j < domino.getMat().getRow(itemSelected).length; j++) {
-
-            series.getData().add(new XYChart.Data("(" + indexSelected + "," + j + ")" // column name
-                    , domino.getMat().getRow(itemSelected)[j]));
-            System.out.println(domino.getMat().getRow(itemSelected)[j]);
-
+        
+        
+        ArrayList<Cell> cells = domino.getMat().getNonZeroData();
+        int _rowSelected = domino.getMat().getMatrixDescriptor().getColElementIndex(itemSelected);
+        for (Cell cell : cells){
+        	if (cell.row == _rowSelected){
+        		series.getData().add(new XYChart.Data("(" + indexSelected + "," + cell.col + ")" // column name
+                        , cell.value));
+                System.out.println(cell.value);
+        	}
         }
         System.out.println("--");
         bc.getData().add(series);
