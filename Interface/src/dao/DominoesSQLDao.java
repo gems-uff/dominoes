@@ -36,6 +36,7 @@ public class DominoesSQLDao implements DominoesDao{
 	public static final int File_Class = 4;
 	public static final int Class_Method = 5;
 	public static final int Bug_Commit = 6;
+	public static final int Commit_Method = 8;
 	
 	
 	public static void openDatabase() throws ClassNotFoundException, SQLException{
@@ -87,8 +88,8 @@ public class DominoesSQLDao implements DominoesDao{
     	case Developer_Commit:
     		return loadDeveloperCommit(row_name, col_name);
     		
-    	case Commit_File:
-    		return loadCommitFile(row_name, col_name);
+    	//case Commit_File:
+    	//	return loadCommitFile(row_name, col_name);
     		
     	case Package_File:
     		return loadPackageFile(row_name, col_name);
@@ -101,6 +102,9 @@ public class DominoesSQLDao implements DominoesDao{
     		
     	case Bug_Commit:
     		return loadBugCommit(row_name, col_name);
+    		
+    	case Commit_Method:
+    		return loadCommitMethod(row_name, col_name);
 
     	}
     	
@@ -144,7 +148,7 @@ public class DominoesSQLDao implements DominoesDao{
 		while (rs.next())
 			descriptor.AddColDesc(rs.getString("NewName"));
 		
-		System.out.printf("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 						
 		// Build Matrix
@@ -217,7 +221,7 @@ public class DominoesSQLDao implements DominoesDao{
 		{
 			descriptor.AddRowDesc(rs.getString("name"));
 		}
-		System.out.printf("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		//Matrix2D mat = new Matrix2D(descriptor);
@@ -290,7 +294,7 @@ public class DominoesSQLDao implements DominoesDao{
 		while (rs.next())
 			descriptor.AddColDesc(rs.getString("NewName"));
 						
-		System.out.printf("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -372,7 +376,7 @@ public class DominoesSQLDao implements DominoesDao{
 					rs.getString("ClassName"));
 		}
 		
-		System.out.printf("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -462,7 +466,7 @@ public class DominoesSQLDao implements DominoesDao{
 					rs.getString("ClassName") + "$" + rs.getString("FuncName"));
 		}
 		
-		System.out.printf("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		
@@ -507,6 +511,88 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
     
+    private IMatrix2D loadCommitMethod(String row, String col) throws Exception {
+    	String sql;
+		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+		
+		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR "
+				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + repository_name + "' ";
+		
+		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
+		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		
+		sql = sql.concat("ORDER BY TC.Date;");
+		rs = smt.executeQuery(sql);
+		
+		while (rs.next())
+		{
+			descriptor.AddRowDesc(rs.getString("HashCode"));
+		}
+		
+		sql = "SELECT DISTINCT TFL.NewName, TCL.name as ClassName, TF.name as FuncName " + 
+				"FROM TFunction TF, TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
+			"WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
+				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
+				"AND TR.name = '" + repository_name + "' ";
+		
+		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
+		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+
+		sql = sql.concat("GROUP BY TFL.NewName, TCL.name, TF.name ");
+		sql = sql.concat("ORDER BY TC.date, TFL.NewName, TCL.name, TF.name;");
+		
+		rs = smt.executeQuery(sql);
+		
+		while (rs.next())
+		{			
+			descriptor.AddColDesc(rs.getString("NewName") + "$" + 
+					rs.getString("ClassName") + "$" + rs.getString("FuncName"));
+		}
+				
+		
+		System.out.println("Commit x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		
+		
+		sql = "SELECT TC.HashCode, TFL.NewName, TCL.name as ClassName, TF.name as FuncName " + 
+				"FROM TFunction TF, TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
+			"WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
+				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
+				"AND TR.name = '" + repository_name + "' ";
+			
+		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
+		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+				
+		sql = sql.concat("GROUP BY TFL.NewName, TCL.name, TF.name ");
+		sql = sql.concat("ORDER BY TC.date, TFL.NewName, TCL.name, TF.name;");
+	
+		rs = smt.executeQuery(sql);
+					
+		
+		// temp matrix
+		ArrayList<Cell> cells = new ArrayList<Cell>();
+		
+		while (rs.next()){				
+			Cell c = new Cell();
+			c.row = descriptor.getRowElementIndex(rs.getString("HashCode"));
+			c.col = descriptor.getColElementIndex(rs.getString("NewName") + "$" + 
+						rs.getString("ClassName") + "$" + rs.getString("FuncName"));
+			c.value = 1;
+			
+			cells.add(c);
+		}
+		
+		mat.setData(cells);
+		
+		rs.close();
+		smt.close();
+		
+		return mat;
+    }
+    
     private IMatrix2D loadBugCommit(String row, String col) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
@@ -547,7 +633,7 @@ public class DominoesSQLDao implements DominoesDao{
 		}
 		
 		
-		System.out.printf("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		

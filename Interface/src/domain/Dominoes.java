@@ -393,13 +393,13 @@ public final class Dominoes {
         setMat(_newMat);
     }
 
-    public Dominoes multiply(Dominoes dom) {
+    public Dominoes multiply(Dominoes dom2) {
     	
     	Dominoes domResult = new Dominoes();
     	
     	domResult.type = Dominoes.TYPE_DERIVED;
 
-        if (idCol.equals(dom.getIdRow())) {
+        if (idCol.equals(dom2.getIdRow())) {
             domResult.type = Dominoes.TYPE_SUPPORT;
         }
         
@@ -412,10 +412,10 @@ public final class Dominoes {
 			e.printStackTrace();
 		}
         
-        domResult.historic = new Historic(this.getHistoric(), dom.getHistoric());
+        domResult.historic = new Historic(this.getHistoric(), dom2.getHistoric());
         
         domResult.setIdRow(getIdRow());
-        domResult.setIdCol(dom.getIdCol());
+        domResult.setIdCol(dom2.getIdCol());
         
         return domResult;
     }
