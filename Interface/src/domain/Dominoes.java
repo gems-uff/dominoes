@@ -217,9 +217,6 @@ public final class Dominoes {
         Text historic = new Text(auxHistoric);
         historic.setFont(new Font("Arial", 10));
         historic.setFill(Dominoes.COLOR_HISTORIC);
-        if(this.type == Dominoes.TYPE_BASIC){
-        	historic.setFill(Dominoes.COLOR_INIVISIBLE);
-        }
         historic.setX(2);
         historic.setY(3 * Dominoes.GRAPH_HEIGHT / 5);
         historic.setWrappingWidth(Dominoes.GRAPH_WIDTH - 2);
@@ -232,18 +229,24 @@ public final class Dominoes {
         switch (this.getType()) {
             case Dominoes.TYPE_BASIC:
                 type.setText(Dominoes.TYPE_BASIC_CODE);
+                type.setFill(COLOR_INIVISIBLE);
                 
                 circle.setFill(COLOR_INIVISIBLE);
-            	type.setFill(COLOR_INIVISIBLE);
+            	
+            	historic.setFill(Dominoes.COLOR_INIVISIBLE);
                 break;
             case Dominoes.TYPE_DERIVED:
                 type.setText(Dominoes.TYPE_DERIVED_CODE);
+                type.setFill(COLOR_INIVISIBLE);
                 
                 circle.setFill(COLOR_INIVISIBLE);
-                type.setStroke(COLOR_INIVISIBLE);
+                
+                border.setFill(COLOR_LINE.invert());
+                
                 break;
             case Dominoes.TYPE_SUPPORT:
                 type.setText(Dominoes.TYPE_SUPPORT_CODE);
+                
                 break;
             case Dominoes.TYPE_CONFIDENCE:
                 type.setText(Dominoes.TYPE_CONFIDENCE_CODE);
@@ -373,49 +376,61 @@ public final class Dominoes {
      */
     public void transpose() {
         
-    	// transpose the row with column
-        Integer swapSide = new Integer(0);
-        String swapId = new String("");
-
-        swapId = this.getIdRow();
-        this.setIdRow(this.getIdCol());
-        this.setIdCol(swapId);
-
-        this.type = Dominoes.TYPE_DERIVED;
+    	
+        if(!(this.type == Dominoes.TYPE_BASIC)){
+        	this.type = Dominoes.TYPE_DERIVED;
+        }
         if (this.getIdRow().equals(this.getIdCol())) {
             this.type = Dominoes.TYPE_SUPPORT;
         }
 
+        //String id = this.getIdRow();
+        //this.setIdRow(this.getIdCol());
+        //this.setIdCol(id);
+        
+        //System.out.println("first: "+this.getHistoric().getFirstItem());
+        //System.out.println("last: "+this.getHistoric().getLastItem());
         // transpose this historic
+        //System.out.print(this.historic + "->");
         this.getHistoric().reverse();
+        this.setIdRow(this.getHistoric().getFirstItem());
+        this.setIdCol(this.getHistoric().getLastItem());
+        //System.out.println(this.historic);
+        System.out.println("first: "+this.getHistoric().getFirstItem());
+        System.out.println("last: "+this.getHistoric().getLastItem());
+        //this.setIdRow(this.getHistoric().getLastItem());
+        //this.setIdCol(this.getHistoric().getFirstItem());
+        
+        
+        
         
         IMatrix2D _newMat = mat.transpose();
         setMat(_newMat);
     }
 
-    public Dominoes multiply(Dominoes dom2) {
+    public Dominoes multiply(Dominoes dom) {
     	
     	Dominoes domResult = new Dominoes();
     	
     	domResult.type = Dominoes.TYPE_DERIVED;
 
-        if (idCol.equals(dom2.getIdRow())) {
+        if (idRow.equals(dom.getIdCol())) {
             domResult.type = Dominoes.TYPE_SUPPORT;
         }
         
         try {
 			domResult.setMat(
 					getMat().multiply(
-							dom2.getMat(), Configuration.processingUnit.equalsIgnoreCase("GPU")));
+							dom.getMat(), Configuration.processingUnit.equalsIgnoreCase("GPU")));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
-        domResult.historic = new Historic(this.getHistoric(), dom2.getHistoric());
+        domResult.historic = new Historic(this.getHistoric(), dom.getHistoric());
         
         domResult.setIdRow(getIdRow());
-        domResult.setIdCol(dom2.getIdCol());
+        domResult.setIdCol(dom.getIdCol());
         
         return domResult;
     }

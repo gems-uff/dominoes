@@ -1,8 +1,11 @@
 package boundary;
 
+import domain.Configuration;
 import domain.Dominoes;
+
 import java.io.IOException;
 import java.util.ArrayList;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -318,11 +321,23 @@ public class ListViewDominoes extends ListView<Group> {
      *
      * @param visibility True to define visible the historic
      */
-    void setVisibleHistoric(boolean visibility) {
+    void setVisibleHistoric() {
+    	boolean visibility = this.visibilityHistoric;
         for (Group group : pieces) {
             group.getChildren().get(Dominoes.GRAPH_HISTORIC).setVisible(visibility);
         }
-        this.visibilityHistoric = visibility;
+    }
+    
+    /**
+     * This function is used to define the visibility of type
+     *
+     * @param visibility True to define visible the type
+     */
+    void setVisibleType() {
+    	boolean visibility = Configuration.visibilityType;
+        for (Group group : pieces) {
+            group.getChildren().get(Dominoes.GRAPH_TYPE).setVisible(visibility);
+        }
     }
 
     /**

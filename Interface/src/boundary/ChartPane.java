@@ -14,16 +14,19 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.scene.Cursor;
+import javafx.scene.*;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+
 
 /**
  *
@@ -55,6 +58,9 @@ public class ChartPane extends Pane {
 
         bc = new BarChart<String, Number>(xAxis, yAxis);
         bc.setTitle(domino.getHistoric().toString());
+        bc.setAnimated(false);
+        
+        // change color BarChart
 
         box = new ComboBox<>();
         ObservableList<String> items = FXCollections.observableArrayList();
@@ -151,22 +157,53 @@ public class ChartPane extends Pane {
         XYChart.Series series = new XYChart.Series();
         
         String itemSelected = box.getSelectionModel().getSelectedItem();
-        int indexSelected = box.getSelectionModel().getSelectedIndex(); 
+        int rowSelected = box.getSelectionModel().getSelectedIndex(); 
         
         series = new XYChart.Series();
         series.setName("row " + itemSelected); //row name
+
+        int indexArraySelected = domino.getMat().getMatrixDescriptor().getRowElementIndex(itemSelected); 
         
+        int length = domino.getMat().getMatrixDescriptor().getNumCols();
         
+        int j = 0;
+        String name = "";
+    	int limtName = 15;
         ArrayList<Cell> cells = domino.getMat().getNonZeroData();
-        int _rowSelected = domino.getMat().getMatrixDescriptor().getColElementIndex(itemSelected);
-        for (Cell cell : cells){
-        	if (cell.row == _rowSelected){
-        		series.getData().add(new XYChart.Data("(" + indexSelected + "," + cell.col + ")" // column name
-                        , cell.value));
-                System.out.println(cell.value);
+        
+    		while(j < domino.getMat().getMatrixDescriptor().getNumCols()){
+    			name = domino.getMat().getMatrixDescriptor().getColumnAt(j);
+    			Data data = new XYChart.Data(name, 0);
+    			if(name.length() > limtName){
+    				data = new XYChart.Data(name.substring(0, limtName) + "...", 0);    				
+    			}
+    			
+    			//Tooltip.install(data, new Tooltip(name));
+    			series.getData().add(data);
+        
+    			j++;
         	}
+    	
+    	
+        for (Cell _matCell : cells){
+        	if(_matCell.row < rowSelected){
+        		continue;
+        	}
+        	if(_matCell.row > rowSelected){
+        		break;
+        	}
+        	
+        	name = domino.getMat().getMatrixDescriptor().getColumnAt(_matCell.col);
+        	Data data = new XYChart.Data(name, _matCell.value);
+			if(name.length() > limtName){
+				data = new XYChart.Data(name.substring(0, limtName) + "...", _matCell.value);    				
+			}
+        	
+        	//Tooltip.install(data, new Tooltip(name));
+            series.getData().add(data);
+        	
+        	
         }
-        System.out.println("--");
         bc.getData().add(series);
     }
 

@@ -47,18 +47,42 @@ public class ConfigurationFile {
                 if (line.split(separator).length == 2) {
                     nameVariable = line.split(separator)[0].trim().toLowerCase();
                     valueVariable = line.split(separator)[1].trim().toLowerCase();
-                    if (nameVariable.equals("fullscreen")
-                            && Boolean.parseBoolean(valueVariable)) {
-                        Configuration.fullscreen = Boolean.parseBoolean(valueVariable);
-                    } else if (nameVariable.equals("autosave")
-                            && Boolean.parseBoolean(valueVariable)) {
-                        Configuration.autoSave = Boolean.parseBoolean(valueVariable);
-                    } else if (nameVariable.equals("visibilityhistoric")
-                            && Boolean.parseBoolean(valueVariable)) {
-                        Configuration.visibilityHistoric = Boolean.parseBoolean(valueVariable);
-                    } else if (nameVariable.equals("resizable")
-                            && Boolean.parseBoolean(valueVariable)) {
-                        Configuration.resizable = Boolean.parseBoolean(valueVariable);
+                    if (nameVariable.equals("fullscreen")){
+                            if(valueVariable.equals("false")) {
+                            	Configuration.fullscreen = false;
+                            }else if(valueVariable.equals("true")) {
+                            	Configuration.fullscreen = true;
+                            }
+                    } else if (nameVariable.equals("autosave")){
+                    	if(valueVariable.equals("false")) {
+                        	Configuration.autoSave = false;
+                        }else if(valueVariable.equals("true")) {
+                        	Configuration.autoSave = true;
+                        }
+                    } else if (nameVariable.equals("visibilityhistoric")){
+                    	if(valueVariable.equals("false")) {
+                        	Configuration.visibilityHistoric = false;
+                        }else if(valueVariable.equals("true")) {
+                        	Configuration.visibilityHistoric = true;
+                        }
+                    } else if (nameVariable.equals("visibilitytype")){
+                    	if(valueVariable.equals("false")) {
+                        	Configuration.visibilityType = false;
+                        }else if(valueVariable.equals("true")) {
+                        	Configuration.visibilityType = true;
+                        }
+                    } else if (nameVariable.equals("visibilitytimepane")){
+                    	if(valueVariable.equals("false")) {
+                        	Configuration.visibilityTimePane = false;
+                        }else if(valueVariable.equals("true")) {
+                        	Configuration.visibilityTimePane = true;
+                        }
+                    } else if (nameVariable.equals("resizable")){
+                    	if(valueVariable.equals("false")) {
+                        	Configuration.resizable = false;
+                        }else if(valueVariable.equals("true")) {
+                        	Configuration.resizable = true;
+                        }
                     } else if (nameVariable.equals("width")
                             && isDouble(valueVariable)) {
                         Configuration.width = Double.parseDouble(valueVariable);

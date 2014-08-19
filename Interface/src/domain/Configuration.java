@@ -7,6 +7,8 @@ public class Configuration {
     public static boolean fullscreen = false;
     public static boolean autoSave = false;
     public static boolean visibilityHistoric = true;
+    public static boolean visibilityType = true;
+    public static boolean visibilityTimePane = true;
     public static boolean resizable = false;
     
     public static double width = 800.0f;
@@ -16,5 +18,5 @@ public class Configuration {
     public static String accessMode = "SQL";
     public static String processingUnit = "GPU";
     
-    public static final int amont = 9;
+    public static final int amont = 11;
 }

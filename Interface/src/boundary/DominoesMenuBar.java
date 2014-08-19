@@ -42,10 +42,11 @@ public class DominoesMenuBar extends MenuBar {
 //------EDIT MENU ITENS---------------------------------------------------------
     private final Menu MEdit;
 
-    private final Menu MEdit_fillColor;
-    private final CustomMenuItem MEdit_fillColor_custom;
-    private Slider MEdit_fillColor_slider;
+    //private final Menu MEdit_fillColor;
+    //private final CustomMenuItem MEdit_fillColor_custom;
+    //private Slider MEdit_fillColor_slider;
     private final CheckMenuItem MEdit_showHistoric;
+    private final CheckMenuItem MEdit_showType;
 
 //------COFIGURATION MENU ITENS-------------------------------------------------
     private final Menu MConfiguration;
@@ -56,7 +57,9 @@ public class DominoesMenuBar extends MenuBar {
     private final ToggleGroup MConfiguration_database_accessGroup;
     
     private final SeparatorMenuItem separator;
-
+    
+//------TIME PANE MENU ITENS----------------------------------------------------
+    private final CheckMenuItem MTimePane;
     /**
      * Builder class
      */
@@ -87,16 +90,20 @@ public class DominoesMenuBar extends MenuBar {
 //------EDIT MENU ITENS---------------------------------------------------------
         this.MEdit = new Menu("Edit");
 
-        this.MEdit_fillColor = new Menu("Color Fill");
-        this.MEdit_fillColor_slider = new Slider(0, 1, Dominoes.COLOR_FILL.getBrightness());
-        this.MEdit_fillColor_custom = new CustomMenuItem(this.MEdit_fillColor_slider);
-        this.MEdit_fillColor_custom.setHideOnClick(false);
-        this.MEdit_fillColor.getItems().addAll(this.MEdit_fillColor_custom);
+        //this.MEdit_fillColor = new Menu("Color Fill");
+        //this.MEdit_fillColor_slider = new Slider(0, 1, Dominoes.COLOR_FILL.getBrightness());
+        //this.MEdit_fillColor_custom = new CustomMenuItem(this.MEdit_fillColor_slider);
+        //this.MEdit_fillColor_custom.setHideOnClick(false);
+        //this.MEdit_fillColor.getItems().addAll(this.MEdit_fillColor_custom);
 
         this.MEdit_showHistoric = new CheckMenuItem("Show Historic");
         this.MEdit_showHistoric.setSelected(Configuration.visibilityHistoric);
 
-        this.MEdit.getItems().addAll(this.MEdit_fillColor, this.MEdit_showHistoric);
+        MEdit_showType = new CheckMenuItem("Show Type");
+        MEdit_showType.setSelected(Configuration.visibilityType);
+        
+        //this.MEdit.getItems().addAll(this.MEdit_fillColor, this.MEdit_showHistoric);
+        this.MEdit.getItems().addAll(this.MEdit_showHistoric, this.MEdit_showType);
 
 //------CONFIGURATION MENU ITENS------------------------------------------------
         this.MConfiguration = new Menu("Configuration");
@@ -115,8 +122,14 @@ public class DominoesMenuBar extends MenuBar {
         
         this.MConfiguration.getItems().addAll(this.MConfiguration_database, this.separator, this.MConfiguration_fullScreen);
 
+//------TIME PANE MENU ITENS----------------------------------------------------
+        MTimePane = new CheckMenuItem("View Time");
+        MTimePane.setSelected(Configuration.visibilityTimePane);
+        Menu time = new Menu("Time");
+        time.getItems().addAll(MTimePane);
+        
 //------MENU ITENS--------------------------------------------------------------
-        this.getMenus().addAll(this.MDominoes, this.MEdit, this.MConfiguration);
+        this.getMenus().addAll(this.MDominoes, this.MEdit, this.MConfiguration, time);
 
 //------ADD LISTENERS-----------------------------------------------------------
 //----------DOMINOES MENU ITENS-------------------------------------------------
@@ -197,39 +210,57 @@ public class DominoesMenuBar extends MenuBar {
         });
 
 //----------EDIT MENU ITENS-----------------------------------------------------
-        this.MEdit_fillColor_slider.setOnMouseDragged(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent event) {
-                Dominoes.COLOR_FILL = new Color(/*this.*/MEdit_fillColor_slider.getValue(),
-                        /*this.*/ MEdit_fillColor_slider.getValue(),
-                        /*this.*/ MEdit_fillColor_slider.getValue(),
-                        Dominoes.COLOR_FILL.getOpacity());
-                Dominoes.COLOR_LINE = new Color(0.14 * /*this.*/ MEdit_fillColor_slider.getValue(),
-                        0.14 * /*this.*/ MEdit_fillColor_slider.getValue(),
-                        0.14 * MEdit_fillColor_slider.getValue(),
-                        Dominoes.COLOR_FILL.getOpacity()).invert();
-                Dominoes.COLOR_NORMAL_FONT = Dominoes.COLOR_FILL.invert();
-                App.changeColor();
-            }
-        });
+//        this.MEdit_fillColor_slider.setOnMouseDragged(new EventHandler<MouseEvent>() {
+//
+//            @Override
+//            public void handle(MouseEvent event) {
+//                Dominoes.COLOR_FILL = new Color(/*this.*/MEdit_fillColor_slider.getValue(),
+//                        /*this.*/ MEdit_fillColor_slider.getValue(),
+//                        /*this.*/ MEdit_fillColor_slider.getValue(),
+//                        Dominoes.COLOR_FILL.getOpacity());
+//                Dominoes.COLOR_LINE = new Color(0.14 * /*this.*/ MEdit_fillColor_slider.getValue(),
+//                        0.14 * /*this.*/ MEdit_fillColor_slider.getValue(),
+//                        0.14 * MEdit_fillColor_slider.getValue(),
+//                        Dominoes.COLOR_FILL.getOpacity()).invert();
+//                Dominoes.COLOR_NORMAL_FONT = Dominoes.COLOR_FILL.invert();
+//                App.changeColor();
+//            }
+//        });
 
         this.MEdit_showHistoric.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
                 Configuration.visibilityHistoric = MEdit_showHistoric.isSelected();
-                App.setVisibleHistoric(Configuration.visibilityHistoric);
+                App.setVisibleHistoric();
+            }
+        });
+        
+        this.MEdit_showType.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                Configuration.visibilityType = MEdit_showType.isSelected();
+                App.setVisibleType();
             }
         });
 
-//----------CONFIGURATION MENU ITENS--------------------------------------------
+//----------CONFIGURATION MENU ITENS------------------------------------------------
         this.MConfiguration_fullScreen.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
                 Configuration.fullscreen = MConfiguration_fullScreen.isSelected();
                 App.setFullscreen(Configuration.fullscreen);
+            }
+        });
+//----------TIME PANE MENU ITENS----------------------------------------------------
+        MTimePane.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                App.setVisibleTimePane();
+                
             }
         });
     }

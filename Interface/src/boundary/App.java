@@ -9,10 +9,13 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+
 import arch.Matrix2D;
 import arch.MatrixDescriptor;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
@@ -28,6 +31,7 @@ public class App extends Application {
     private static ListViewDominoes list;
     private static AreaMove area;
     private static DominoesMenuBar menu;
+    private static TimePane time;
     private static Visual visual;
 
     private static Scene scene;
@@ -44,7 +48,7 @@ public class App extends Application {
     public static void start() {
         launch((String[]) null);
     }
-
+    
     static void drawGraph(Dominoes domino) {
         visual.addTabGraph(domino);
     }
@@ -187,11 +191,13 @@ public class App extends Application {
         App.list = new ListViewDominoes();
         App.visual = new Visual();
         App.area = new AreaMove();
+        App.time = new TimePane();
+        App.time.setVisible(Configuration.visibilityTimePane);
         
         //App.list.add(new Dominoes("R","C", new Matrix2D(new MatrixDescriptor("R", "C"))));
         
         App.scene = new Scene(new Group());
-        VBox back = new VBox(2);
+        VBox back = new VBox();
         splitPane = new SplitPane();
         
         App.scene.setOnMouseReleased(new EventHandler<MouseEvent>() {
@@ -201,13 +207,26 @@ public class App extends Application {
                 App.scene.setCursor(Cursor.DEFAULT);
             }
         });
-
+        
         splitPane.getItems().add(App.list);
         splitPane.getItems().add(App.area);
         splitPane.getItems().add(App.visual);
         
-        back.getChildren().add(menu);
-        back.getChildren().add(splitPane);
+        back.getChildren().addAll(menu);
+        
+        back.getChildren().addAll(splitPane);
+        if(time.isVisible())back.getChildren().add(time);
+        time.visibleProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    back.getChildren().add(time);
+                } else {
+                    back.getChildren().remove(time);
+                }
+            }
+        });
+        
         
         App.scene.setRoot(back);
         App.stage.setScene(App.scene);
@@ -220,9 +239,19 @@ public class App extends Application {
      *
      * @param visibility True to define visible the historic
      */
-    public static void setVisibleHistoric(boolean visibility) {
-        area.setVisibleHistoric(visibility);
-        list.setVisibleHistoric(visibility);
+    public static void setVisibleHistoric() {
+        area.setVisibleHistoric();
+        list.setVisibleHistoric();
+    }
+    
+    /**
+     * This function is used to define the visibility of type
+     *
+     * @param visibility True to define visible the type
+     */
+    public static void setVisibleType() {
+        area.setVisibleType();
+        list.setVisibleType();
     }
 
     /**
@@ -248,6 +277,11 @@ public class App extends Application {
         App.visual.setSize(App.width, App.height - padding);
         App.area.setSize(App.width, App.height - padding);
 
+    }
+    
+    static void setVisibleTimePane(){
+	 	Configuration.visibilityTimePane = !Configuration.visibilityTimePane;
+    	time.setVisible(Configuration.visibilityTimePane);
     }
     
     @Override

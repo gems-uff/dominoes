@@ -13,6 +13,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Menu;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -81,11 +82,14 @@ public class AreaMove extends Pane {
         MenuItem menuItemMultiply = new MenuItem("Multiply");
         menuItemMultiply.setDisable(true);
         MenuItem menuItemSaveInList = new MenuItem("Save");
-        MenuItem menuItemViewGraph = new MenuItem("View Graph");
-        MenuItem menuItemViewMatrix = new MenuItem("View Matrix");
-        MenuItem menuItemViewChart = new MenuItem("View Chart");
-        MenuItem menuItemViewTree = new MenuItem("View Tree");
+        MenuItem menuItemViewGraph = new MenuItem("Graph");
+        MenuItem menuItemViewMatrix = new MenuItem("Matrix");
+        MenuItem menuItemViewChart = new MenuItem("Chart");
+        MenuItem menuItemViewTree = new MenuItem("Tree");
         MenuItem menuItemClose = new MenuItem("Close");
+        
+        Menu menuOperate = new Menu("Operates");
+        Menu menuView = new Menu("Views");
 
         Group group = domino.drawDominoes();
         group.getChildren().get(Dominoes.GRAPH_HISTORIC).setVisible(Configuration.visibilityHistoric);
@@ -262,10 +266,26 @@ public class AreaMove extends Pane {
         minimenu.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                // choise menu item multiply
+                if (((MenuItem) event.getTarget()).getText().equals(menuItemSaveInList.getText())) {
+                    System.out.println("saving");
+                    try {
+                        saveAndSendToList(group);
+                        close(group);
+                    } catch (IOException ex) {
+                        System.out.println(ex.getMessage());
+                    }
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemClose.getText())) {
+                    System.out.println("closing");
+                    closePiece(group);
+                }
+            }
+        });
+        menuOperate.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
                 if (((MenuItem) event.getTarget()).getText().equals(menuItemTranspose.getText())) {
                     try {
-                        //                    System.out.println("transposing");
+                    	System.out.println("transposing");
                         transpose(group);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
@@ -278,15 +298,13 @@ public class AreaMove extends Pane {
                         System.err.println(ex.getMessage());
                     }
 
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemSaveInList.getText())) {
-                    System.out.println("saving");
-                    try {
-                        saveAndSendToList(group);
-                        close(group);
-                    } catch (IOException ex) {
-                        System.out.println(ex.getMessage());
-                    }
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewGraph.getText())) {
+                }
+            }
+        });
+        menuView.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (((MenuItem) event.getTarget()).getText().equals(menuItemViewGraph.getText())) {
                     drawGraph(domino);
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewMatrix.getText())) {
                     drawMatrix(domino);
@@ -294,14 +312,13 @@ public class AreaMove extends Pane {
                     drawChart(domino);
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewTree.getText())) {
                     drawTree(domino);
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemClose.getText())) {
-//                    System.out.println("closing");
-                    closePiece(group);
                 }
             }
         });
-
-        minimenu.getItems().addAll(menuItemTranspose, menuItemMultiply, menuItemViewChart, menuItemViewMatrix, menuItemViewGraph, menuItemViewTree, menuItemSaveInList, menuItemClose);
+        
+        menuOperate.getItems().addAll(menuItemTranspose, menuItemMultiply);
+        menuView.getItems().addAll(menuItemViewChart, menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
+        minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
     }
 
     /**
@@ -376,7 +393,7 @@ public class AreaMove extends Pane {
                 && g1.getTranslateY() <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
             if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).getText())
-                    && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows() ) {
+                    && d1.getMat().getMatrixDescriptor().getNumRows() == d2.getMat().getMatrixDescriptor().getNumCols() ) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
                 ((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -401,7 +418,7 @@ public class AreaMove extends Pane {
                 + Dominoes.GRAPH_HEIGHT)) {
 
             if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).getText())
-                    && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows()) {
+                    && d1.getMat().getMatrixDescriptor().getNumRows() == d2.getMat().getMatrixDescriptor().getNumCols()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
                 ((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -607,11 +624,25 @@ public class AreaMove extends Pane {
      *
      * @param visibility True to define visible the historic
      */
-    void setVisibleHistoric(boolean visibility) {
+    void setVisibleHistoric() {
+    	boolean visibility = Configuration.visibilityHistoric;
         for (Group group : pieces) {
             group.getChildren().get(Dominoes.GRAPH_HISTORIC).setVisible(visibility);
         }
-        Configuration.visibilityHistoric = visibility;
+        
+    }
+    
+    /**
+     * This function is used to define the visibility of type
+     *
+     * @param visibility True to define visible the type
+     */
+    void setVisibleType() {
+    	boolean visibility = Configuration.visibilityType;
+        for (Group group : pieces) {
+            group.getChildren().get(Dominoes.GRAPH_TYPE).setVisible(visibility);
+        }
+        
     }
 
     /**
@@ -622,7 +653,22 @@ public class AreaMove extends Pane {
     private void transpose(Group piece) throws IOException {
 
         int duration = 500;
-
+        Color colorHistoric;
+        
+        Dominoes domino = control.Controller.tranposeDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
+        Group swap = domino.drawDominoes();
+        
+        double translateX = ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).getX();
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setX(((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).getX());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setX(translateX);
+        
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
+        ((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
+        
+        colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
+        
         RotateTransition rt = new RotateTransition(Duration.millis(duration));
         rt.setFromAngle(piece.getRotate());
         rt.setToAngle(piece.getRotate() + 180);
@@ -636,7 +682,7 @@ public class AreaMove extends Pane {
         rt2.setToAngle(piece.getRotate() - 180);
 
         FillTransition ft3 = new FillTransition(Duration.millis(duration / 3));
-        ft3.setFromValue(Dominoes.COLOR_HISTORIC);
+        ft3.setFromValue(colorHistoric);
         ft3.setToValue(Dominoes.COLOR_INIVISIBLE);
 
         RotateTransition rt4 = new RotateTransition(Duration.millis(duration / 3));
@@ -645,7 +691,7 @@ public class AreaMove extends Pane {
 
         FillTransition ft5 = new FillTransition(Duration.millis(duration / 3));
         ft5.setFromValue(Dominoes.COLOR_INIVISIBLE);
-        ft5.setToValue(Dominoes.COLOR_HISTORIC);
+        ft5.setToValue(colorHistoric);
 
         RotateTransition rt5 = new RotateTransition(Duration.millis(duration));
         rt5.setFromAngle(piece.getRotate());
@@ -657,43 +703,9 @@ public class AreaMove extends Pane {
         new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_HISTORIC), ft3, rt4, ft5).play();
         new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_TYPE), rt5).play();
 
-        // change the position of letters
-        Text swap = (Text) piece.getChildren().remove(Dominoes.GRAPH_ID_ROW);
-        piece.getChildren().add(swap);
-
-        String historicGraph = ((Text) piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText();
-        String[] auxHistoric = historicGraph.split(",");
-
-        historicGraph = "";
-
-        for (int i = auxHistoric.length - 1; i >= 0; i--) {
-            historicGraph += auxHistoric[i];
-            if (i > 0) {
-                historicGraph += ",";
-            }
-        }
-        Dominoes domino = control.Controller.tranposeDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
-
-        ((Text) piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(historicGraph);
-
-        String type = "";
-        switch (domino.getType()) {
-            case Dominoes.TYPE_DERIVED:
-                type = Dominoes.TYPE_DERIVED_CODE;
-                break;
-            case Dominoes.TYPE_SUPPORT:
-                type = Dominoes.TYPE_SUPPORT_CODE;
-                break;
-        }
-        ((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(type);
-
         if (Configuration.autoSave) {
             this.saveAndSendToList(piece);
         }
-
-
-        // remove
-        this.dominoes.set(this.pieces.indexOf(piece), domino);
 
     }
 
