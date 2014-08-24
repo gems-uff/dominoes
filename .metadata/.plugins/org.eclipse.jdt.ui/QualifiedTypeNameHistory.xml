@@ -6,7 +6,6 @@
 <fullyQualifiedTypeName name="arch.IMatrix2D"/>
 <fullyQualifiedTypeName name="arch.Matrix2DFactory"/>
 <fullyQualifiedTypeName name="java.security.acl.Group"/>
-<fullyQualifiedTypeName name="javafx.event.EventHandler"/>
 <fullyQualifiedTypeName name="org.la4j.matrix.Matrices"/>
 <fullyQualifiedTypeName name="org.la4j.matrix.functor.MatrixProcedure"/>
 <fullyQualifiedTypeName name="java.awt.List"/>
@@ -26,10 +25,8 @@
 <fullyQualifiedTypeName name="java.text.DateFormat"/>
 <fullyQualifiedTypeName name="java.text.SimpleDateFormat"/>
 <fullyQualifiedTypeName name="dao.DominoesSQLDao"/>
-<fullyQualifiedTypeName name="domain.Dominoes"/>
 <fullyQualifiedTypeName name="java.lang.IndexOutOfBoundsException"/>
 <fullyQualifiedTypeName name="javafx.scene.chart.XYChart.Data"/>
-<fullyQualifiedTypeName name="boundary.DominoesMenuBar"/>
 <fullyQualifiedTypeName name="java.awt.MenuItem"/>
 <fullyQualifiedTypeName name="boundary.TimePane"/>
 <fullyQualifiedTypeName name="java.awt.Rectangle"/>
@@ -37,7 +34,11 @@
 <fullyQualifiedTypeName name="java.awt.FlowLayout"/>
 <fullyQualifiedTypeName name="javafx.beans.value.ChangeListener"/>
 <fullyQualifiedTypeName name="javax.swing.ComboBoxModel"/>
-<fullyQualifiedTypeName name="domain.Configuration"/>
 <fullyQualifiedTypeName name="boundary.IntervalSlider"/>
 <fullyQualifiedTypeName name="java.lang.System"/>
+<fullyQualifiedTypeName name="domain.Configuration"/>
+<fullyQualifiedTypeName name="boundary.DominoesMenuBar"/>
+<fullyQualifiedTypeName name="javax.xml.datatype.Duration"/>
+<fullyQualifiedTypeName name="javafx.event.EventHandler"/>
+<fullyQualifiedTypeName name="domain.Dominoes"/>
 </qualifiedTypeNameHistroy>

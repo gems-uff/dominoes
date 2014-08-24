@@ -54,23 +54,21 @@ public class TreePane extends Pane {
 
         treeLayout = new TreeLayout<>(graph);
 
+        final DefaultModalGraphMouse graphMouse = new DefaultModalGraphMouse();
         vv = new VisualizationViewer<>(treeLayout, new Dimension(600, 600));
         vv.setBackground(Color.white);
         vv.getRenderContext().setVertexFillPaintTransformer(new ConstantTransformer(Color.GRAY));
         vv.getRenderContext().setEdgeFillPaintTransformer(new ConstantTransformer(Color.BLACK));
         vv.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
         vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+        vv.setGraphMouse(graphMouse);
         // add a listener for ToolTips
         vv.getRenderContext().setArrowFillPaintTransformer(new ConstantTransformer(Color.WHITE));
-
-        final GraphZoomScrollPane panel = new GraphZoomScrollPane(vv);
-
-        final DefaultModalGraphMouse graphMouse = new DefaultModalGraphMouse();
-
-        vv.setGraphMouse(graphMouse);
-
+        
+        
+        
         SwingNode s = new SwingNode();
-        s.setContent(panel);
+        s.setContent(vv);
         this.getChildren().add(s);
 
     }
@@ -82,8 +80,8 @@ public class TreePane extends Pane {
             return;
         }
         
-        graph.addEdge(edgeFactory.create(), historic, historic.getHistoricLeft());
         graph.addEdge(edgeFactory.create(), historic, historic.getHistoricRight());
+        graph.addEdge(edgeFactory.create(), historic, historic.getHistoricLeft());
 
         createTree(historic.getHistoricLeft());
         createTree(historic.getHistoricRight());

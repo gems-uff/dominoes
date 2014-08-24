@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import javafx.animation.FillTransition;
 import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
@@ -38,6 +40,8 @@ public class AreaMove extends Pane {
     private double srcTranslateY;
 
     private double padding = Configuration.width;
+    
+    private boolean transposing = false;
 
     /**
      * Class builder with the dimension defined in parameters. here, will create
@@ -88,7 +92,7 @@ public class AreaMove extends Pane {
         MenuItem menuItemViewTree = new MenuItem("Tree");
         MenuItem menuItemClose = new MenuItem("Close");
         
-        Menu menuOperate = new Menu("Operates");
+        Menu menuOperate = new Menu("Operations");
         Menu menuView = new Menu("Views");
 
         Group group = domino.drawDominoes();
@@ -237,7 +241,9 @@ public class AreaMove extends Pane {
 
                     if (mouseEvent.getClickCount() == 2) {
                         try {
-                            transpose(group);
+                        	if(!transposing){
+                        		transpose(group);
+                        	}
                         } catch (IOException ex) {
                             System.err.println(ex.getMessage());
                         }
@@ -285,8 +291,10 @@ public class AreaMove extends Pane {
             public void handle(ActionEvent event) {
                 if (((MenuItem) event.getTarget()).getText().equals(menuItemTranspose.getText())) {
                     try {
-                    	System.out.println("transposing");
-                        transpose(group);
+                    	if(!transposing){
+                    		System.out.println("transposing");
+                        	transpose(group);
+                    	}
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
@@ -326,9 +334,9 @@ public class AreaMove extends Pane {
      */
     void changeColor() {
         for (Group group : this.pieces) {
-            ((Shape) group.getChildren().get(Dominoes.GRAPH_FILL)).setFill(Dominoes.COLOR_FILL);
-            ((Shape) group.getChildren().get(Dominoes.GRAPH_LINE)).setFill(Dominoes.COLOR_LINE);
-            ((Shape) group.getChildren().get(Dominoes.GRAPH_BORDER)).setFill(Dominoes.COLOR_LINE);
+            ((Shape) group.getChildren().get(Dominoes.GRAPH_FILL)).setFill(Dominoes.COLOR_BACK);
+            ((Shape) group.getChildren().get(Dominoes.GRAPH_LINE)).setFill(Dominoes.COLOR_BORDER);
+            ((Shape) group.getChildren().get(Dominoes.GRAPH_BORDER)).setFill(Dominoes.COLOR_BORDER);
             ((Shape) group.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_NORMAL_FONT);
             ((Shape) group.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_NORMAL_FONT);
         }
@@ -651,61 +659,135 @@ public class AreaMove extends Pane {
      * @param piece The piece to animate
      */
     private void transpose(Group piece) throws IOException {
-
+    	transposing = true;
+    	
         int duration = 500;
-        Color colorHistoric;
+        
+        double startAngle = piece.getRotate(); 
         
         Dominoes domino = control.Controller.tranposeDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
         Group swap = domino.drawDominoes();
         
         double translateX = ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).getX();
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setX(((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).getX());
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setX(translateX);
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setX(translateX);       
         
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText());
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
-        ((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
         
-        colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
         
-        RotateTransition rt = new RotateTransition(Duration.millis(duration));
-        rt.setFromAngle(piece.getRotate());
-        rt.setToAngle(piece.getRotate() + 180);
+        RotateTransition rtPiece = new RotateTransition(Duration.millis(duration));
+        rtPiece.setFromAngle(startAngle);
+        rtPiece.setToAngle(startAngle + 180);
 
-        RotateTransition rt1 = new RotateTransition(Duration.millis(duration));
-        rt1.setFromAngle(piece.getRotate());
-        rt1.setToAngle(piece.getRotate() - 180);
+        RotateTransition rtPieceRow = new RotateTransition(Duration.millis(duration));
+        rtPieceRow.setFromAngle(rtPiece.getFromAngle());
+        rtPieceRow.setToAngle(startAngle - 180);
 
-        RotateTransition rt2 = new RotateTransition(Duration.millis(duration));
-        rt2.setFromAngle(piece.getRotate());
-        rt2.setToAngle(piece.getRotate() - 180);
+        RotateTransition rtPieceCol = new RotateTransition(Duration.millis(duration));
+        rtPieceCol.setFromAngle(rtPiece.getFromAngle());
+        rtPieceCol.setToAngle(rtPieceRow.getToAngle());
 
-        FillTransition ft3 = new FillTransition(Duration.millis(duration / 3));
-        ft3.setFromValue(colorHistoric);
-        ft3.setToValue(Dominoes.COLOR_INIVISIBLE);
+        RotateTransition rtType = new RotateTransition(Duration.millis(duration));
+        rtType.setFromAngle(rtPiece.getFromAngle());
+        rtType.setToAngle(rtPiece.getToAngle());
+        
+        Color colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
+        FillTransition ftHistoric1 = new FillTransition(Duration.millis(duration));
+        ftHistoric1.setFromValue(colorHistoric);
+        ftHistoric1.setToValue(Dominoes.COLOR_INIVISIBLE);
+        
+        FillTransition ftHistoric2 = new FillTransition(Duration.millis(duration));
+        ftHistoric2.setFromValue(ftHistoric1.getToValue());
+        ftHistoric2.setToValue(ftHistoric1.getFromValue());
+        
+        Group groupType = (Group) piece.getChildren().get(Dominoes.GRAPH_TYPE);
+        Color colorType = (Color) ((Shape) groupType.getChildren().get(0)).getFill();
+        FillTransition ftType1 = new FillTransition(Duration.millis(duration));
+        ftType1.setFromValue(colorType);
+        ftType1.setToValue(Dominoes.COLOR_INIVISIBLE);
+        
+        Color colorFontType = (Color) ((Text)groupType.getChildren().get(1)).getFill();
+        FillTransition ftType2 = new FillTransition(Duration.millis(duration));
+        ftType2.setFromValue(colorFontType);
+        ftType2.setToValue(Dominoes.COLOR_INIVISIBLE);
+        
+        FillTransition ftType3 = new FillTransition(Duration.millis(duration));
+        ftType3.setFromValue(ftType1.getToValue());
+        ftType3.setToValue(ftType1.getFromValue());
+        
+        FillTransition ftType4 = new FillTransition(Duration.millis(duration));
+        ftType4.setFromValue(ftType2.getToValue());
+        ftType4.setToValue(ftType2.getFromValue());
 
-        RotateTransition rt4 = new RotateTransition(Duration.millis(duration / 3));
-        rt4.setFromAngle(piece.getRotate());
-        rt4.setToAngle(piece.getRotate() - 180);
-
-        FillTransition ft5 = new FillTransition(Duration.millis(duration / 3));
-        ft5.setFromValue(Dominoes.COLOR_INIVISIBLE);
-        ft5.setToValue(colorHistoric);
-
-        RotateTransition rt5 = new RotateTransition(Duration.millis(duration));
-        rt5.setFromAngle(piece.getRotate());
-        rt5.setToAngle(piece.getRotate() - 180);
-
-        new SequentialTransition(piece, rt).play();
-        new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_ID_ROW), rt1).play();
-        new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_ID_COL), rt2).play();
-        new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_HISTORIC), ft3, rt4, ft5).play();
-        new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_TYPE), rt5).play();
-
-        if (Configuration.autoSave) {
-            this.saveAndSendToList(piece);
+        ParallelTransition transition1_1 = new ParallelTransition(new SequentialTransition(groupType.getChildren().get(0), ftType1));
+        ParallelTransition transition1_2 = new ParallelTransition(new SequentialTransition(groupType.getChildren().get(1), ftType2));
+        ParallelTransition transition1_3 = new ParallelTransition(piece.getChildren().get(Dominoes.GRAPH_HISTORIC), ftHistoric1);
+        
+        transition1_1.play();
+        transition1_2.play();
+        transition1_3.play();
+        
+        ParallelTransition transition2_1 = new ParallelTransition(piece, rtPiece);
+        ParallelTransition transition2_2 = new ParallelTransition(piece.getChildren().get(Dominoes.GRAPH_ID_ROW), rtPieceRow);
+        ParallelTransition transition2_3 = new ParallelTransition(piece.getChildren().get(Dominoes.GRAPH_ID_COL), rtPieceCol);
+        
+        if(!colorFontType.equals(Dominoes.COLOR_INIVISIBLE)
+        		|| !colorHistoric.equals(Dominoes.COLOR_INIVISIBLE)){
+        	transition2_1.setDelay(Duration.millis(duration));
+        	transition2_2.setDelay(Duration.millis(duration));
+        	transition2_3.setDelay(Duration.millis(duration));
         }
+        
+        transition2_1.play();
+        transition2_2.play();
+        transition2_3.play();
+        
+        ParallelTransition transition3_1 = new ParallelTransition(piece.getChildren().get(Dominoes.GRAPH_HISTORIC), ftHistoric2);
+        ParallelTransition transition3_2 = new ParallelTransition(groupType.getChildren().get(0), ftType3);
+        ParallelTransition transition3_3 = new ParallelTransition(groupType.getChildren().get(1), ftType4);
+        
+        if(!colorFontType.equals(Dominoes.COLOR_INIVISIBLE)
+        		|| !colorHistoric.equals(Dominoes.COLOR_INIVISIBLE)){
+        	transition3_1.setDelay(Duration.millis(2 * duration));
+        	transition3_2.setDelay(Duration.millis(2 * duration));
+        	transition3_3.setDelay(Duration.millis(2 * duration));
+        }
+        
+        transition3_1.play();
+        transition3_2.play();
+        transition3_3.play();
+        
+        transition1_1.setOnFinished(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent arg0) {
+				
+				double x = ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getTranslateX();
+	            double y = ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getTranslateY();
+	            x = Math.abs(Dominoes.GRAPH_WIDTH - x);
+	            y = Math.abs(Dominoes.GRAPH_HEIGHT - y);
+	            ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).setTranslateX(x);
+	            ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).setTranslateY(y);
+	            
+	            ((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setRotate(startAngle - 180);
+	            ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).setRotate(startAngle - 180);
+	            
+	            ((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
+	            ((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
+				
+	            
+			}
+		});
+        
+        transition3_3.setOnFinished(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent arg0) {
+				transposing = false;
+				
+			}
+		});
 
     }
 

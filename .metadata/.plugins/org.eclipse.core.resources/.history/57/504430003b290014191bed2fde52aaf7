@@ -1,0 +1,86 @@
+package boundary;
+
+import java.awt.FlowLayout;
+import java.util.ArrayList;
+
+import javax.swing.ComboBoxModel;
+
+import arch.Cell;
+import domain.Configuration;
+import domain.Dominoes;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.scene.Cursor;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.control.Label;
+import javafx.geometry.*;
+
+
+public class TimePane extends Pane{
+
+	private ComboBox timeBox;
+	private BarChart<String, Number> barChart;
+	private IntervalSlider slider;
+	
+	public TimePane(){
+		
+		this.setHeight(Configuration.height/2);
+		this.setWidth(Configuration.width);
+		
+		timeBox = new ComboBox();
+		ObservableList<String> items = FXCollections.observableArrayList();
+		
+        items.add("1 Month");
+        items.add("3 Month");
+        items.add("6 Month");
+        
+        timeBox.setItems(items);
+        timeBox.setValue(items.get(0));
+        
+		final CategoryAxis xAxis = new CategoryAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        
+        xAxis.setLabel("label X");
+        xAxis.setPrefHeight(30);
+        yAxis.setLabel("label Y");
+        yAxis.setPrefWidth(50 + 10 * yAxis.getLabel().split("\\n").length);
+
+        this.barChart = new BarChart<String, Number>(xAxis, yAxis);
+        this.barChart.setAnimated(false);        
+        this.barChart.setPrefHeight(this.getHeight()/4);
+        this.barChart.setPrefWidth(this.getWidth()/6 * 5);
+        this.barChart.setTranslateX(0);
+        
+        double x = yAxis.getPrefWidth() + yAxis.getTickLength() + yAxis.getTickLabelGap() + yAxis.getTickUnit();
+        double y = xAxis.getPrefHeight() + xAxis.getTickLength() + xAxis.getTickLabelGap() + xAxis.getTickLabelFont().getSize();
+		
+		slider = new IntervalSlider(0, 1, 0.2, 0.8, this.barChart.getPrefWidth() - x - 14);
+		slider.setTranslateX(x);
+		slider.setTranslateY(-y + slider.getHeight());
+		
+		
+		GridPane pane = new GridPane();
+		pane.add(timeBox, 0, 0);
+		pane.add(new FlowPane(barChart,slider), 1, 0);
+//		pane.setGridLinesVisible(true);
+		
+		pane.setPrefHeight(Configuration.width/2);
+		this.getChildren().add(pane);
+		
+	}
+}

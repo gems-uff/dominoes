@@ -122,4 +122,13 @@ public class Controller {
 
     }
     
+    public static double opposite(double size, double index){
+    	if(size < 0 || index < 0 || index > size){
+    		throw new IllegalArgumentException("Invalid parameter."
+    				+ "\nController.opposite(...) parameter is invalid");
+    	}
+    	double result = Math.abs(index - size);
+    	return result;
+    }
+    
 }
