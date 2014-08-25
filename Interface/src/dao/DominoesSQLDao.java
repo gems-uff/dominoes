@@ -144,7 +144,7 @@ public class DominoesSQLDao implements DominoesDao{
 		while (rs.next())
 			descriptor.AddColDesc(rs.getString("NewName"));
 		
-		System.out.printf("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 						
 		// Build Matrix
@@ -217,7 +217,7 @@ public class DominoesSQLDao implements DominoesDao{
 		{
 			descriptor.AddRowDesc(rs.getString("name"));
 		}
-		System.out.printf("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		//Matrix2D mat = new Matrix2D(descriptor);
@@ -290,7 +290,7 @@ public class DominoesSQLDao implements DominoesDao{
 		while (rs.next())
 			descriptor.AddColDesc(rs.getString("NewName"));
 						
-		System.out.printf("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -372,7 +372,7 @@ public class DominoesSQLDao implements DominoesDao{
 					rs.getString("ClassName"));
 		}
 		
-		System.out.printf("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -462,7 +462,7 @@ public class DominoesSQLDao implements DominoesDao{
 					rs.getString("ClassName") + "$" + rs.getString("FuncName"));
 		}
 		
-		System.out.printf("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		
@@ -547,7 +547,7 @@ public class DominoesSQLDao implements DominoesDao{
 		}
 		
 		
-		System.out.printf("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		

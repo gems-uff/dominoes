@@ -175,8 +175,8 @@ public class App extends Application {
 			
 			// Set begin and end date
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			DominoesSQLDao.setBeginDate(sdf.parse("2014-01-01 00:00:00"));
-			DominoesSQLDao.setEndDate(sdf.parse("2014-12-31 00:00:00"));
+			DominoesSQLDao.setBeginDate(sdf.parse("2013-11-01 00:00:00"));
+			DominoesSQLDao.setEndDate(sdf.parse("2014-01-31 00:00:00"));
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

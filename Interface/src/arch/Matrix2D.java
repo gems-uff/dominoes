@@ -248,5 +248,28 @@ public class Matrix2D implements IMatrix2D {
 		}
 		
 		return cellList;
+	}
+
+	@Override
+	public IMatrix2D reduceRows(boolean useGPU) {
+		MatrixDescriptor _newDescriptor = new MatrixDescriptor(
+				this.matrixDescriptor.getColType(), 
+				this.matrixDescriptor.getRowType());
+		
+		_newDescriptor.AddRowDesc("SUM");
+		
+		for (int i = 0; i < this.matrixDescriptor.getNumCols(); i++)
+			_newDescriptor.AddColDesc(this.matrixDescriptor.getColumnAt(i));
+		
+		Matrix2D reduced = null;
+		
+		try {
+			reduced = new Matrix2D(_newDescriptor);
+			MatrixProcessor.reduceRow(matPointer, reduced.matPointer, useGPU);
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
+		
+		return reduced;
 	}		
 }

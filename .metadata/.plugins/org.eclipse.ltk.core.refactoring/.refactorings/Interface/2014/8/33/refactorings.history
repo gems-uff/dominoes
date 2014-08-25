@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename local variable &apos;indexSelected&apos; in &apos;boundary.ChartPane.drawChart(...)&apos; to &apos;rowSelected&apos;&#x0D;&#x0A;- Original project: &apos;Interface&apos;&#x0D;&#x0A;- Original element: &apos;boundary.ChartPane.drawChart(Dominoes).indexSelected&apos;&#x0D;&#x0A;- Renamed element: &apos;indexSelected&apos;&#x0D;&#x0A;- Update references to refactored element" description="Rename local variable &apos;indexSelected&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src&lt;boundary{ChartPane.java[ChartPane~drawChart~QDominoes;@indexSelected!5122!5184!5126!5138!I!0!false" name="rowSelected" references="true" stamp="1408026163183" version="1.0"/>
-</session>

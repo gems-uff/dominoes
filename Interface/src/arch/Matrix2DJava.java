@@ -207,5 +207,38 @@ public class Matrix2DJava implements IMatrix2D {
 		});
 		
 		return cells;
+	}
+
+	@Override
+	public IMatrix2D reduceRows(boolean useGPU) {
+		MatrixDescriptor _newDescriptor = new MatrixDescriptor(
+				this.matrixDescriptor.getColType(), 
+				this.matrixDescriptor.getRowType());
+		
+
+		_newDescriptor.AddRowDesc("SUM");
+		
+		for (int i = 0; i < this.matrixDescriptor.getNumCols(); i++)
+			_newDescriptor.AddColDesc(this.matrixDescriptor.getColumnAt(i));
+		
+		Matrix2DJava reduced = new Matrix2DJava(_newDescriptor);
+		
+		float []rowSum = new float[this.matrixDescriptor.getNumCols()];
+		ArrayList<Cell> nz = getNonZeroData();
+		
+		for (Cell c : nz){
+			rowSum[c.col] += c.value;
+		}
+		
+		ArrayList<Cell> resCells = new ArrayList<Cell>();
+		
+		for (int i = 0; i < rowSum.length; i++){
+			if (Math.abs(rowSum[i]) > 0){
+				resCells.add(new Cell(0, i, rowSum[i]));
+			}
+		}
+		reduced.setData(resCells);
+		
+		return reduced;
 	}		
 }

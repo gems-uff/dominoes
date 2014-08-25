@@ -122,4 +122,17 @@ public class Controller {
 
     }
     
+    /**This function has begin when the user want to reduce a matrix.
+     * 
+     * @param domino Matrix to be reduced
+     * @return Return the reduced matrix in the parameter
+     */
+    public static Dominoes reduceDominoes(Dominoes domino) {
+        
+    	domino.reduceRows();
+    	
+        return domino;
+
+    }
+    
 }

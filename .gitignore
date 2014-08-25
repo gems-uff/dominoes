@@ -1,5 +1,6 @@
 Interface/target
 gitdataminer/target
+.metadata
 JNIGPUMatrix/kernel.o
 JNIGPUMatrix/libMatrixProcessor.o
 *.log

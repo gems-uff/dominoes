@@ -363,6 +363,77 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 	}
 }
 
+void calculateReducedRows(SpMatf *matrix, SpMatf *result, bool useGPU){
+
+	if (useGPU){
+		/*int nonZeros_1 = mat1->nonZeros();
+		int nonZeros_2 = mat2->nonZeros();
+
+		int rows_1[nonZeros_1], cols_1[nonZeros_1], rows_2[nonZeros_2], cols_2[nonZeros_2];
+		float values_1[nonZeros_1], values_2[nonZeros_2];
+
+		int k = 0;
+		for (int i = 0; i < mat1->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*mat1), i); it; ++it){
+				rows_1[k] = it.row();
+				cols_1[k] = it.col();
+				values_1[k] = it.value();
+				k++;
+			}
+		}
+
+		k = 0;
+		for (int i = 0; i < mat2->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*mat2), i); it; ++it){
+				rows_2[k] = it.row();
+				cols_2[k] = it.col();
+				values_2[k] = it.value();
+				k++;
+			}
+		}
+
+
+		int *res_rows, *res_cols, res_nz;
+		float *res_data;
+
+		g_MatMul(mat1->rows(), mat1->cols(), mat2->cols(), nonZeros_1, nonZeros_2,
+				rows_1, cols_1, values_1, rows_2, cols_2, values_2, &res_rows, &res_cols, &res_data, res_nz);
+
+		fprintf(stderr, "nz1\n");;
+
+
+		setNonZeroData(result, res_rows, res_cols, res_data, res_nz);
+
+		fprintf(stderr, "nz2\n");
+		free(res_rows);
+		free(res_cols);
+		free(res_data);*/
+	} else {
+
+		float matrixToArray[matrix->cols()];
+		memset(matrixToArray, 0, sizeof(matrixToArray));
+
+		for (int i = 0; i < matrix->outerSize(); i++){
+			for (SpMatf::InnerIterator it((*matrix), i); it; ++it){
+				matrixToArray[it.col()] += it.value();
+			}
+		}
+
+		float epsilon = std::numeric_limits<float>::epsilon();
+
+		std::vector<Tf> tripletList;
+
+		for (int j = 0; j <matrix->cols(); j++){
+
+			if (fabs(matrixToArray[j]) > epsilon){
+					tripletList.push_back(Tf(0, j, matrixToArray[j]));
+			}
+		}
+
+		result->setFromTriplets(tripletList.begin(), tripletList.end());
+	}
+}
+
 JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_createMatrixData
   (JNIEnv *env, jclass obj, jint rows, jint cols){
 
@@ -604,8 +675,18 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standar
 	deleteMatrix(_mean);
 }
 
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_reduceRow
+  (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
+
+	SpMatf* _matrix = (SpMatf*) pointer;
+	SpMatf* _res = (SpMatf*) result;
+
+	calculateReducedRows(_matrix, _res, useGPU);
+}
+//201447617980
 
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standard_1score
   (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
+
 
 }

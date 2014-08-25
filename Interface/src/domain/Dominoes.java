@@ -407,6 +407,46 @@ public final class Dominoes {
         IMatrix2D _newMat = mat.transpose();
         setMat(_newMat);
     }
+    
+    /**
+     * This function reduce the lines of a matrix
+     *
+     * @return the historic invert
+     */
+    public void reduceRows() {
+        
+        if(!(this.type == Dominoes.TYPE_BASIC)){
+        	this.type = Dominoes.TYPE_DERIVED;
+        }
+        if (this.getIdRow().equals(this.getIdCol())) {
+            this.type = Dominoes.TYPE_SUPPORT;
+        }
+
+        //String id = this.getIdRow();
+        //this.setIdRow(this.getIdCol());
+        //this.setIdCol(id);
+        
+        //System.out.println("first: "+this.getHistoric().getFirstItem());
+        //System.out.println("last: "+this.getHistoric().getLastItem());
+        // transpose this historic
+        //System.out.print(this.historic + "->");
+        this.getHistoric().reverse();
+        this.setIdRow("SUM");
+        this.setIdCol(this.getHistoric().getLastItem());
+        //System.out.println(this.historic);
+        System.out.println("first: "+this.getHistoric().getFirstItem());
+        System.out.println("last: "+this.getHistoric().getLastItem());
+        //this.setIdRow(this.getHistoric().getLastItem());
+        //this.setIdCol(this.getHistoric().getFirstItem());
+        
+        
+        //this.historic = new Historic("SUM", this.getIdCol());
+        
+        IMatrix2D _newMat = mat.reduceRows(Configuration.processingUnit.equalsIgnoreCase("GPU"));
+        setMat(_newMat);
+        
+        _newMat.Debug();
+    }
 
     public Dominoes multiply(Dominoes dom) {
     	
@@ -433,6 +473,11 @@ public final class Dominoes {
         domResult.setIdCol(dom.getIdCol());
         
         return domResult;
+    }
+    
+    public boolean isSquare(){
+    	return getMat().getMatrixDescriptor().getNumRows() == 
+    			getMat().getMatrixDescriptor().getNumCols();    	
     }
     
     public Dominoes cloneNoMatrix(){

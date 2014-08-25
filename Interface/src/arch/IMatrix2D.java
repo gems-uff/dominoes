@@ -17,6 +17,8 @@ public interface IMatrix2D {
 		
 	public IMatrix2D multiply(IMatrix2D other, boolean useGPU) throws Exception;
 	
+	public IMatrix2D reduceRows(boolean useGPU);
+	
 	public void Debug();
 	
 	public void ExportCSV(String filename);

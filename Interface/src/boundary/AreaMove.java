@@ -79,8 +79,7 @@ public class AreaMove extends Pane {
         ContextMenu minimenu = new ContextMenu();
         
         MenuItem menuItemTranspose = new MenuItem("Transpose");
-        MenuItem menuItemMultiply = new MenuItem("Multiply");
-        menuItemMultiply.setDisable(true);
+        MenuItem menuItemReduceLines = new MenuItem("Reduce Lines");
         MenuItem menuItemSaveInList = new MenuItem("Save");
         MenuItem menuItemViewGraph = new MenuItem("Graph");
         MenuItem menuItemViewMatrix = new MenuItem("Matrix");
@@ -133,9 +132,9 @@ public class AreaMove extends Pane {
         this.dominoes.add(domino);
         this.getChildren().add(group);
 
-        if (!domino.getIdRow().equals(domino.getIdCol())) {
-            menuItemViewGraph.setDisable(true);
-        }
+        //if (!domino.getIdRow().equals(domino.getIdCol())) {
+          //  menuItemViewGraph.setDisable(true);
+        //}
 
         group.setOnMouseEntered(new EventHandler<MouseEvent>() {
 
@@ -188,11 +187,11 @@ public class AreaMove extends Pane {
                 for (int j = 0; j < pieces.size(); j++) {
 
                     if (index != j && detectMultiplication(index, j)) {
-                        menuItemMultiply.setDisable(false);
+                        //menuItemReduceLines.setDisable(false);
 
                         break;
                     } else {
-                        menuItemMultiply.setDisable(true);
+                        //menuItemReduceLines.setDisable(true);
                     }
                 }
             }
@@ -290,10 +289,10 @@ public class AreaMove extends Pane {
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemMultiply.getText())) {
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemReduceLines.getText())) {
                     try {
-                        System.out.println("multiplying");
-                        multiply();
+                        System.out.println("Reducing Lines");
+                        reduceLines(group);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
@@ -316,7 +315,7 @@ public class AreaMove extends Pane {
             }
         });
         
-        menuOperate.getItems().addAll(menuItemTranspose, menuItemMultiply);
+        menuOperate.getItems().addAll(menuItemTranspose, menuItemReduceLines);
         menuView.getItems().addAll(menuItemViewChart, menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
     }
@@ -703,6 +702,33 @@ public class AreaMove extends Pane {
         new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_HISTORIC), ft3, rt4, ft5).play();
         new SequentialTransition(piece.getChildren().get(Dominoes.GRAPH_TYPE), rt5).play();
 
+        if (Configuration.autoSave) {
+            this.saveAndSendToList(piece);
+        }
+
+    }
+    
+    /**
+     * This function only maked a simple animation to tranpose a matrix
+     *
+     * @param piece The piece to animate
+     */
+    private void reduceLines(Group piece) throws IOException {
+
+        Color colorHistoric;
+        
+        Dominoes domino = control.Controller.reduceDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
+        
+        Group swap = domino.drawDominoes();
+        
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText("SUM");
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
+        //((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
+        //((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
+        
+        colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
+        
+       
         if (Configuration.autoSave) {
             this.saveAndSendToList(piece);
         }

@@ -151,6 +151,14 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_multipl
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_transpose
   (JNIEnv *, jclass, jlong, jlong);
 
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    reduceRow
+ * Signature: (JJZ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_reduceRow
+  (JNIEnv *, jclass, jlong, jlong, jboolean);
+
 #ifdef __cplusplus
 }
 #endif
