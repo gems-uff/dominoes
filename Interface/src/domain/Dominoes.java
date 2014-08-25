@@ -15,14 +15,16 @@ public final class Dominoes {
     public final static double GRAPH_WIDTH = 100;
     public final static double GRAPH_HEIGHT = 50;
 
-    public static Color COLOR_FILL = new Color(1, 1, 1, 1);
-    public static Color COLOR_LINE = new Color(0.86, 0.86, 0.86, 1);
+    public static Color COLOR_BACK = new Color(1, 1, 1, 1);
+    public static Color COLOR_BORDER = new Color(0.56, 0.56, 0.56, 1);
+    public static Color COLOR_LINE = new Color(0.56, 0.76, 0.56, 1);
+    public static Color COLOR_BORDER_DERIVED = new Color(0.36, 0.36, 0.36, 1);
     public static Color COLOR_NORMAL_FONT = new Color(0, 0, 0, 1);
     public static Color COLOR_NO_OPERATION_FONT = new Color(1, 0, 0, 1);
     public static Color COLOR_OPERATE_FONT = new Color(0, 1, 0, 1);
     public static Color COLOR_HISTORIC = new Color(0.86, 0.86, 0.86, 1);
     public static Color COLOR_INIVISIBLE = new Color(0, 0, 0, 0);
-    public static Color COLOR_TYPE = COLOR_LINE;
+    public static Color COLOR_TYPE = COLOR_BORDER;
 
     /*
      This variables are used to know the sequence of the matrix information 
@@ -176,24 +178,22 @@ public final class Dominoes {
      * @return - A javafx.scene.Group (Graphic) to draw in scene
      */
     public Group drawDominoes() {
-
-        double padding = 1;
         
         Rectangle border = new Rectangle(GRAPH_WIDTH, GRAPH_HEIGHT);
-        border.setFill(Dominoes.COLOR_LINE);
+        border.setFill(Dominoes.COLOR_BORDER);
         border.setArcHeight(Dominoes.GRAPH_ARC);
         border.setArcWidth(Dominoes.GRAPH_ARC);
         border.setX(0);
         border.setY(0);
 
         Rectangle back = new Rectangle(GRAPH_WIDTH - 2, GRAPH_HEIGHT - 2);
-        back.setFill(Dominoes.COLOR_FILL);
+        back.setFill(Dominoes.COLOR_BACK);
         back.setArcHeight(Dominoes.GRAPH_ARC);
         back.setArcWidth(Dominoes.GRAPH_ARC);
-        back.setX(1);
-        back.setY(1);
+        back.setX(border.getX() + 1);
+        back.setY(border.getY() + 1);
 
-        Rectangle line = new Rectangle(GRAPH_WIDTH / 2 - 1, 10, 2, 30);
+        Rectangle line = new Rectangle(GRAPH_WIDTH / 2 - 1, border.getHeight() - back.getHeight(), 2, back.getHeight() - 2);
         line.setFill(Dominoes.COLOR_LINE);
         line.setArcHeight(Dominoes.GRAPH_ARC);
         line.setArcWidth(Dominoes.GRAPH_ARC);
@@ -214,7 +214,14 @@ public final class Dominoes {
         idCol.toFront();
 
         String auxHistoric = this.historic.toString();
-        Text historic = new Text(auxHistoric);
+        Text historic;
+        if(auxHistoric.length() <= 24){
+        	historic = new Text(auxHistoric);        	
+        }else{
+        	historic = new Text(auxHistoric.substring(0, 24) + "...");
+        }
+        
+        
         historic.setFont(new Font("Arial", 10));
         historic.setFill(Dominoes.COLOR_HISTORIC);
         historic.setX(2);
@@ -222,26 +229,40 @@ public final class Dominoes {
         historic.setWrappingWidth(Dominoes.GRAPH_WIDTH - 2);
         historic.toFront();
 
-        Circle circle = new Circle(back.getX() + back.getWidth() / 2, back.getY() + back.getHeight() / 2, 5, Dominoes.COLOR_TYPE);
+//        Circle circle = new Circle(back.getX() + back.getWidth() / 2, back.getY() + back.getHeight() / 2, 5, Dominoes.COLOR_TYPE);
+        double radius = 5;
+        double circlePadding = 2;
+        double padding = 1;
+        Circle circle = new Circle(0, 0, radius, Dominoes.COLOR_TYPE);
 
         Text type = new Text();
         type.setFill(Dominoes.COLOR_NORMAL_FONT);
+        type.setX(circle.getCenterX() - circle.getRadius()/2 - padding);
+        type.setY(circle.getCenterY() + circle.getRadius()/2 + padding);
+        
         switch (this.getType()) {
             case Dominoes.TYPE_BASIC:
                 type.setText(Dominoes.TYPE_BASIC_CODE);
-                type.setFill(COLOR_INIVISIBLE);
+                type.setFill(Dominoes.COLOR_INIVISIBLE);
                 
-                circle.setFill(COLOR_INIVISIBLE);
+                circle.setFill(Dominoes.COLOR_INIVISIBLE);
             	
             	historic.setFill(Dominoes.COLOR_INIVISIBLE);
+            	
                 break;
             case Dominoes.TYPE_DERIVED:
                 type.setText(Dominoes.TYPE_DERIVED_CODE);
-                type.setFill(COLOR_INIVISIBLE);
+                type.setFill(Dominoes.COLOR_INIVISIBLE);
                 
-                circle.setFill(COLOR_INIVISIBLE);
+                circle.setFill(Dominoes.COLOR_INIVISIBLE);
                 
-                border.setFill(COLOR_LINE.invert());
+                border.setFill(Dominoes.COLOR_BORDER_DERIVED);
+                back.setWidth(back.getWidth() - 2);
+                back.setHeight(back.getHeight() - 2);
+                back.setX(back.getX() + 1);
+                back.setY(back.getY() + 1);
+                
+                line.setFill(Dominoes.COLOR_LINE);
                 
                 break;
             case Dominoes.TYPE_SUPPORT:
@@ -255,13 +276,17 @@ public final class Dominoes {
                 type.setText(Dominoes.TYPE_LIFT_CODE);
                 break;
         }
-        type.setX(circle.getCenterX() - circle.getRadius()/2 - padding);
-        type.setY(circle.getCenterY() + circle.getRadius()/2 + padding);
         
         circle.toFront();
         type.toFront();
-
-        return new Group(border, back, line, historic, new Group(circle, type),idRow, idCol);
+        
+        Group groupType = new Group(circle, type);
+        groupType.setTranslateX(border.getX() + border.getWidth() - (radius + circlePadding));
+        groupType.setTranslateY((radius + circlePadding));
+        groupType.setAutoSizeChildren(true);
+        
+        Group domino = new Group(border, back, line, historic, groupType,idRow, idCol);
+        return domino;
     }
 
 
@@ -376,7 +401,6 @@ public final class Dominoes {
      */
     public void transpose() {
         
-    	
         if(!(this.type == Dominoes.TYPE_BASIC)){
         	this.type = Dominoes.TYPE_DERIVED;
         }
@@ -384,25 +408,9 @@ public final class Dominoes {
             this.type = Dominoes.TYPE_SUPPORT;
         }
 
-        //String id = this.getIdRow();
-        //this.setIdRow(this.getIdCol());
-        //this.setIdCol(id);
-        
-        //System.out.println("first: "+this.getHistoric().getFirstItem());
-        //System.out.println("last: "+this.getHistoric().getLastItem());
-        // transpose this historic
-        //System.out.print(this.historic + "->");
         this.getHistoric().reverse();
         this.setIdRow(this.getHistoric().getFirstItem());
         this.setIdCol(this.getHistoric().getLastItem());
-        //System.out.println(this.historic);
-        System.out.println("first: "+this.getHistoric().getFirstItem());
-        System.out.println("last: "+this.getHistoric().getLastItem());
-        //this.setIdRow(this.getHistoric().getLastItem());
-        //this.setIdCol(this.getHistoric().getFirstItem());
-        
-        
-        
         
         IMatrix2D _newMat = mat.transpose();
         setMat(_newMat);

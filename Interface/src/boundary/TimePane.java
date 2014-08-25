@@ -1,6 +1,7 @@
 package boundary;
 
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 
 import javax.swing.ComboBoxModel;
@@ -33,39 +34,81 @@ import javafx.geometry.*;
 
 public class TimePane extends Pane{
 
-	private final BarChart<String, Number> bc;
-	private ComboBox b;
+	private Label labelTime;
+	private Label labelDatabase;
+	
+	private ComboBox comboBoxTime;
+	private ComboBox comboBoxDatabase;
+	
+	private BarChart<String, Number> barChart;
 	private IntervalSlider slider;
 	
 	public TimePane(){
 		
-		b = new ComboBox();
-		ObservableList<String> items = FXCollections.observableArrayList();
+		this.setHeight(Configuration.height/2);
+		this.setWidth(Configuration.width);
 		
-        items.add("1 Month");
-        items.add("3 Month");
-        items.add("6 Month");
+		labelTime = new Label("Period");
+		labelDatabase = new Label("Repository");
+		
+		comboBoxTime = new ComboBox();
+		ObservableList<String> itemsTime = FXCollections.observableArrayList();
+		
+        itemsTime.add("1 Month");
+        itemsTime.add("3 Month");
+        itemsTime.add("6 Month");
         
-        b.setItems(items);
-        b.setValue(items.get(0));
+        comboBoxTime.setItems(itemsTime);
+        comboBoxTime.setValue(itemsTime.get(0));
+        Tooltip.install(comboBoxTime, new Tooltip("specify the period to work in the repository"));
+        
+        comboBoxDatabase = new ComboBox();
+        comboBoxDatabase.setMaxWidth(130);
+        ObservableList<String> itemsDatabase = FXCollections.observableArrayList();
+        
+        //receber do banco de dados
+        itemsDatabase.add("database 0");
+        itemsDatabase.add("database 1");
+        itemsDatabase.add("database 2");
+		
+        comboBoxDatabase.setItems(itemsDatabase);
+        comboBoxDatabase.setValue(itemsDatabase.get(0));
+        Tooltip.install(comboBoxDatabase, new Tooltip("select the repository to work with in the database"));
+        
+        GridPane gridPaneConfigurations = new GridPane();
+        gridPaneConfigurations.setHgap(20);
+        gridPaneConfigurations.setVgap(10);
+        gridPaneConfigurations.setPrefWidth(200);
+        gridPaneConfigurations.add(labelTime, 0, 0);
+        gridPaneConfigurations.add(comboBoxTime, 1, 0);
+        gridPaneConfigurations.add(labelDatabase, 0, 1);
+        gridPaneConfigurations.add(comboBoxDatabase, 1, 1);
         
 		final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
+        
+        xAxis.setLabel("label X");
+        xAxis.setPrefHeight(30);
+        yAxis.setLabel("label Y");
+        yAxis.setPrefWidth(50 + 10 * yAxis.getLabel().split("\\n").length);
+
+        this.barChart = new BarChart<String, Number>(xAxis, yAxis);
+        this.barChart.setAnimated(false);        
+        this.barChart.setPrefHeight(this.getHeight()/4);
+        this.barChart.setPrefWidth(this.getWidth() - gridPaneConfigurations.getPrefWidth());
+        
+        double x = yAxis.getPrefWidth() + yAxis.getTickLength() + yAxis.getTickLabelGap() + yAxis.getTickUnit();
+        double y = xAxis.getPrefHeight() + xAxis.getTickLength() + xAxis.getTickLabelGap() + xAxis.getTickLabelFont().getSize();
 		
-		xAxis.setLabel("");
-        yAxis.setLabel("");
-		bc = new BarChart<String, Number>(xAxis, yAxis);
+		slider = new IntervalSlider(0, 1, 0.2, 0.8, this.barChart.getPrefWidth() - x - 14);
+		slider.setTranslateX(x);
+		slider.setTranslateY(-y + slider.getHeight());
 		
-		bc.setPrefHeight(Configuration.height/4);
-		
-		slider = new IntervalSlider(0, 1, 0.2, 0.8, 200);
-		System.out.println("\n" + slider.getHeight());
 		
 		GridPane pane = new GridPane();
-		pane.add(b, 0, 0, 1, 2);
-		pane.add(bc, 1, 0);
-		pane.add(slider, 1, 1);
-		//pane.setGridLinesVisible(true);
+		pane.add(gridPaneConfigurations, 0, 0);		
+		pane.add(new FlowPane(barChart,slider), 1, 0);
+		pane.setGridLinesVisible(true);
 		
 		pane.setPrefHeight(Configuration.width/2);
 		this.getChildren().add(pane);

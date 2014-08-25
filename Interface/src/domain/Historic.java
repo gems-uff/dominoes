@@ -8,6 +8,8 @@ public class Historic {
 
     private String rightItem;
     private String leftItem;
+    private Dominoes dominoLeft;
+    private Dominoes dominoRight;
     private Historic historicLeft;
     private Historic historicRight;
     private int length;
@@ -39,6 +41,8 @@ public class Historic {
         this.historicLeft = temp.historicLeft;
         this.historicRight = temp.historicRight;
         this.length = temp.length;
+        this.dominoLeft = temp.dominoLeft;
+        this.dominoRight = temp.dominoRight;
     }
 
     public Historic(String left, String right) throws IllegalArgumentException {
@@ -173,6 +177,21 @@ public class Historic {
 
     }
 
+    /**
+     * This function will return the item corresponding to index 
+     * 
+     * <p><b>Exemple:</b>
+     * <blockquote>suppose the historic A,B,C,D. To the index: 
+     * <br>1 => A
+     * <br>2 => B
+     * <br>3 => C
+     * <br>4 => D
+     * </blockquote>
+     * 
+     * @param index associated to item
+     * @throws IllegalArgumentException in cases where the index is invalid
+     *
+     */
     public String getItem(int index) throws IllegalArgumentException {
         Historic result = this;
 

@@ -288,7 +288,6 @@ public class App extends Application {
     public void stop(){
     	// Destroy all remaining dominoes
     	
-
-    	
     }
+    
 }
