@@ -8,4 +8,4 @@ width:				1000.0
 height:				600.0
 listWidth:			130.0
 accessMode:			SQL
-processingUnit:		CPU
+processingUnit:		GPU

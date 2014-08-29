@@ -84,6 +84,8 @@ public class AreaMove extends Pane {
         
         MenuItem menuItemTranspose = new MenuItem("Transpose");
         MenuItem menuItemReduceLines = new MenuItem("Reduce Lines");
+        MenuItem menuItemLift = new MenuItem("Lift");
+        MenuItem menuItemZScore = new MenuItem("Z-Score");
         MenuItem menuItemSaveInList = new MenuItem("Save");
         MenuItem menuItemViewGraph = new MenuItem("Graph");
         MenuItem menuItemViewMatrix = new MenuItem("Matrix");
@@ -323,7 +325,7 @@ public class AreaMove extends Pane {
             }
         });
         
-        menuOperate.getItems().addAll(menuItemTranspose, menuItemReduceLines);
+        menuOperate.getItems().addAll(menuItemTranspose, menuItemReduceLines, menuItemLift, menuItemZScore);
         menuView.getItems().addAll(menuItemViewChart, menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
     }

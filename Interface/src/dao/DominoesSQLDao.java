@@ -12,7 +12,11 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import arch.Cell;
 import arch.IMatrix2D;
@@ -36,6 +40,12 @@ public class DominoesSQLDao implements DominoesDao{
 	public static final int File_Class = 4;
 	public static final int Class_Method = 5;
 	public static final int Bug_Commit = 6;
+	
+	
+	public enum Group {
+		Month,
+		Day
+	}
 	
 	
 	public static void openDatabase() throws ClassNotFoundException, SQLException{
@@ -621,5 +631,88 @@ public class DominoesSQLDao implements DominoesDao{
 	public static void setEndDate(Date endDate) {
 		DominoesSQLDao.endDate = endDate;
 	}
+	
+	public static Map<String, Integer> getNumCommits(Group group) throws SQLException{		
+		String sql = "";
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+		Map<String, Integer> results = new LinkedHashMap<>();
+		
+		if (group == Group.Month){
+			sql = "SELECT strftime('%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TREPOSITORY TR " + 
+					"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+		}
+		else if (group == Group.Day){
+			sql = "SELECT strftime('%d/%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TREPOSITORY TR " + 
+					"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+		}
+		
+		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
+		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		
+		if (group == Group.Month){
+			sql = sql.concat("GROUP BY strftime('%m/%Y', date) ");
+		} else if (group == Group.Day){
+			sql = sql.concat("GROUP BY strftime('%d/%m/%Y', date) ");
+		}
+		
+		sql = sql.concat("ORDER BY TC.date;");
+		
+		rs = smt.executeQuery(sql);
+		
+		while (rs.next())
+		{
+			results.put(rs.getString("Period"), rs.getInt("Total"));
+			System.out.println(rs.getString("Period") + " - " + rs.getInt("Total"));
+		}
+		
+		
+		rs.close();
+		smt.close();
+							
+		return results;
+	}
     
+	public static Map<String, Integer> getNumBugs(Group group) throws SQLException{		
+		String sql = "";
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+		Map<String, Integer> results = new LinkedHashMap<>();
+		
+		if (group == Group.Month){
+			sql = "SELECT strftime('%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TBUG TB, TREPOSITORY TR " + 
+					"WHERE TB.commitId = TC.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+		}
+		else if (group == Group.Day){
+			sql = "SELECT strftime('%d/%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TBUG TB, TREPOSITORY TR " + 
+					"WHERE TB.commitId = TC.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+		}
+		
+		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
+		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		
+		if (group == Group.Month){
+			sql = sql.concat("GROUP BY strftime('%m/%Y', date) ");
+		} else if (group == Group.Day){
+			sql = sql.concat("GROUP BY strftime('%d/%m/%Y', date) ");
+		}
+		
+		sql = sql.concat("ORDER BY TC.date;");
+		
+		rs = smt.executeQuery(sql);
+		
+		while (rs.next())
+		{
+			results.put(rs.getString("Period"), rs.getInt("Total"));
+			System.out.println(rs.getString("Period") + " - " + rs.getInt("Total"));
+		}
+		
+		
+		rs.close();
+		smt.close();
+					
+		
+		
+		return results;
+	}
 }

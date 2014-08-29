@@ -13,6 +13,7 @@
 #include <cusp/complex.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/multiply.h>
+#include <cusp/print.h>
 
 #include <helper_cuda.h>
 #include <stdio.h>
@@ -148,7 +149,6 @@ extern "C" {
     	int *_col_res = new int[res_nz];
     	float *_value_res = new float[res_nz];
     	
-    	fprintf(stderr, "cco_nz: %d\n", res_nz);
     	
     	for(size_t n = 0; n < res_nz; n++)
   		{
@@ -156,12 +156,12 @@ extern "C" {
     		_col_res[n] = matRes.column_indices[n];
    		 	_value_res[n] = matRes.values[n];
    		}
+
+		*row_res = _row_res;
+    	*col_res = _col_res;
+    	*value_res = _value_res;
    		
-   		row_res = &_row_res;
-   		col_res = &_col_res;
-   		value_res = &_value_res; 
-   		 
-   		fprintf(stderr, "cco_nz: %d\n", res_nz);
+   		//cusp::print(matRes);
     }
     
     

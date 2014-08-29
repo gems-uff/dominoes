@@ -207,8 +207,6 @@ void deleteMatrix(SpMatf *matrix){
 }
 
 void setNonZeroData(SpMatf *mat, int *rows, int *cols, float *values, int size){
-	//fprintf(stderr, "Setting data: %d\n", size);
-
 	std::vector<Tf> tripletList;
 
 	for (int i = 0; i < size; i++){
@@ -319,6 +317,9 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 		int nonZeros_1 = mat1->nonZeros();
 		int nonZeros_2 = mat2->nonZeros();
 
+		fprintf(stderr, "nz1: %d\n", nonZeros_1);
+		fprintf(stderr, "nz2: %d\n", nonZeros_2);
+
 		int rows_1[nonZeros_1], cols_1[nonZeros_1], rows_2[nonZeros_2], cols_2[nonZeros_2];
 		float values_1[nonZeros_1], values_2[nonZeros_2];
 
@@ -349,7 +350,7 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 		g_MatMul(mat1->rows(), mat1->cols(), mat2->cols(), nonZeros_1, nonZeros_2,
 				rows_1, cols_1, values_1, rows_2, cols_2, values_2, &res_rows, &res_cols, &res_data, res_nz);
 
-		fprintf(stderr, "nz1\n");;
+		fprintf(stderr, "nz1\n");
 
 
 		setNonZeroData(result, res_rows, res_cols, res_data, res_nz);
@@ -365,7 +366,7 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 
 void calculateReducedRows(SpMatf *matrix, SpMatf *result, bool useGPU){
 
-	if (useGPU){
+	//if (useGPU){
 		/*int nonZeros_1 = mat1->nonZeros();
 		int nonZeros_2 = mat2->nonZeros();
 
@@ -408,8 +409,8 @@ void calculateReducedRows(SpMatf *matrix, SpMatf *result, bool useGPU){
 		free(res_rows);
 		free(res_cols);
 		free(res_data);*/
-	} else {
-
+//	} else {
+	{
 		float matrixToArray[matrix->cols()];
 		memset(matrixToArray, 0, sizeof(matrixToArray));
 
