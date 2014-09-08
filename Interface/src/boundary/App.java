@@ -1,31 +1,31 @@
 package boundary;
 
-import dao.DominoesSQLDao;
-import domain.Configuration;
-import domain.Dominoes;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
-
-import arch.Matrix2D;
-import arch.MatrixDescriptor;
 import javafx.application.Application;
-import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import dao.DominoesSQLDao;
+import domain.Configuration;
+import domain.Dominoes;
 
+@SuppressWarnings("restriction")
 public class App extends Application {
 
     private static ListViewDominoes list;
@@ -34,96 +34,75 @@ public class App extends Application {
     private static TimePane time;
     private static Visual visual;
 
+    private static SplitPane vSplitPane;
+    private static SplitPane vSP_body_hSplitPane;
+    private static BorderPane vSP_head_TimePane;
+    
     private static Scene scene;
     private static Stage stage;
-
-    private static SplitPane splitPane;
             
     private static double width = Configuration.width;
     private static double height = Configuration.height;
-
-    /**
-     *
-     */
-    public static void start() {
-        launch((String[]) null);
-    }
     
-    static void drawGraph(Dominoes domino) {
-        visual.addTabGraph(domino);
-    }
-
-    static void drawMatrix(Dominoes domino) {
-        visual.addTabMatrix(domino);
-    }
+    private static String beginDateWork = Configuration.beginDate;
+    private static String endDateWork = Configuration.endDate;
     
-    static void drawChart(Dominoes domino) {
-        visual.addTabChart(domino);
-    }
-    
-    static void drawTree(Dominoes domino) {
-        visual.addTabTree(domino);
-    }
+    private static ArrayList<Dominoes> array = null;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
+        	
             App.stage = primaryStage;
             App.stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
             App.stage.centerOnScreen();
-
+            App.stage.setTitle("Dominoes Interface");
+            App.stage.setResizable(Configuration.resizable);
+            
             App.menu = new DominoesMenuBar();
-
+            
+            App.beginDateWork = Configuration.beginDate;
+            App.endDateWork = Configuration.endDate;
+            
+            App.checkout(Configuration.beginDate, Configuration.endDate);
+        	App.setTimelime();
             App.set();
+
+            time.setButtomOnAction(new EventHandler<ActionEvent>() {
+    			
+    			@Override
+    			public void handle(ActionEvent arg0) {
+    				try{
+	    			    beginDateWork = time.getValueToolTipMin();
+	    			    endDateWork = time.getValueToolTipMax();
+	    			    System.out.println("begin: " + beginDateWork);
+	    			    System.out.println("end: " + endDateWork);
+	    				App.menu.load(beginDateWork, endDateWork);
+    				} catch (ParseException e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+    			}
+    		});
+            
+            if(Configuration.resizableTimeOnFullScreen){
+            	App.fillTimeHistoricPointers();
+            }
+            
+            if(!Configuration.automaticCheck){
+            	App.clear();
+            }
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }
     }
 
-    /**
-     * This function is used to exit this program
-     *
-     * @param status status required by the operating system
-     */
-    private static void exit(int status) {
-        System.exit(status);
-    }
+    private static void fillTimeHistoricPointers() {
+    	App.setFullscreen(!stage.isFullScreen());
+    	App.setFullscreen(!stage.isFullScreen());
+	}
 
-    /**
-     * This function is called to change the parts color
-     */
-    static void changeColor() {
-        App.list.changeColor();
-        App.area.changeColor();
-    }
-
-    /**
-     * This function remove all parts in this area move
-     */
-    public static void clear() {
-        App.list.clear();
-        App.area.clear();
-    }
-
-    /**
-     * This function adds in List a matrix specified
-     *
-     * @param dominoes the matrix to be added
-     */
-    public static void CopyToList(Dominoes dominoes) {
-        App.list.add(dominoes);
-    }
-
-    /**
-     * This function adds in Area a matrix specified
-     *
-     * @param dominoes the matrix to be added
-     */
-    public static void copyToArea(Dominoes dominoes) {
-        App.area.add(dominoes);
-    }
-
-    /**
+	/**
      * This function remove the element of the list and of the move area
      *
      * @param dominoes Element to remove
@@ -163,20 +142,19 @@ public class App extends Application {
     }
 
     /**
-     * Set the basic configuration of this Application
+     * check out the data
      */
-    public static void set() {
-        App.stage.setTitle("Dominoes Interface");
-        App.stage.setResizable(Configuration.resizable);
-
-        // Open database
+    public static void checkout(String beginDate, String endDate){
+    	// Open database
         try {
-			DominoesSQLDao.openDatabase();
 			
 			// Set begin and end date
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			DominoesSQLDao.setBeginDate(sdf.parse("2013-11-01 00:00:00"));
-			DominoesSQLDao.setEndDate(sdf.parse("2014-01-31 00:00:00"));
+			DominoesSQLDao.setBeginDate(sdf.parse(beginDate));
+			DominoesSQLDao.setEndDate(sdf.parse(endDate));
+//			DominoesSQLDao.setBeginDate(sdf.parse("2013-11-01 00:00:00"));
+//			DominoesSQLDao.setEndDate(sdf.parse("2014-01-31 00:00:00"));
+			DominoesSQLDao.openDatabase();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -187,53 +165,153 @@ public class App extends Application {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-        App.list = new ListViewDominoes();
+    }
+    
+    public static void setTimelime(){
+    	beginDateWork = Configuration.beginDate; 
+        endDateWork = Configuration.endDate;
+    	
+    	double min = 0, max = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try{
+        	min = sdf.parse(beginDateWork).getYear() * 12;
+        	min += sdf.parse(beginDateWork).getMonth();
+        	
+        	max = sdf.parse(endDateWork).getYear() * 12;
+        	max += sdf.parse(endDateWork).getMonth();
+        	
+    	} catch (ParseException e) {
+    		// TODO Auto-generated catch block
+			e.printStackTrace();
+    	}
+        max = max - min;
+        min = 0;
+
+        App.time = new TimePane(min, max, min, min);
+        App.time.setVisible(Configuration.visibilityTimePane);
+    	
+    }
+    
+    /**
+     * Set the basic configuration of this Application
+     */
+    public static void set() {
+        if(Configuration.automaticCheck){
+        	array = control.Controller.loadAllMatrices();
+        }else{
+        	array = null;
+        }
+        App.list = new ListViewDominoes(array);
         App.visual = new Visual();
         App.area = new AreaMove();
-        App.time = new TimePane();
-        App.time.setVisible(Configuration.visibilityTimePane);
-        
-        //App.list.add(new Dominoes("R","C", new Matrix2D(new MatrixDescriptor("R", "C"))));
         
         App.scene = new Scene(new Group());
         VBox back = new VBox();
-        splitPane = new SplitPane();
         
-        App.scene.setOnMouseReleased(new EventHandler<MouseEvent>() {
+        vSplitPane = new SplitPane();
+        vSplitPane.setOrientation(Orientation.VERTICAL);
+        
+        vSP_body_hSplitPane = new SplitPane();
+        
+//        App.scene.setOnMouseReleased(new EventHandler<MouseEvent>() {
+//
+//            @Override
+//            public void handle(MouseEvent event) {
+//                App.scene.setCursor(Cursor.DEFAULT);
+//            }
+//        });
+        
+        vSP_body_hSplitPane.getItems().add(App.list);
+        vSP_body_hSplitPane.getItems().add(App.area);
+        vSP_body_hSplitPane.getItems().add(App.visual);
+        
+        if(App.time == null){
+        	App.setTimelime();
+        }
+        
+        vSP_head_TimePane = new BorderPane();
+        vSP_head_TimePane.setCenter(time);
+        vSP_head_TimePane.visibleProperty().addListener(new ChangeListener<Boolean>() {
+        	
+        	@Override
+        	public void changed(ObservableValue<? extends Boolean> arg0, Boolean oldValue, Boolean newValue) {
+        		if(vSP_head_TimePane.isVisible()){
+        			vSplitPane.getItems().remove(vSP_body_hSplitPane);
+        			
+        			vSplitPane.getItems().add(vSP_head_TimePane);
+        			vSplitPane.getItems().add(vSP_body_hSplitPane);
+        			
+        		}else{
+        			
+        			vSplitPane.getItems().remove(vSP_head_TimePane);
 
-            @Override
-            public void handle(MouseEvent event) {
-                App.scene.setCursor(Cursor.DEFAULT);
-            }
-        });
+        		}
+        	}
+		});
         
-        splitPane.getItems().add(App.list);
-        splitPane.getItems().add(App.area);
-        splitPane.getItems().add(App.visual);
+        if(Configuration.visibilityTimePane) vSplitPane.getItems().add(vSP_head_TimePane);
+        vSplitPane.getItems().add(vSP_body_hSplitPane);
         
-        back.getChildren().addAll(menu);
-        
-        back.getChildren().addAll(splitPane);
-        if(time.isVisible())back.getChildren().add(time);
-        time.visibleProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    back.getChildren().add(time);
-                } else {
-                    back.getChildren().remove(time);
-                }
-            }
-        });
-        
+        back.getChildren().addAll(menu, vSplitPane);
         
         App.scene.setRoot(back);
         App.stage.setScene(App.scene);
-        App.stage.show();
+//        App.setFullscreen(Configuration.fullscreen);
+//        App.stage.show();
+//        App.time.definitionSlider(stage);
         App.setFullscreen(Configuration.fullscreen);
     }
+    
+    @Override
+    public void stop(){
+    	// Destroy all remaining dominoes
+    	
+    }
+    
+    /**
+     * This function is used to exit this program
+     *
+     * @param status status required by the operating system
+     */
+    @SuppressWarnings("unused")
+	private static void exit(final int status) {
+        System.exit(status);
+    }
 
+    /**
+     * This function is called to change the parts color
+     */
+    static void changeColor() {
+        App.list.changeColor();
+        App.area.changeColor();
+    }
+
+    /**
+     * This function remove all parts in this area move
+     */
+    public static void clear() {
+        App.list.clear();
+        App.area.clear();
+    }
+
+    /**
+     * This function adds in List a matrix specified
+     *
+     * @param dominoes the matrix to be added
+     */
+    public static void CopyToList(Dominoes dominoes) {
+        App.list.add(dominoes);
+    }
+
+    /**
+     * This function adds in Area a matrix specified
+     *
+     * @param dominoes the matrix to be added
+     */
+    public static void copyToArea(Dominoes dominoes) {
+        App.area.add(dominoes);
+    }
+    
     /**
      * This function is used to define the visibility of historic
      *
@@ -253,15 +331,17 @@ public class App extends Application {
         area.setVisibleType();
         list.setVisibleType();
     }
-
+    
     /**
      * This function is used to make full screen in this Application
      *
      * @param fullscreen
      */
     static void setFullscreen(boolean fullscreen) {
+    	Configuration.fullscreen = fullscreen;
         double padding = menu.getHeight();
         App.stage.setFullScreen(fullscreen);
+
         if (!fullscreen) {
             padding += 30;
             
@@ -269,25 +349,50 @@ public class App extends Application {
             App.stage.setHeight(Configuration.height);
             App.stage.centerOnScreen();
         }
-
+        
         App.width = App.stage.getWidth();
         App.height = App.stage.getHeight();
         
+        if(App.time.isVisible()){
+        	App.time.definitionSlider(stage);
+        }
         App.list.setSize(Configuration.listWidth , App.height - padding);
         App.visual.setSize(App.width, App.height - padding);
         App.area.setSize(App.width, App.height - padding);
 
     }
     
-    static void setVisibleTimePane(){
+    static void changeVisibleTimePane(){
 	 	Configuration.visibilityTimePane = !Configuration.visibilityTimePane;
-    	time.setVisible(Configuration.visibilityTimePane);
-    }
-    
-    @Override
-    public void stop(){
-    	// Destroy all remaining dominoes
+	 	time.setVisible(Configuration.visibilityTimePane);
+	 	vSP_head_TimePane.setVisible(Configuration.visibilityTimePane);
     	
     }
     
+    /**
+    *
+    */
+   public static void start() {
+       launch((String[]) null);
+   }
+   
+   static void drawGraph(Dominoes domino) {
+       visual.addTabGraph(domino);
+   }
+
+   static void drawMatrix(Dominoes domino) {
+       visual.addTabMatrix(domino);
+   }
+   
+   static void drawChart(Dominoes domino) {
+       visual.addTabChart(domino);
+   }
+   
+   static void drawTree(Dominoes domino) {
+       visual.addTabTree(domino);
+   }
+   
+   static Stage getStage(){
+	   return App.stage;
+   }
 }

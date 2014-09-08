@@ -1,135 +1,79 @@
 package boundary;
 
-import java.awt.FlowLayout;
-import java.awt.Insets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import javax.swing.ComboBoxModel;
-import javax.swing.SwingUtilities;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
-
-import arch.Cell;
-import dao.DaoFactory;
-import dao.DominoesSQLDao;
-import dao.DominoesSQLDao.Group;
-import domain.Configuration;
-import domain.Dominoes;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Cursor;
-import javafx.scene.chart.LineChart;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.chart.Axis;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Data;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.control.Label;
-import javafx.embed.swing.SwingNode;
-import javafx.geometry.*;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+import dao.DominoesSQLDao;
+import domain.Configuration;
 
 
+@SuppressWarnings({ "restriction", "rawtypes", "unchecked" })
 public class TimePane extends Pane{
-
-	private Label labelTime;
-	private Label labelDatabase;
 	
-	private ComboBox comboBoxTime;
-	private ComboBox comboBoxDatabase;
+	private Button bSet;
+	
+	private Group timePaneGroup; 
 	
 	private LineChart<String, Number> lineChart;
 	private IntervalSlider slider;
-	
-	
+	private double sliderWidth;
+	private double historicBeginPosition = 0, historicEndPosition = 0;
+	private double chartZeroX = -1;
+	private double chartZeroY = -1;
+	private double paddingX = -1;
 	JFreeChart jLineChart;
 	
 	public TimePane(){
+		this(0,1,0,1);
+	}
+	
+	public TimePane(double min, double max, double selectMin, double selectMax){
 		
-		this.setHeight(Configuration.height/2);
-		this.setWidth(Configuration.width);
+		ObservableList<String> xItems = FXCollections.<String>observableArrayList();
 		
-		labelTime = new Label("Period");
-		labelDatabase = new Label("Repository");
+		this.bSet = new Button("Set");
+		Tooltip.install(bSet, new Tooltip("Click to set begin date and end date to work"));
 		
-		comboBoxTime = new ComboBox();
-		ObservableList<String> itemsTime = FXCollections.observableArrayList();
-		
-        itemsTime.add("1 Month");
-        itemsTime.add("3 Month");
-        itemsTime.add("6 Month");
-        
-        comboBoxTime.setItems(itemsTime);
-        comboBoxTime.setValue(itemsTime.get(0));
-        Tooltip.install(comboBoxTime, new Tooltip("specify the period to work in the repository"));
-        
-        comboBoxDatabase = new ComboBox();
-        comboBoxDatabase.setMaxWidth(130);
-        ObservableList<String> itemsDatabase = FXCollections.observableArrayList();
-        
-        //receber do banco de dados
-        itemsDatabase.add("database 0");
-        itemsDatabase.add("database 1");
-        itemsDatabase.add("database 2");
-		
-        comboBoxDatabase.setItems(itemsDatabase);
-        comboBoxDatabase.setValue(itemsDatabase.get(0));
-        Tooltip.install(comboBoxDatabase, new Tooltip("select the repository to work with in the database"));
-        
-        GridPane gridPaneConfigurations = new GridPane();
-        gridPaneConfigurations.setHgap(20);
-        gridPaneConfigurations.setVgap(10);
-        gridPaneConfigurations.setPrefWidth(200);
-        gridPaneConfigurations.add(labelTime, 0, 0);
-        gridPaneConfigurations.add(comboBoxTime, 1, 0);
-        gridPaneConfigurations.add(labelDatabase, 0, 1);
-        gridPaneConfigurations.add(comboBoxDatabase, 1, 1);
+        BorderPane gridPaneSet = new BorderPane();        
+        gridPaneSet.setCenter(bSet);
         
 		final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
         
-        xAxis.setLabel("label X");
-        xAxis.setPrefHeight(30);
-        yAxis.setLabel("label Y");
-        yAxis.setPrefWidth(50 + 10 * yAxis.getLabel().split("\\n").length);
-
         this.lineChart = new LineChart<String, Number>(xAxis, yAxis);
-        this.lineChart.setAnimated(false);        
-        this.lineChart.setPrefHeight(this.getHeight()/4);
-        this.lineChart.setPrefWidth(this.getWidth() - gridPaneConfigurations.getPrefWidth());
-        
-        double x = yAxis.getPrefWidth() + yAxis.getTickLength() + yAxis.getTickLabelGap() + yAxis.getTickUnit();
-        double y = xAxis.getPrefHeight() + xAxis.getTickLength() + xAxis.getTickLabelGap() + xAxis.getTickLabelFont().getSize();
-		
-		slider = new IntervalSlider(0, 1, 0.2, 0.8, this.lineChart.getPrefWidth() - x - 14);
-		slider.setTranslateX(x);
-		slider.setTranslateY(-y + slider.getHeight());
-		
+        this.lineChart.setPrefHeight(200);
 
 		DefaultCategoryDataset ds = new DefaultCategoryDataset();
 		// Add commits
 		try {
-			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(Group.Month);			
-			XYChart.Series serie1 = new XYChart.Series<>();
+			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(dao.DominoesSQLDao.Group.Month);			
+			XYChart.Series<String, Number> serie1 = new XYChart.Series<>();
 			serie1.setName("Commits");
-			
 			for (Map.Entry<String, Integer> value : commitsByPeriod.entrySet()){
-				serie1.getData().add(new XYChart.Data<>(value.getKey(), value.getValue()));
+				serie1.getData().add(new XYChart.Data<String, Number>(value.getKey(), value.getValue()));
+				xItems.add(value.getKey());
 				ds.addValue(value.getValue(), value.getKey(), "Commits");
 			}
 			lineChart.getData().add(serie1);
@@ -139,11 +83,9 @@ public class TimePane extends Pane{
 			e.printStackTrace();
 		}
 		
-		
-		
 		// Add Bugs
 		try {
-			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(Group.Month);			
+			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(dao.DominoesSQLDao.Group.Month);			
 			XYChart.Series serie2 = new XYChart.Series<>();
 			serie2.setName("Bugs");
 			
@@ -157,8 +99,7 @@ public class TimePane extends Pane{
 			e.printStackTrace();
 		}
 		
-		//lineChart.setBarGap(3);
-		//lineChart.setCategoryGap(20);
+		xAxis.setCategories(xItems);
 		
 		/*barChart.setOnScroll(new EventHandler<ScrollEvent>() {
 
@@ -176,23 +117,100 @@ public class TimePane extends Pane{
 				
 		});*/
 		
-		
-		
 		//jLineChart = ChartFactory.createLineChart(
 			//"Tittle", "", "", ds, PlotOrientation.HORIZONTAL, true, false, false);
 		
+		// after, you have call definitionSlider() to define the slider values
+		slider = new IntervalSlider(min, max, selectMax, selectMin, max-min);
+		
+		timePaneGroup = new Group();
+		timePaneGroup.getChildren().add(lineChart);
+		timePaneGroup.getChildren().add(slider);
+		
+		this.lineChart.setPrefWidth(Configuration.width);
+		
 		GridPane pane = new GridPane();
-		pane.add(gridPaneConfigurations, 0, 0);		
-		pane.add(new FlowPane(lineChart,slider), 1, 0);
-		pane.setGridLinesVisible(true);
+		pane.add(timePaneGroup, 0, 0);
+		pane.add(gridPaneSet, 0, 1);
 		
-		pane.setPrefHeight(Configuration.width/2);
 		this.getChildren().add(pane);
-		
-		//SwingNode swingNode = new SwingNode();
-		//swingNode.setContent(new org.jfree.chart.ChartPanel(jLineChart));
 
-		//this.getChildren().add(swingNode);
+		this.bSet.setOnAction(null);
+	}
+	
+	public void definitionSlider(Stage stage){
+		int size = this.lineChart.getData().get(0).getData().size();
+		String begin = this.lineChart.getData().get(0).getData().get(0).getXValue();
+		String end = this.lineChart.getData().get(0).getData().get(size - 1).getXValue();
 		
+		if(Configuration.resizableTimeOnFullScreen){
+			this.lineChart.setPrefWidth(stage.getWidth());
+		}
+		stage.show();
+		
+		Axis<String> xAxis = lineChart.getXAxis();
+		Axis<Number> yAxis = lineChart.getYAxis();
+		
+		ArrayList<String> tooltip = new ArrayList<>();
+		
+		for(int i = 0; i < size; i++){
+			tooltip.add(this.lineChart.getData().get(0).getData().get(i).getXValue());
+		}
+		
+		if(chartZeroX == -1
+        		|| chartZeroY == -1
+        		|| paddingX == -1){
+        Node chartPlotArea = stage.getScene().lookup(".chart-plot-background");
+	    	chartZeroX = chartPlotArea.getLayoutX();
+        	chartZeroY = chartPlotArea.getLayoutY();
+        
+        	paddingX = xAxis.getTickLength() - xAxis.getTickLabelGap();
+        }
+
+        
+        if(Configuration.resizableTimeOnFullScreen){
+        	if(historicBeginPosition == 0 && historicEndPosition == 0){
+        		historicBeginPosition = xAxis.getDisplayPosition(begin);
+        		historicEndPosition = xAxis.getDisplayPosition(end);
+        	}
+        	sliderWidth = historicEndPosition;
+        	sliderWidth -= historicBeginPosition;
+        }else{
+        	sliderWidth = xAxis.getDisplayPosition(end);
+        	sliderWidth -= xAxis.getDisplayPosition(begin);
+        }
+        
+        IntervalSlider slider = new IntervalSlider(this.slider.getMin(), this.slider.getMax(), this.slider.getValueMin(), this.slider.getValueMax(), this.sliderWidth, tooltip);
+        if(Configuration.resizableTimeOnFullScreen){
+        	slider.setTranslateX(historicBeginPosition + chartZeroX + paddingX);
+        }else{
+        	slider.setTranslateX(xAxis.getDisplayPosition(begin) + chartZeroX + paddingX);
+        }
+        slider.setTranslateY(yAxis.getDisplayPosition(0) + chartZeroY/* + paddingY*/);
+        slider.setLinkPointers(true);
+        
+        int index = this.timePaneGroup.getChildren().indexOf(this.slider);
+        this.slider = slider;
+        this.timePaneGroup.getChildren().set(index, slider);
+        
+        if(Configuration.resizableTimeOnFullScreen){
+        	historicBeginPosition = xAxis.getDisplayPosition(begin);
+        	historicEndPosition = xAxis.getDisplayPosition(end);
+        }
+        stage.show();
+	}
+	
+	
+	
+	public String getValueToolTipMin(){
+    	return slider.getValueToolTipMin();
+    }
+    
+    public String getValueToolTipMax(){
+    	return slider.getValueToolTipMax();
+    }
+	
+	public void setButtomOnAction(EventHandler<ActionEvent> event){
+		this.bSet.setOnAction(event);
 	}
 }

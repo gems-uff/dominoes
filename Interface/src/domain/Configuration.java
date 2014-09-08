@@ -1,7 +1,5 @@
 package domain;
 
-import java.awt.Toolkit;
-
 public class Configuration {
     // to read file
     public static boolean fullscreen = false;
@@ -10,6 +8,8 @@ public class Configuration {
     public static boolean visibilityType = true;
     public static boolean visibilityTimePane = true;
     public static boolean resizable = false;
+    public static boolean automaticCheck = false;
+    public static boolean resizableTimeOnFullScreen = false;
     
     public static double width = 800.0f;
     public static double height = 600.0f;
@@ -18,5 +18,12 @@ public class Configuration {
     public static String accessMode = "SQL";
     public static String processingUnit = "GPU";
     
-    public static final int amont = 11;
+	public static String beginDate = "2013-11-01 00:00:00";
+    public static String endDate = "2014-01-31 00:00:00";    
+    
+    public static final int amount = 15;
+
+    // not save/read file 
+    public static double fullscreenWidth = Configuration.width;
+    public static double fullscreenHeight = Configuration.height;
 }

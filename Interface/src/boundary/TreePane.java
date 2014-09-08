@@ -1,24 +1,27 @@
 package boundary;
 
+import java.awt.Color;
+import java.awt.Dimension;
+
+import javafx.embed.swing.SwingNode;
+import javafx.scene.layout.Pane;
+
+import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.functors.ConstantTransformer;
+
 import domain.Dominoes;
 import domain.Historic;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 //import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Forest;
-import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import java.awt.Color;
-import java.awt.Dimension;
-import javafx.embed.swing.SwingNode;
-import javafx.scene.layout.Pane;
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.functors.ConstantTransformer;
 
+@SuppressWarnings("restriction")
 public class TreePane extends Pane {
 
     VisualizationViewer<Historic, Integer> vv;

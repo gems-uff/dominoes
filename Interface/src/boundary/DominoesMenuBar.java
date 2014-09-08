@@ -5,90 +5,92 @@
  */
 package boundary;
 
-import domain.Configuration;
-import domain.Dominoes;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
+import domain.Configuration;
 
 /**
  *
  * @author Daniel
  */
+@SuppressWarnings("restriction")
 public class DominoesMenuBar extends MenuBar {
 
 //------DOMINOES MENU ITENS-----------------------------------------------------
-    private final Menu MDominoes;
+    private final Menu mDominoes;
 
-    private final MenuItem MDominoes_new;
-    private final MenuItem MDominoes_load;
-    private final MenuItem MDominoes_exit;
-    private final MenuItem MDominoes_exitAndSave;
-    private final Menu MDominoes_save;
-    private final MenuItem MDominoes_save_saveAll;
-    private final CheckMenuItem MDominoes_save_autoSave;
+    private final MenuItem mDominoes_new;
+    private final MenuItem mDominoes_loadAll;
+    private final MenuItem mDominoes_exit;
+    private final MenuItem mDominoes_exitAndSave;
+    private final Menu mDominoes_save;
+    private final MenuItem mDominoes_save_saveAll;
+    private final CheckMenuItem mDominoes_save_autoSave;
+    private final SeparatorMenuItem mDominoes_separator;
 
 //------EDIT MENU ITENS---------------------------------------------------------
-    private final Menu MEdit;
+    private final Menu mEdit;
 
     //private final Menu MEdit_fillColor;
     //private final CustomMenuItem MEdit_fillColor_custom;
     //private Slider MEdit_fillColor_slider;
-    private final CheckMenuItem MEdit_showHistoric;
-    private final CheckMenuItem MEdit_showType;
+    private final CheckMenuItem mEdit_showHistoric;
+    private final CheckMenuItem mEdit_showType;
 
 //------COFIGURATION MENU ITENS-------------------------------------------------
-    private final Menu MConfiguration;
-    private final CheckMenuItem MConfiguration_fullScreen;
-    private final Menu MConfiguration_database;
-    private final RadioMenuItem MConfiguration_database_accessTXT;
-    private final RadioMenuItem MConfiguration_database_accessSQL;
-    private final ToggleGroup MConfiguration_database_accessGroup;
+    private final Menu mConfiguration;
+    private final CheckMenuItem mConfiguration_fullScreen;
+    private final Menu mConfiguration_database;
+    private final RadioMenuItem mConfiguration_database_accessTXT;
+    private final RadioMenuItem mConfiguration_database_accessSQL;
+    private final ToggleGroup mConfiguration_database_accessGroup;
     
-    private final SeparatorMenuItem separator;
+    private final SeparatorMenuItem mConfiguration_separator;
     
-//------TIME PANE MENU ITENS----------------------------------------------------
-    private final CheckMenuItem MTimePane;
+//------TIME MENU ITENS----------------------------------------------------
+    private final Menu mTimeline;
+    private final CheckMenuItem mTimeline_ShowTimeline;
+    
     /**
      * Builder class
      */
     public DominoesMenuBar() {
         this.setHeight(30);
 //------DOMINOES MENU ITENS-----------------------------------------------------
-        this.MDominoes = new Menu("Dominoes");
+        this.mDominoes = new Menu("Dominoes");
 
-        this.MDominoes_new = new MenuItem("New");
-        this.MDominoes_load = new MenuItem("Load");
-        this.MDominoes_load.setDisable(true);
-        this.MDominoes_save = new Menu("Save");
-        this.MDominoes_save_saveAll = new MenuItem("Save All");
-        this.MDominoes_save_autoSave = new CheckMenuItem("Auto Save");
-        this.MDominoes_save_autoSave.setSelected(Configuration.autoSave);
-        this.MDominoes_exit = new MenuItem("Exit");
-        this.MDominoes_exitAndSave = new MenuItem("Exit And Save");
+        this.mDominoes_new = new MenuItem("New");
+        this.mDominoes_loadAll = new MenuItem("Load All");
+        this.mDominoes_loadAll.setDisable(true);
+        this.mDominoes_save = new Menu("Save");
+        this.mDominoes_save_saveAll = new MenuItem("Save All");
+        this.mDominoes_save_autoSave = new CheckMenuItem("Auto Save");
+        this.mDominoes_save_autoSave.setSelected(Configuration.autoSave);
+        this.mDominoes_exit = new MenuItem("Exit");
+        this.mDominoes_exitAndSave = new MenuItem("Exit And Save");
 
-        this.MDominoes_save.getItems().addAll(this.MDominoes_save_saveAll,
-                this.MDominoes_save_autoSave);
+        this.mDominoes_save.getItems().addAll(this.mDominoes_save_saveAll,
+                this.mDominoes_save_autoSave);
 
-        this.separator = new SeparatorMenuItem();
+        this.mDominoes_separator = new SeparatorMenuItem();
 
-        this.MDominoes.getItems().addAll(this.MDominoes_new, this.MDominoes_load,
-                this.MDominoes_save, this.separator, MDominoes_exitAndSave,
-                this.MDominoes_exit);
+        this.mDominoes.getItems().addAll(this.mDominoes_new, this.mDominoes_loadAll,
+                this.mDominoes_save, this.mDominoes_separator, mDominoes_exitAndSave,
+                this.mDominoes_exit);
 
 //------EDIT MENU ITENS---------------------------------------------------------
-        this.MEdit = new Menu("Edit");
+        this.mEdit = new Menu("Edit");
 
         //this.MEdit_fillColor = new Menu("Color Fill");
         //this.MEdit_fillColor_slider = new Slider(0, 1, Dominoes.COLOR_FILL.getBrightness());
@@ -96,78 +98,74 @@ public class DominoesMenuBar extends MenuBar {
         //this.MEdit_fillColor_custom.setHideOnClick(false);
         //this.MEdit_fillColor.getItems().addAll(this.MEdit_fillColor_custom);
 
-        this.MEdit_showHistoric = new CheckMenuItem("Show Historic");
-        this.MEdit_showHistoric.setSelected(Configuration.visibilityHistoric);
+        this.mEdit_showHistoric = new CheckMenuItem("Show Historic");
+        this.mEdit_showHistoric.setSelected(Configuration.visibilityHistoric);
 
-        MEdit_showType = new CheckMenuItem("Show Type");
-        MEdit_showType.setSelected(Configuration.visibilityType);
+        mEdit_showType = new CheckMenuItem("Show Type");
+        mEdit_showType.setSelected(Configuration.visibilityType);
         
         //this.MEdit.getItems().addAll(this.MEdit_fillColor, this.MEdit_showHistoric);
-        this.MEdit.getItems().addAll(this.MEdit_showHistoric, this.MEdit_showType);
+        this.mEdit.getItems().addAll(this.mEdit_showHistoric, this.mEdit_showType);
 
 //------CONFIGURATION MENU ITENS------------------------------------------------
-        this.MConfiguration = new Menu("Configuration");
+        this.mConfiguration = new Menu("Configuration");
 
-        this.MConfiguration_fullScreen = new CheckMenuItem("Full Screen");
-        this.MConfiguration_fullScreen.setSelected(Configuration.fullscreen);
-        this.MConfiguration_database = new Menu("Access Mode");
-        this.MConfiguration_database_accessGroup = new ToggleGroup();
-        this.MConfiguration_database_accessTXT = new RadioMenuItem("TXT Access");
-        this.MConfiguration_database_accessSQL = new RadioMenuItem("SQL Access");
-        this.MConfiguration_database_accessTXT.setToggleGroup(MConfiguration_database_accessGroup);
-        this.MConfiguration_database_accessSQL.setToggleGroup(MConfiguration_database_accessGroup);
-        this.MConfiguration_database_accessTXT.setSelected(true);
+        this.mConfiguration_fullScreen = new CheckMenuItem("Full Screen");
+        this.mConfiguration_fullScreen.setSelected(Configuration.fullscreen);
+        this.mConfiguration_database = new Menu("Access Mode");
+        this.mConfiguration_database_accessGroup = new ToggleGroup();
+        this.mConfiguration_database_accessTXT = new RadioMenuItem("TXT Access");
+        this.mConfiguration_database_accessSQL = new RadioMenuItem("SQL Access");
+        this.mConfiguration_database_accessTXT.setToggleGroup(mConfiguration_database_accessGroup);
+        this.mConfiguration_database_accessSQL.setToggleGroup(mConfiguration_database_accessGroup);
+        this.mConfiguration_database_accessTXT.setSelected(true);
         
-        this.MConfiguration_database.getItems().addAll(this.MConfiguration_database_accessTXT, this.MConfiguration_database_accessSQL);
+        this.mConfiguration_separator = new SeparatorMenuItem();
         
-        this.MConfiguration.getItems().addAll(this.MConfiguration_database, this.separator, this.MConfiguration_fullScreen);
+        this.mConfiguration_database.getItems().addAll(this.mConfiguration_database_accessTXT, this.mConfiguration_database_accessSQL);
+        
+        this.mConfiguration.getItems().addAll(this.mConfiguration_database, this.mConfiguration_separator, this.mConfiguration_fullScreen);
 
-//------TIME PANE MENU ITENS----------------------------------------------------
-        MTimePane = new CheckMenuItem("View Time");
-        MTimePane.setSelected(Configuration.visibilityTimePane);
-        Menu time = new Menu("Time");
-        time.getItems().addAll(MTimePane);
+//------TIME MENU ITENS----------------------------------------------------
+        this.mTimeline_ShowTimeline = new CheckMenuItem("View Time");
+        this.mTimeline_ShowTimeline.setSelected(Configuration.visibilityTimePane);
+        this.mTimeline = new Menu("Time");
+        this.mTimeline.getItems().addAll(mTimeline_ShowTimeline);
         
 //------MENU ITENS--------------------------------------------------------------
-        this.getMenus().addAll(this.MDominoes, this.MEdit, this.MConfiguration, time);
+        this.getMenus().addAll(this.mDominoes, this.mEdit, this.mConfiguration, mTimeline);
+//        this.getMenus().addAll(this.mDominoes, this.mEdit, this.mConfiguration);
 
+        
+        if(!Configuration.automaticCheck || Configuration.endDate.compareTo(Configuration.beginDate) <= 0){
+        	this.changeEnableDisble();
+        }
 //------ADD LISTENERS-----------------------------------------------------------
 //----------DOMINOES MENU ITENS-------------------------------------------------
-        this.MDominoes_new.setOnAction(new EventHandler<ActionEvent>() {
+        this.mDominoes_new.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
 
                 App.clear();
-
-                /*this.*/MDominoes_new.setDisable(true);
-                /*this.*/MDominoes_load.setDisable(false);
-                /*this.*/MDominoes_save.setDisable(true);
-                /*this.*/MDominoes_exit.setDisable(true);
-                /*this.*/MDominoes_exitAndSave.setDisable(true);
-                /*this.*/MEdit.setDisable(true);
-                /*this.*/MConfiguration.setDisable(true);
+                changeEnableDisble();
 
             }
         });
-        this.MDominoes_load.setOnAction(new EventHandler<ActionEvent>() {
+        this.mDominoes_loadAll.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-
-                /*this.*/MDominoes_new.setDisable(false);
-                /*this.*/MDominoes_load.setDisable(true);
-                /*this.*/MDominoes_save.setDisable(false);
-                /*this.*/MDominoes_exit.setDisable(false);
-                /*this.*/MDominoes_exitAndSave.setDisable(false);
-                /*this.*/MEdit.setDisable(false);
-                /*this.*/MConfiguration.setDisable(false);
-
-                App.set();
+            	try{
+            		load(Configuration.beginDate, Configuration.endDate);
+            	} catch (ParseException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
             }
         });
 
-        this.MDominoes_save_saveAll.setOnAction(new EventHandler<ActionEvent>() {
+        this.mDominoes_save_saveAll.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
@@ -179,16 +177,16 @@ public class DominoesMenuBar extends MenuBar {
             }
         });
 
-        this.MDominoes_save_autoSave.setOnAction(new EventHandler<ActionEvent>() {
+        this.mDominoes_save_autoSave.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-                Configuration.autoSave = /*this.*/MDominoes_save_autoSave.isSelected();
+                Configuration.autoSave = /*this.*/mDominoes_save_autoSave.isSelected();
                 
             }
         });
 
-        this.MDominoes_exitAndSave.setOnAction(new EventHandler<ActionEvent>() {
+        this.mDominoes_exitAndSave.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
@@ -201,7 +199,7 @@ public class DominoesMenuBar extends MenuBar {
             }
         });
 
-        this.MDominoes_exit.setOnAction(new EventHandler<ActionEvent>() {
+        this.mDominoes_exit.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
@@ -227,41 +225,86 @@ public class DominoesMenuBar extends MenuBar {
 //            }
 //        });
 
-        this.MEdit_showHistoric.setOnAction(new EventHandler<ActionEvent>() {
+        this.mEdit_showHistoric.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-                Configuration.visibilityHistoric = MEdit_showHistoric.isSelected();
+                Configuration.visibilityHistoric = mEdit_showHistoric.isSelected();
                 App.setVisibleHistoric();
             }
         });
         
-        this.MEdit_showType.setOnAction(new EventHandler<ActionEvent>() {
+        this.mEdit_showType.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-                Configuration.visibilityType = MEdit_showType.isSelected();
+                Configuration.visibilityType = mEdit_showType.isSelected();
                 App.setVisibleType();
             }
         });
 
 //----------CONFIGURATION MENU ITENS------------------------------------------------
-        this.MConfiguration_fullScreen.setOnAction(new EventHandler<ActionEvent>() {
+        this.mConfiguration_fullScreen.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-                Configuration.fullscreen = MConfiguration_fullScreen.isSelected();
-                App.setFullscreen(Configuration.fullscreen);
+                App.setFullscreen(mConfiguration_fullScreen.isSelected());
             }
         });
 //----------TIME PANE MENU ITENS----------------------------------------------------
-        MTimePane.setOnAction(new EventHandler<ActionEvent>() {
+        mTimeline_ShowTimeline.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-                App.setVisibleTimePane();
+            	
+                App.changeVisibleTimePane();
                 
             }
         });
     }
+	public void changeEnableDisble() {
+		
+		this.mDominoes_new.setDisable(!this.mDominoes_new.isDisable());
+        this.mDominoes_loadAll.setDisable(!this.mDominoes_loadAll.isDisable());
+        this.mDominoes_save.setDisable(!this.mDominoes_save.isDisable());
+        this.mDominoes_exit.setDisable(!this.mDominoes_exit.isDisable());
+        this.mDominoes_exitAndSave.setDisable(!this.mDominoes_exitAndSave.isDisable());
+        
+        this.mEdit.setDisable(!this.mEdit.isDisable());
+        
+//        this.mConfiguration.setDisable(!this.mConfiguration.isDisable());
+        
+//        this.mTimeline.setDisable(false);
+		
+	}
+	
+	public void load(String begin, String end) throws ParseException{
+		
+		try{
+			SimpleDateFormat sdfReduce = new SimpleDateFormat("MM/yyyy");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			
+			sdfReduce.parse(begin);
+			sdfReduce.parse(end);
+			System.out.println(begin);
+			System.out.println(end);
+			begin = control.Controller.changeFormat(sdfReduce, sdf, begin);
+			end = control.Controller.changeFormat(sdfReduce, sdf, end);
+			System.out.println(begin);
+			System.out.println(end);
+			sdf.parse(begin);
+			sdf.parse(end);
+		}catch(ParseException e){
+			System.err.println("format not found");
+			throw e;
+		}
+		
+		changeEnableDisble();
+    	Configuration.automaticCheck = true;
+    	App.checkout(begin, end);
+        App.set();
+		
+	}
+	
+	
 }

@@ -6,6 +6,7 @@
 
 package boundary;
 
+import domain.Configuration;
 import arch.Session;
 
 /**
@@ -22,6 +23,8 @@ public class Main {
         	Session.startSession();
             // read the configuration file
             control.Controller.loadConfiguration();
+            System.out.println("\n beginDate: "+ Configuration.beginDate);
+            System.out.println("endDate: "+ Configuration.endDate);
             // call Application.launch()
             App.start();
             Session.closeSection();

@@ -5,15 +5,13 @@
  */
 package boundary;
 
+import java.util.ArrayList;
+
 import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Control;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -23,55 +21,107 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Daniel
  */
+@SuppressWarnings("restriction")
 public class IntervalSlider extends Control {
 
     private Group slider;
     
+    private Rectangle back;
     private Rectangle line;
     private Rectangle selectedArea;
     private Polygon pointMin;
     private Polygon pointMax;
 
-    private double min;
-    private double max;
-    private double valueMin;
-    private double valueMax;
+    private Double sizePointer = new Double(8);
+    private Double[] centerShape = new Double[]{
+    		0.4 * sizePointer, 0.5 * sizePointer
+    };
+    
+    private Double[] pointerShape = new Double[]{
+    		0.2 * sizePointer, -0.3 * sizePointer,
+    		0.0 * sizePointer, -0.5 * sizePointer,
+    		-0.2 * sizePointer, -0.3 * sizePointer,
+        
+    		-0.4 * sizePointer, 0.2 * sizePointer,
+    		-0.4 * sizePointer, 0.5 * sizePointer,
+    		-0.2 * sizePointer, 0.6 * sizePointer,
+    		
+    		0.2 * sizePointer, 0.6 * sizePointer,
+    		0.4 * sizePointer, 0.5 * sizePointer,
+    		0.4 * sizePointer, 0.2 * sizePointer
+    		
+//    		center = x = 0.4 , y = 0.5
+    };
+    
+    private double min = 0;
+    private double max = 1;
+    private double valueMin = 0;
+    private double valueMax = 1;
     
     private double srcSceneX;
     private double srcTranslateX;
     
+    private boolean enableLinkPoint = false;
+    private double sizeLinkPoint = max - min;
+    private Double[] linkPoint;
+    
+    private String valueTooltipMin;
+    private String valueTooltipMax;
+    
+    private ArrayList<String> tooltip;
+    
     public IntervalSlider() throws IllegalArgumentException{
-    	this(0, 1, 0, 1, 200);
+    	this(0, 1, 0, 1);
+    }
+    
+    public IntervalSlider(double min, double max, double valueMin, double valueMax) throws IllegalArgumentException{
+    	this(min, max, valueMin, valueMax, 100);
     }
     
     public IntervalSlider(double min, double max, double valueMin, double valueMax, double width) throws IllegalArgumentException{
-    	this(min, max, valueMin, valueMax, width, 4);
+    	this(min, max, valueMin, valueMax, width, null);
     }
     
-    public IntervalSlider(double min, double max, double valueMin, double valueMax, double width, double height) throws IllegalArgumentException{
+//    public IntervalSlider(double min, double max, double valueMin, double valueMax, double width, ArrayList<String> tooltip, Double[] linkPoint) throws IllegalArgumentException{
+    	public IntervalSlider(double min, double max, double valueMin, double valueMax, double width, ArrayList<String> tooltip) throws IllegalArgumentException{
+    	
         this.min = min;
         this.max = max;
         this.valueMin = valueMin;
         this.valueMax = valueMax;
         
-        this.setHeight(height);
         this.setWidth(width);
         this.setMin(min);
         this.setMax(max);
         this.setValueMin(valueMin);
         this.setValueMax(valueMax);
-
+//        this.setLinkPoint(linkPoint);
+        this.setTooltip(tooltip);
+        
         this.initialize();
+        
     }
 
-    public double getMin() {
+    private void setLinkPoint(Double[] linkPoint) throws IllegalArgumentException {
+    	if(linkPoint == null
+    			|| linkPoint.length < 2
+    			|| linkPoint[0] != min
+    			|| linkPoint[linkPoint.length - 1] != max){
+    		throw new IllegalArgumentException("Invalid argument.\n"
+            		+ this.getClass().toString() + ".linkPoint attribute not is valid");
+    	}
+		this.linkPoint = linkPoint;
+		
+	}
+
+	public double getMin() {
         return min;
     }
 
-    private void setMin(double min) throws IllegalArgumentException{
+    private void setMin(double min) throws IllegalArgumentException {
         if(min > max){
-            throw new IllegalArgumentException("Invalid argument."
-            		+ "\nThe IntervalSlider.Min attribute not is valid");
+        	throw new IllegalArgumentException("Invalid argument.\n"
+            		+ this.getClass().toString() + ".min attribute not is valid");
         }
         this.min = min;
     }
@@ -80,10 +130,10 @@ public class IntervalSlider extends Control {
         return max;
     }
 
-    private void setMax(double max) throws IllegalArgumentException{
+    private void setMax(double max) throws IllegalArgumentException {
         if(max < min){
-            throw new IllegalArgumentException("Invalid argument."
-            		+ "\nThe IntervalSlider.Max attribute not is valid");
+            throw new IllegalArgumentException("Invalid argument.\n"
+            		+ this.getClass().toString() + ".max attribute not is valid");
         }
         this.max = max;
     }
@@ -99,7 +149,8 @@ public class IntervalSlider extends Control {
         this.valueMin = value;
     }
 
-    public double getValueMax() {
+
+	public double getValueMax() {
         return valueMax;
     }
 
@@ -111,35 +162,17 @@ public class IntervalSlider extends Control {
     }
 
     private void initialize() {
-//        Color stroke = new Color(0,116.0/255.0, 154.0/255.0, 1);
     	Color stroke = new Color(0.3,0.3, 0.3, 1);
-        Color selectedBackground = new Color(0,150.0/255.0, 201.0/255.0, 1);
         Color selectedPointer = new Color(88.0/255.0,188.0/255.0, 222.0/255.0, 1);
         Color selectedAreaColor = new Color(0,150.0/255.0, 201.0/255.0, 0.5);
         
-//        Double size = new Double(this.getHeight() + 4);
-        Double size = new Double(8);
+        double borderLine = 10;
         
-        Double[] pointerShape = new Double[]{
-        		0.2 * size, -0.3 * size,
-        		0.0 * size, -0.5 * size,
-        		-0.2 * size, -0.3 * size,
-            
-        		-0.4 * size, 0.2 * size,
-        		-0.4 * size, 0.5 * size,
-        		-0.2 * size, 0.6 * size,
-        		
-        		0.2 * size, 0.6 * size,
-        		0.4 * size, 0.5 * size,
-        		0.4 * size, 0.2 * size
-        		
-//        		center = x = 0.4 , y = 0.5
-        };
+        this.setHeight(sizePointer);
         
         this.setMinHeight(this.getHeight());
-        this.setMinWidth(this.getWidth());
         
-        this.line = new Rectangle(this.getWidth(), this.getHeight());
+        this.line = new Rectangle(this.getWidth(), this.getHeight()/2);
         this.line.setArcHeight(5);
         this.line.setArcWidth(5);
         this.line.setFill(Color.WHITE);
@@ -151,30 +184,67 @@ public class IntervalSlider extends Control {
         this.pointMin.getPoints().addAll(pointerShape);
         this.pointMin.setFill(Color.WHITESMOKE);
         this.pointMin.setStroke(stroke);
-        this.pointMin.setTranslateX((this.getValueMin())/(max - min) * (this.line.getWidth()) + this.line.getTranslateX() - size/2);
+        this.pointMin.setTranslateX((this.getValueMin())/(this.max - this.min) * (this.line.getWidth()) + this.line.getTranslateX() - sizePointer/2);
         this.pointMin.setTranslateY(this.line.getHeight()/2);
-        Tooltip.install(this.pointMin, new Tooltip(String.valueOf(this.valueMin)));
-
+        if(this.tooltip != null){
+        	int indexMin = (int) (this.valueMin - min);
+        	valueTooltipMin = this.tooltip.get(indexMin);
+        	
+        }else{
+        	valueTooltipMin = String.valueOf(valueMin);
+        }
+        Tooltip.install(this.pointMin, new Tooltip(valueTooltipMin));
+        
         this.pointMax = new Polygon();
         this.pointMax.getPoints().addAll(pointerShape);
         this.pointMax.setFill(Color.WHITESMOKE);
         this.pointMax.setStroke(stroke);
-        this.pointMax.setTranslateX((this.getValueMax())/(max - min) * (this.line.getWidth()) + this.line.getTranslateX() - size/2);
+        this.pointMax.setTranslateX((this.getValueMax())/(this.max - this.min) * (this.line.getWidth()) + this.line.getTranslateX() - sizePointer/2);
         this.pointMax.setTranslateY(this.line.getHeight()/2);
-        Tooltip.install(this.pointMax, new Tooltip(String.valueOf(this.valueMax)));
-
+        if(this.tooltip != null){
+        	int indexMax = (int) (this.valueMax - min);
+        	valueTooltipMax = this.tooltip.get(indexMax);
+        }else{
+        	valueTooltipMax = String.valueOf(valueMax);
+        }
+        Tooltip.install(this.pointMin, new Tooltip(valueTooltipMax));
+        
+        if(this.pointMin.getTranslateX() < this.line.getTranslateX())
+        	this.pointMin.setTranslateX(this.line.getTranslateX());
+        if(this.pointMax.getTranslateX() > this.line.getTranslateX() + this.line.getWidth())
+        	this.pointMax.setTranslateX(this.line.getTranslateX() + this.line.getWidth());        
+        
+        if(this.pointMin.getTranslateX() >= this.line.getTranslateX() + this.line.getWidth()){
+	        if(this.pointMin.getTranslateX() > this.pointMax.getTranslateX())
+	        	this.pointMin.setTranslateX(this.pointMax.getTranslateX());
+	        if(this.pointMax.getTranslateX() < this.pointMin.getTranslateX())
+	        	this.pointMax.setTranslateX(this.pointMin.getTranslateX());
+        }else if(this.pointMax.getTranslateX() <= this.line.getTranslateX()){
+        	if(this.pointMax.getTranslateX() < this.pointMin.getTranslateX())
+	        	this.pointMax.setTranslateX(this.pointMin.getTranslateX());
+        	if(this.pointMin.getTranslateX() > this.pointMax.getTranslateX())
+	        	this.pointMin.setTranslateX(this.pointMax.getTranslateX());
+	        
+        }
+        
         this.selectedArea = new Rectangle(this.pointMax.getTranslateX() - this.pointMin.getTranslateX(), this.line.getHeight());
         this.selectedArea.setFill(selectedAreaColor);
         this.selectedArea.setTranslateX(this.pointMin.getTranslateX());
         this.selectedArea.setTranslateY(this.line.getTranslateY());
         
+        this.back = new Rectangle(this.getWidth() + 4 * centerShape[0], 10);
+        this.back.setTranslateX(-2 * centerShape[0]);
+        this.back.setFill(new Color(0,0,0,0));
+//        this.back.setFill(Color.WHITE);
+        
         this.slider = new Group();
         this.slider.getChildren().addAll(
+        		this.back,
                 this.line,
                 this.selectedArea,
                 this.pointMin,
                 this.pointMax);
-        this.slider.setTranslateX(0);
+        this.slider.setTranslateX(this.back.getTranslateX());
         this.slider.setTranslateY(0);
         
         this.pointMin.setOnMouseEntered(new EventHandler<MouseEvent>() {
@@ -217,13 +287,26 @@ public class IntervalSlider extends Control {
 
             @Override
             public void handle(MouseEvent event) {
-            	Tooltip.uninstall(pointMin, new Tooltip(String.valueOf(valueMin)));
+            	if(tooltip != null){
+                	int indexMin = (int) (valueMin - min);
+                	valueTooltipMin = tooltip.get(indexMin);
+                }else{
+                	valueTooltipMin = String.valueOf(valueMin);
+                }
+            	Tooltip.uninstall(pointMin, new Tooltip(valueTooltipMin));
             	
                 double offsetX = event.getSceneX() - srcSceneX;
                 double newTranslateX = srcTranslateX + offsetX;
-
-                pointMin.setTranslateX(newTranslateX);
-                valueMin = min + ((max - min) * (pointMin.getTranslateX() - line.getTranslateX())/(line.getWidth()));
+                
+                valueMin = min + ((max - min) * (newTranslateX - line.getTranslateX())/(line.getWidth()));
+                
+                if(enableLinkPoint){
+                	valueMin = (int)Math.round(valueMin);
+                	pointMin.setTranslateX(line.getTranslateX() + (line.getWidth() * ((valueMin - min) / (max - min))));
+                }else{
+                	pointMin.setTranslateX(newTranslateX);
+                }
+                
                 if(newTranslateX < line.getTranslateX() || valueMin < min){
                     pointMin.setTranslateX(line.getTranslateX());
                     valueMin = min;
@@ -231,10 +314,17 @@ public class IntervalSlider extends Control {
                     pointMin.setTranslateX(pointMax.getTranslateX());
                     valueMin = valueMax;
                 }
+                
                 selectedArea.setTranslateX(pointMin.getTranslateX());
                 selectedArea.setWidth(pointMax.getTranslateX() - pointMin.getTranslateX());
-                
-                Tooltip.install(pointMin, new Tooltip(String.valueOf(valueMin)));
+
+                if(tooltip != null){
+                	int indexMin = (int) (valueMin - min);
+                	valueTooltipMin = tooltip.get(indexMin);
+                }else{
+                	valueTooltipMin = String.valueOf(valueMin);
+                }
+                Tooltip.install(pointMin, new Tooltip(valueTooltipMin));
             }
         });
         
@@ -269,22 +359,35 @@ public class IntervalSlider extends Control {
 
             @Override
             public void handle(MouseEvent event) {
-                pointMin.setStroke(stroke);
-                pointMin.setStrokeWidth(1);
+                pointMax.setStroke(stroke);
+                pointMax.setStrokeWidth(1);
             }
         });
         this.pointMax.setOnMouseDragged(new EventHandler<MouseEvent>() {
 
             @Override
             public void handle(MouseEvent event) {
-            	Tooltip.uninstall(pointMax, new Tooltip(String.valueOf(valueMax)));
+            	if(tooltip != null){
+                	int indexMax = (int) (valueMax - min);
+                	valueTooltipMax = tooltip.get(indexMax);
+                	
+                }else{
+                	valueTooltipMax = String.valueOf(valueMax);
+                }
+            	Tooltip.uninstall(pointMax, new Tooltip(valueTooltipMax));
             	
                 double offsetX = event.getSceneX() - srcSceneX;
                 double newTranslateX = srcTranslateX + offsetX;
 
-                pointMax.setTranslateX(newTranslateX);
                 
-                valueMax = min + ((max - min) * (pointMax.getTranslateX() - line.getTranslateX())/(line.getWidth()));
+                
+                valueMax = min + ((max - min) * (newTranslateX - line.getTranslateX())/(line.getWidth()));
+                if(enableLinkPoint){
+                	valueMax = (int)Math.round(valueMax);
+                	pointMax.setTranslateX(line.getTranslateX() + (line.getWidth() * ((valueMax - min) / (max - min))));
+                }else{
+                	pointMax.setTranslateX(newTranslateX);
+                }
                 if(newTranslateX > line.getTranslateX() + line.getWidth() || valueMax > max ){
                     pointMax.setTranslateX(line.getTranslateX() + line.getWidth());
                     valueMax = max ;
@@ -294,13 +397,40 @@ public class IntervalSlider extends Control {
                 }
                 selectedArea.setWidth(pointMax.getTranslateX() - pointMin.getTranslateX());
                 
-                Tooltip.install(pointMax, new Tooltip(String.valueOf(valueMax)));
+                if(tooltip != null){
+                	int indexMax = (int) (valueMax - min);
+                	valueTooltipMax = tooltip.get(indexMax);
+                }else{
+                	valueTooltipMax = String.valueOf(valueMax);
+                }
+                Tooltip.install(pointMax, new Tooltip(valueTooltipMax));
+                
             }
         });
         
-//        this.getChildren().addAll(new StackPane(this.slider));
         this.getChildren().addAll(new FlowPane(this.slider));
     }
 
+    public void setTooltip(ArrayList<String> tooltip)throws IllegalArgumentException{
+    	if(this.tooltip != null
+    			&& tooltip != null
+    			&& tooltip.size() != (max - min)){
+    		throw new IllegalArgumentException("Invalid argument."
+            		+ "\nThe IntervalSlider.Tooltip attribute is null"); 
+    	}
+    	
+    	this.tooltip = tooltip;
+    }
     
+    public void setLinkPointers(boolean val){
+    	this.enableLinkPoint = val;
+    }
+
+    public String getValueToolTipMin(){
+    	return valueTooltipMin;
+    }
+    
+    public String getValueToolTipMax(){
+    	return valueTooltipMax;
+    }
 }

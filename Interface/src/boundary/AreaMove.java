@@ -1,21 +1,19 @@
 package boundary;
 
-import domain.Configuration;
-import domain.Dominoes;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import javafx.animation.FillTransition;
+import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -24,7 +22,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import domain.Configuration;
+import domain.Dominoes;
 
+@SuppressWarnings("restriction")
 public class AreaMove extends Pane {
 
     private ArrayList<Dominoes> dominoes;
@@ -347,6 +348,7 @@ public class AreaMove extends Pane {
      * This function remove all parts in this area move
      */
     public void clear() {
+    	if(this.pieces == null || this.dominoes == null) return;
         for (int i = 0; i < this.pieces.size(); i++) {
             this.pieces.get(i).setVisible(false);
         }
@@ -798,8 +800,6 @@ public class AreaMove extends Pane {
      * @param piece The piece to animate
      */
     private void reduceLines(Group piece) throws IOException {
-
-        Color colorHistoric;
         
         Dominoes domino = control.Controller.reduceDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
         
@@ -810,7 +810,7 @@ public class AreaMove extends Pane {
         //((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
         //((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
         
-        colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
+//        Color colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
         
        
         if (Configuration.autoSave) {

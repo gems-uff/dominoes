@@ -1,14 +1,17 @@
 package control;
 
-import util.ConfigurationFile;
-import dao.DominoesDao;
-import dao.DaoFactory;
-import domain.Configuration;
-import domain.Dominoes;
-
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import util.ConfigurationFile;
+import dao.DaoFactory;
+import dao.DominoesDao;
+import domain.Configuration;
+import domain.Dominoes;
 
 public class Controller {
 
@@ -44,6 +47,7 @@ public class Controller {
      * @throws Exception 
      */
     public static void loadConfiguration() throws IOException, Exception{
+//    	new Configuration();
         new ConfigurationFile().loadConfigurationFile();
     }
 
@@ -142,4 +146,13 @@ public class Controller {
     	double result = Math.abs(index - size);
     	return result;
    }
+
+	public static String changeFormat(SimpleDateFormat source,
+			SimpleDateFormat target, String format) throws ParseException {		
+		System.out.println(format);
+		Date date = source.parse(format);
+		String result = target.format(date);
+		System.out.println(result);
+		return result;
+	}
 }

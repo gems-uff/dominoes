@@ -20,6 +20,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Shape;
 
+@SuppressWarnings("restriction")
 public class ListViewDominoes extends ListView<Group> {
 
     private ObservableList<Group> pieces;
@@ -28,15 +29,6 @@ public class ListViewDominoes extends ListView<Group> {
     private double padding = 20;
 
     private boolean visibilityHistoric;
-
-    /**
-     * This class builder access the database to initialize this list and your
-     * arrays.
-     *
-     */
-    public ListViewDominoes() {
-        this(control.Controller.loadAllMatrices());
-    }
 
     /**
      * This class builder initialize this list and your arrays with values
@@ -50,12 +42,14 @@ public class ListViewDominoes extends ListView<Group> {
         this.pieces = FXCollections.observableList(new ArrayList<Group>());
         this.dominoes = new ArrayList<>();
 
+        
         if (array != null) {
             for (Dominoes dom : array) {
                 this.add(dom);
             }
 
         }
+        
 
         this.setItems(this.pieces);
     }
