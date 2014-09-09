@@ -164,7 +164,7 @@ public class MatrixPane extends Pane {
         	Rectangle back = new Rectangle(cellSpace, cellSpace);
             back.setFill(new Color(1, 1, 1, 1));
             Rectangle front = new Rectangle(cellSpace, cellSpace);
-            front.setFill(new Color(0, 0, 1, (_matCell.value - min) / (max - min)));
+            front.setFill( new Color(0.0f, 0.0f, 1.0f, (_matCell.value - min) / (max - min) ));           
             front.toFront();
             
             Group cell = new Group(back, front);

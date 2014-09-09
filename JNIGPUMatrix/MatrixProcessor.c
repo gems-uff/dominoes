@@ -620,9 +620,6 @@ JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMi
 	for (int i = 0; i < _matrix->outerSize(); i++){
 		for (SpMatf::InnerIterator it((*_matrix), i); it; ++it){
 
-			if (i == 0)
-				min = it.value();
-
 			if (it.value() < min)
 				min = it.value();
 		}
@@ -640,9 +637,6 @@ JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMa
 
 	for (int i = 0; i < _matrix->outerSize(); i++){
 		for (SpMatf::InnerIterator it((*_matrix), i); it; ++it){
-
-			if (i == 0)
-				max = it.value();
 
 			if (it.value() > max)
 				max = it.value();

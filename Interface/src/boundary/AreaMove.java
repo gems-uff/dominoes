@@ -83,7 +83,8 @@ public class AreaMove extends Pane {
         ContextMenu minimenu = new ContextMenu();
         
         MenuItem menuItemTranspose = new MenuItem("Transpose");
-        MenuItem menuItemReduceLines = new MenuItem("Reduce Lines");
+        MenuItem menuItemAgreggateRow = new MenuItem("Aggregate Row");
+        MenuItem menuItemAgreggateCol = new MenuItem("Aggregate Col");
         MenuItem menuItemLift = new MenuItem("Lift");
         MenuItem menuItemZScore = new MenuItem("Z-Score");
         MenuItem menuItemSaveInList = new MenuItem("Save");
@@ -299,10 +300,16 @@ public class AreaMove extends Pane {
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemReduceLines.getText())) {
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAgreggateRow.getText())) {
                     try {
-                        System.out.println("Reducing Lines");
                         reduceLines(group);
+                    } catch (IOException ex) {
+                        System.err.println(ex.getMessage());
+                    }
+
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAgreggateCol.getText())) {
+                    try {
+                        reduceColumns(group);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
@@ -325,7 +332,8 @@ public class AreaMove extends Pane {
             }
         });
         
-        menuOperate.getItems().addAll(menuItemTranspose, menuItemReduceLines, menuItemLift, menuItemZScore);
+        menuOperate.getItems().addAll(menuItemTranspose, menuItemAgreggateRow,
+        		menuItemAgreggateCol, menuItemLift, menuItemZScore);
         menuView.getItems().addAll(menuItemViewChart, menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
     }
@@ -793,7 +801,7 @@ public class AreaMove extends Pane {
     }
     
     /**
-     * This function only maked a simple animation to tranpose a matrix
+     * This function is responsible for summing up all lines in a column
      *
      * @param piece The piece to animate
      */
@@ -802,6 +810,35 @@ public class AreaMove extends Pane {
         Color colorHistoric;
         
         Dominoes domino = control.Controller.reduceDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
+        
+        Group swap = domino.drawDominoes();
+        
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText("SUM");
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
+        //((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
+        //((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
+        
+        colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
+        
+       
+        if (Configuration.autoSave) {
+            this.saveAndSendToList(piece);
+        }
+
+    }
+    
+    /**
+     * This function is responsible for summing up all columns in a line
+     *
+     * @param piece The piece to animate
+     */
+    private void reduceColumns(Group piece) throws IOException {
+
+        Color colorHistoric;
+        
+        Dominoes toReduce = this.dominoes.get(this.pieces.indexOf(piece));
+        toReduce.transpose();
+        Dominoes domino = control.Controller.reduceDominoes(toReduce);
         
         Group swap = domino.drawDominoes();
         
