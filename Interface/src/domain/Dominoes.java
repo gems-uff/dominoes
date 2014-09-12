@@ -1,16 +1,15 @@
 package domain;
 
-import java.util.ArrayList;
-
-import arch.IMatrix2D;
-import arch.Matrix2D;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import arch.IMatrix2D;
+import arch.Matrix2D;
 
+@SuppressWarnings("restriction")
 public final class Dominoes {
     public final static double GRAPH_WIDTH = 100;
     public final static double GRAPH_HEIGHT = 50;

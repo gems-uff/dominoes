@@ -6,16 +6,20 @@
 package boundary;
 
 import domain.Dominoes;
+import edu.uci.ics.jung.algorithms.filters.EdgePredicateFilter;
+import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.Graph;
 //import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.io.graphml.parser.NodeElementParser;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.PluggableRenderContext;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
@@ -37,6 +41,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JSlider;
+import javax.xml.ws.Action;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingNode;
@@ -45,9 +52,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
@@ -55,17 +65,32 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.Predicate;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ConstantTransformer;
 
 import arch.Cell;
 import arch.MatrixDescriptor;
-
+import domain.Dominoes;
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
+import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.Forest;
+//import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.UndirectedGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
+import edu.uci.ics.jung.graph.event.GraphEvent.Edge;
+import edu.uci.ics.jung.graph.util.Context;
+import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 /**
  *
  * @author Daniel
  */
-public class GraphPane extends Pane {
+@SuppressWarnings("restriction")
+public class GraphPane extends BorderPane {
 
     /**
      * the graph
@@ -73,7 +98,10 @@ public class GraphPane extends Pane {
 	Map<String, NodeInfo> nodes = new HashMap<>();
 	Map<String, NodeLink> edges = new HashMap<>();
 	ArrayList<NodeInfo> nodesHighlighted = new ArrayList<>();
+	DirectionDisplayPredicate edgePredicate;
+	VertexDisplayPredicate vertexPredicate;
     Forest<String, String> graph;
+    
     
     UndirectedGraph<String, String> graphFactory= new UndirectedSparseMultigraph<>();
 
@@ -95,7 +123,7 @@ public class GraphPane extends Pane {
 //        treeLayout = new TreeLayout<String, Integer>(graph);
         treeLayout = new FRLayout<>(graph);
         
-        vv = new VisualizationViewer<String, String>(treeLayout, new Dimension(600, 600));
+        vv = new VisualizationViewer<String, String>(treeLayout, new Dimension(400, 400));
        
         
         vv.getRenderContext().setVertexFillPaintTransformer(new Transformer<String, Paint>(){
@@ -164,50 +192,55 @@ public class GraphPane extends Pane {
         final DefaultModalGraphMouse graphMouse = new DefaultModalGraphMouse();
         vv.setGraphMouse(graphMouse);
         vv.addKeyListener(graphMouse.getModeKeyListener());;
-
-
+        graphMouse.setZoomAtMouse(false);
+        
+        vv.getRenderContext().setEdgeIncludePredicate(edgePredicate);
+        
+        vertexPredicate = new VertexDisplayPredicate();
+        vv.getRenderContext().setVertexIncludePredicate(vertexPredicate);
 
         SwingNode s = new SwingNode();
-        s.setContent(vv);
+        s.setContent(panel);
+        
 
-        BorderPane borderPane = new BorderPane();
-        borderPane.setTop(addTransformingModeOptions());
-        borderPane.setBottom(addThresholdSlider());
-        borderPane.setCenter(s);
-        this.getChildren().add(borderPane);  
+        this.setTop(addTransformingModeOptions());
+        this.setBottom(addThresholdSlider(domino.getMat().findMinValue(), 
+        		domino.getMat().findMaxValue()));
+        this.setCenter(s);
+        //this.getChildren().add(borderPane);  
     }
 
-    private Node addThresholdSlider() {
-    	HBox hBox = new HBox();
-    	
-    	hBox.setStyle("-fx-background-color: #66FFFF;");
-    	
-    	return hBox;
-    }
-
-	private HBox addTransformingModeOptions() {
+    private Node addThresholdSlider(float min, float max) {
     	HBox hBox = new HBox();
     	
     	hBox.setPadding(new Insets(15, 12, 15, 12));
-    	hBox.setSpacing(10);
     	hBox.setStyle("-fx-background-color: #66FFFF;");
     	
-    	final ToggleGroup optionGroup = new ToggleGroup();
+    	Label lblThreshold = new Label("Threshold: ");
+    	lblThreshold.setPrefSize(100, 20);
     	
-    	Label lblMouseMode = new Label("Mouse Mode: ");
-    	lblMouseMode.setPrefSize(100,  20);
+    	Label lblValue = new Label("Value: ");
+    	lblValue.setPrefSize(100, 20);
     	
-    	RadioButton rbTransform = new RadioButton("Translate");
-    	rbTransform.setPrefSize(100, 20);
-    	rbTransform.setToggleGroup(optionGroup);
-    	rbTransform.setUserData("T");
-    	rbTransform.setSelected(true);
+    	Slider thresholdSlider = new Slider();
+    	thresholdSlider.setMin(min);
+    	thresholdSlider.setMax(max);
     	
-    	RadioButton rbPick = new RadioButton("Picking");
-    	rbPick.setPrefSize(100, 20);
-    	rbPick.setUserData("P");
-    	rbPick.setToggleGroup(optionGroup);
-    	
+    	thresholdSlider.valueProperty().addListener(new ChangeListener<Number>() {
+    		
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				
+				edgePredicate.setThreshold(newValue.floatValue());
+				vv.repaint();
+				
+				lblValue.setText("Value: " +
+						String.format("%.2f", newValue.floatValue()));
+				
+			}
+		});
     	
     	Label lblSearch = new Label("Search: ");
     	lblSearch.setPrefSize(70, 20);
@@ -243,7 +276,34 @@ public class GraphPane extends Pane {
 			}
 		});
     	
-    	hBox.getChildren().addAll(lblMouseMode, rbTransform, rbPick, lblSearch, tf);
+    	hBox.getChildren().addAll(lblThreshold, thresholdSlider, lblValue, lblSearch, tf);
+    	
+    	return hBox;
+    }
+
+	private HBox addTransformingModeOptions() {
+    	HBox hBox = new HBox();
+    	
+    	hBox.setPadding(new Insets(15, 12, 15, 12));
+    	hBox.setSpacing(10);
+    	hBox.setStyle("-fx-background-color: #66FFFF;");
+    	
+    	final ToggleGroup optionGroup = new ToggleGroup();
+    	
+    	Label lblMouseMode = new Label("Mouse Mode: ");
+    	lblMouseMode.setPrefSize(100,  20);
+    	
+    	RadioButton rbTransform = new RadioButton("Translate");
+    	rbTransform.setPrefSize(100, 20);
+    	rbTransform.setToggleGroup(optionGroup);
+    	rbTransform.setUserData("T");
+    	rbTransform.setSelected(true);
+    	
+    	RadioButton rbPick = new RadioButton("Picking");
+    	rbPick.setPrefSize(100, 20);
+    	rbPick.setUserData("P");
+    	rbPick.setToggleGroup(optionGroup);
+    	
     	
     	
     	optionGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
@@ -263,6 +323,10 @@ public class GraphPane extends Pane {
 				
 			}
 		});
+    	
+    	
+    	
+    	hBox.getChildren().addAll(lblMouseMode, rbTransform, rbPick);
     	
     	return hBox;
 
@@ -314,15 +378,18 @@ public class GraphPane extends Pane {
 				nodes.put(n2.toString(), n2);
 				graph.addVertex(n2.toString());
 			}
-			
 			float perc = cell.value / dist;
-			System.out.println(perc);
+			float intensityColor = Math.max(0.1f, perc);
 			
 			NodeLink edge = new NodeLink("E" + n1.toString() + n2.toString(), cell.value);
-			edge.setColor(new Color(1.0f - perc, 1.0f - perc, 1.0f - perc));
+			edge.setColor(new Color(1.0f - intensityColor, 1.0f - intensityColor, 1.0f - intensityColor));
 			edges.put(edge.getId(), edge);
 			graph.addEdge(edge.getId(), n1.toString(), n2.toString());
     	}
+    	
+    	edgePredicate = new DirectionDisplayPredicate(nodes, edges);
+    	
+    	
     }
 
     private boolean isAValidDomino(Dominoes domino) {
@@ -330,4 +397,53 @@ public class GraphPane extends Pane {
                 && (domino.getIdRow().equals(domino.getIdCol())));
     }
 
+    private final static class VertexDisplayPredicate 
+		implements Predicate<Context<Graph<String, String>,String>> {
+
+		@Override
+		public boolean evaluate(Context<Graph<String, String>, String> context) {
+			Graph<String,String> g = context.graph;
+			
+			//System.out.println(context.element + " - " + g.degree(context.element));
+			return  g.inDegree(context.element) > 0 || 
+					g.outDegree(context.element) > 0;
+			
+		}
+    	
+    }
+    
+    private final static class DirectionDisplayPredicate 
+    	implements Predicate<Context<Graph<String, String>,String>> {
+    	
+    	private float threshold = 0;
+    	private Map<String, NodeInfo> nodes;
+    	private Map<String, NodeLink> links;
+    	
+    	public DirectionDisplayPredicate(Map<String,NodeInfo> nodes, 
+    			Map<String,NodeLink> links) {
+			this.nodes = nodes;
+			this.links = links;
+		}
+
+		@Override
+		public boolean evaluate(Context<Graph<String, String>, String> context) {
+			
+			Graph<String, String> g = context.graph;
+			
+			String e = context.element;
+			
+			return links.get(e).getWediht() >= threshold;
+		}
+
+		public float getThreshold() {
+			return threshold;
+		}
+
+		public void setThreshold(float threshold) {
+			this.threshold = threshold;
+		}
+    	
+    }
+       
+    
 }

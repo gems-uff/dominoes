@@ -7,13 +7,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 
-/**
- * A sample showing how to use JUNG's layout classes to position vertices in a
- * graph.
- *
- * @author jeffreyguenther
- * @author timheng
- */
+@SuppressWarnings("restriction")
 public class Visual extends BorderPane {
 
     private double padding = Configuration.width;

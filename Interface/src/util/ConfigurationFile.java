@@ -6,6 +6,7 @@
 package util;
 
 import domain.Configuration;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,71 +34,87 @@ public class ConfigurationFile {
 
         if (!file.exists()) {
             file.createNewFile();
-            writeBasicConfiguration(file);
+            resetConfiguration(file);
             return;
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             int amount = 1;
             String line = br.readLine();
-            String separator = ":";
+            String separator = ":";           
             String nameVariable = null;
             String valueVariable = null;
-            while (amount <= Configuration.amont && line != null) {
-                if (line.split(separator).length == 2) {
-                    nameVariable = line.split(separator)[0].trim().toLowerCase();
-                    valueVariable = line.split(separator)[1].trim().toLowerCase();
-                    if (nameVariable.equals("fullscreen")){
-                            if(valueVariable.equals("false")) {
+            int firstSeparator = 0;
+            while (amount <= Configuration.amount && line != null) {            
+            		firstSeparator = line.indexOf(separator);
+                    nameVariable = line.substring(0, firstSeparator).trim().toLowerCase();
+                    valueVariable = line.substring(firstSeparator + 1).trim().toLowerCase();
+                    if (nameVariable.compareTo("fullscreen") == 0){
+                            if(valueVariable.compareTo("false") == 0) {
                             	Configuration.fullscreen = false;
-                            }else if(valueVariable.equals("true")) {
+                            }else if(valueVariable.compareTo("true") == 0) {
                             	Configuration.fullscreen = true;
                             }
-                    } else if (nameVariable.equals("autosave")){
-                    	if(valueVariable.equals("false")) {
+                    } else if (nameVariable.compareTo("autosave") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
                         	Configuration.autoSave = false;
-                        }else if(valueVariable.equals("true")) {
+                        }else if(valueVariable.compareTo("true") == 0) {
                         	Configuration.autoSave = true;
                         }
-                    } else if (nameVariable.equals("visibilityhistoric")){
-                    	if(valueVariable.equals("false")) {
+                    } else if (nameVariable.compareTo("visibilityhistoric") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
                         	Configuration.visibilityHistoric = false;
-                        }else if(valueVariable.equals("true")) {
+                        }else if(valueVariable.compareTo("true") == 0) {
                         	Configuration.visibilityHistoric = true;
                         }
-                    } else if (nameVariable.equals("visibilitytype")){
-                    	if(valueVariable.equals("false")) {
+                    } else if (nameVariable.compareTo("visibilitytype") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
                         	Configuration.visibilityType = false;
-                        }else if(valueVariable.equals("true")) {
+                        }else if(valueVariable.compareTo("true") == 0) {
                         	Configuration.visibilityType = true;
                         }
-                    } else if (nameVariable.equals("visibilitytimepane")){
-                    	if(valueVariable.equals("false")) {
+                    } else if (nameVariable.compareTo("visibilitytimepane") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
                         	Configuration.visibilityTimePane = false;
-                        }else if(valueVariable.equals("true")) {
+                        }else if(valueVariable.compareTo("true") == 0) {
                         	Configuration.visibilityTimePane = true;
                         }
-                    } else if (nameVariable.equals("resizable")){
-                    	if(valueVariable.equals("false")) {
+                    } else if (nameVariable.compareTo("resizable") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
                         	Configuration.resizable = false;
-                        }else if(valueVariable.equals("true")) {
+                        }else if(valueVariable.compareTo("true") == 0) {
                         	Configuration.resizable = true;
                         }
-                    } else if (nameVariable.equals("width")
+                    } else if (nameVariable.compareTo("automaticcheck") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
+                        	Configuration.automaticCheck = false;
+                        }else if(valueVariable.compareTo("true") == 0) {
+                        	Configuration.automaticCheck = true;
+                        }
+                    } else if (nameVariable.compareTo("resizetimeonfullscreen") == 0){
+                    	if(valueVariable.compareTo("false") == 0) {
+                        	Configuration.resizableTimeOnFullScreen = false;
+                        }else if(valueVariable.compareTo("true") == 0) {
+                        	Configuration.resizableTimeOnFullScreen = true;
+                        }
+                    } else if (nameVariable.compareTo("width") == 0
                             && isDouble(valueVariable)) {
                         Configuration.width = Double.parseDouble(valueVariable);
-                    } else if (nameVariable.equals("height")
+                    } else if (nameVariable.compareTo("height") == 0
                             && isDouble(valueVariable)) {
                         Configuration.height = Double.parseDouble(valueVariable);
-                    } else if (nameVariable.equals("listwidth")
+                    } else if (nameVariable.compareTo("listwidth") == 0
                             && isDouble(valueVariable)) {
                         Configuration.listWidth = Double.parseDouble(valueVariable);
-                    } else if (nameVariable.equals("accessmode")) {
+                    } else if (nameVariable.compareTo("accessmode") == 0) {
                         Configuration.accessMode = valueVariable;
-                    } else if (nameVariable.equals("processingunit")) {
+                    } else if (nameVariable.compareTo("processingunit") == 0) {
                         Configuration.processingUnit = valueVariable;
+                    } else if (nameVariable.compareTo("begindate") == 0) {
+                        Configuration.beginDate = valueVariable;
+                    } else if (nameVariable.compareTo("enddate") == 0) {
+                        Configuration.endDate = valueVariable;
                     }
-                }
                 line = br.readLine();
                 amount++;
             }
@@ -109,16 +126,23 @@ public class ConfigurationFile {
         }
     }
 
-    private void writeBasicConfiguration(File file) throws IOException, Exception {
+    private void resetConfiguration(File file) throws IOException, Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            bw.write("fullscreen:\t\t" + Configuration.fullscreen + "\n");
-            bw.write("autosave:\t\t\t" + Configuration.autoSave + "\n");
-            bw.write("visibilityhistoric:\t" + Configuration.visibilityHistoric + "\n");
-            bw.write("resizable:\t\t\t" + Configuration.resizable + "\n");
-            bw.write("width:\t\t\t" + Configuration.width + "\n");
-            bw.write("height:\t\t\t" + Configuration.height + "\n");
-            bw.write("listwidth:\t\t\t" + Configuration.listWidth + "\n");
-            bw.write("accessmode:\t\t" + Configuration.accessMode + "\n");
+            bw.write("fullscreen:			false" 
+            + "autoSave:			false"
+            + "visibilityHistoric:	true"
+            + "visibilityType:		true"
+            + "visibilityTimePane:	true"
+            + "resizable:			false"
+            + "automaticCheck:		false"
+            + "width:				1000.0"
+            + "height:				600.0"
+            + "listWidth:			130.0"
+            + "accessMode:			SQL"
+            + "processingUnit:		CPU"
+            + "beginDate:			2013-11-01 00:00:00"
+            + "endDate:			2014-01-31 00:00:00");
+            
         } catch (IOException ex) {
             throw new IOException(ex.getMessage());
         } catch (Exception ex) {

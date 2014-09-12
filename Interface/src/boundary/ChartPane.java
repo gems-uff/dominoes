@@ -7,31 +7,31 @@ package boundary;
 
 import java.util.ArrayList;
 
-import arch.Cell;
-import domain.Dominoes;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.scene.*;
+import javafx.scene.Cursor;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import arch.Cell;
+import domain.Dominoes;
 
 
 /**
  *
  * @author Daniel
  */
+@SuppressWarnings("restriction")
 public class ChartPane extends Pane {
 
     private ComboBox<String> box;
@@ -72,7 +72,8 @@ public class ChartPane extends Pane {
         box.getSelectionModel().select(0);
 
         box.valueProperty().addListener(new ChangeListener<String>() {
-            @Override
+            @SuppressWarnings("rawtypes")
+			@Override
             public void changed(ObservableValue ov, String t, String t1) {
                 // draw chart
                 drawChart(domino);
@@ -152,7 +153,8 @@ public class ChartPane extends Pane {
 
     }
 
-    private void drawChart(Dominoes domino) {
+    @SuppressWarnings("rawtypes")
+	private void drawChart(Dominoes domino) {
         bc.getData().removeAll(bc.getData());
         XYChart.Series series = new XYChart.Series();
         
@@ -162,9 +164,9 @@ public class ChartPane extends Pane {
         series = new XYChart.Series();
         series.setName("row " + itemSelected); //row name
 
-        int indexArraySelected = domino.getMat().getMatrixDescriptor().getRowElementIndex(itemSelected); 
-        
-        int length = domino.getMat().getMatrixDescriptor().getNumCols();
+//        int indexArraySelected = domino.getMat().getMatrixDescriptor().getRowElementIndex(itemSelected); 
+//        
+//        int length = domino.getMat().getMatrixDescriptor().getNumCols();
         
         int j = 0;
         String name = "";

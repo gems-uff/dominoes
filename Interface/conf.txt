@@ -1,11 +1,15 @@
-fullscreen:			false
-autoSave:			false
-visibilityHistoric:	true
-visibilityType:		true
-visibilityTimePane:	true
-resizable:			false
-width:				1000.0
-height:				600.0
-listWidth:			130.0
-accessMode:			SQL
-processingUnit:		GPU
+fullscreen:				false
+autoSave:				false
+visibilityHistoric:		true
+visibilityType:			true
+visibilityTimePane:		true
+resizable:				true
+automaticCheck:			false
+resizeTimeOnFullScreen:	false
+width:					1000.0
+height:					600.0
+listWidth:				130.0
+accessMode:				SQL
+processingUnit:			GPU
+beginDate:				2007-11-01 00:00:00
+endDate:				2014-01-31 00:00:00

@@ -5,29 +5,28 @@
  */
 package boundary;
 
-import java.sql.NClob;
 import java.util.ArrayList;
 
-import arch.Cell;
-import arch.MatrixDescriptor;
-import domain.Dominoes;
 import javafx.event.EventHandler;
-import javafx.scene.control.Tooltip;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import arch.Cell;
+import arch.MatrixDescriptor;
+import domain.Dominoes;
 
 /**
  *
  * @author Daniel
  */
+@SuppressWarnings("restriction")
 public class MatrixPane extends Pane {
 
     private double maxZoom = 2;
@@ -38,7 +37,7 @@ public class MatrixPane extends Pane {
     private double srcTranslateX;
     private double srcTranslateY;
 
-    public MatrixPane(Dominoes domino) {
+	public MatrixPane(Dominoes domino) {
     	
         System.out.println("Rows: " + domino.getMat().getMatrixDescriptor().getNumRows() +
         		" Cols: " + domino.getMat().getMatrixDescriptor().getNumCols());
@@ -66,7 +65,7 @@ public class MatrixPane extends Pane {
         int _nRows = _descriptor.getNumRows();
         int _nCols = _descriptor.getNumCols();
         
-        for(int i = 0; i < domino.getMat().getMatrixDescriptor().getNumRows(); i++){
+        for(int i = 0; i < _nRows; i++){
         	if(domino.getMat().getMatrixDescriptor().getRowAt(i).length() > largerSize){
         		largerSize = domino.getMat().getMatrixDescriptor().getRowAt(i).length();
         	}
@@ -75,7 +74,7 @@ public class MatrixPane extends Pane {
         beginRowHead = -1 * largerSize * charSpace;
         endRowHead = 0;
         
-        for(int i = 0; i < domino.getMat().getMatrixDescriptor().getNumCols(); i++){
+        for(int i = 0; i < _nCols; i++){
         	if(domino.getMat().getMatrixDescriptor().getColumnAt(i).length() > largerSize){
         		largerSize = domino.getMat().getMatrixDescriptor().getColumnAt(i).length();
         	}
@@ -88,7 +87,7 @@ public class MatrixPane extends Pane {
     	height = cellSpace;
     	
         // draw the label of the matrix row/columns
-        for (int i = 0; i < _descriptor.getNumRows(); i++) {
+        for (int i = 0; i < _nRows; i++) {
         	largerSize = domino.getMat().getMatrixDescriptor().getRowAt(i).length();
         	Rectangle back = new Rectangle(width, height);
             back.setFill(new Color(0.5, 0.5, 0.5, 0.1));
@@ -123,7 +122,7 @@ public class MatrixPane extends Pane {
         width = Math.abs(endColumnHead - beginColumnHead);
     	height = cellSpace;
         
-        for (int i = 0; i < _descriptor.getNumCols(); i++) {
+        for (int i = 0; i < _nCols; i++) {
         	Rectangle back = new Rectangle(width, height);
         	back.setTranslateX(0);
         	back.setTranslateY(0);

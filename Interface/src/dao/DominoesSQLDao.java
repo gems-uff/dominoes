@@ -1,27 +1,22 @@
 package dao;
 
-import domain.Configuration;
-import domain.Dominoes;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import arch.Cell;
 import arch.IMatrix2D;
-import arch.Matrix2D;
 import arch.Matrix2DFactory;
+import domain.Configuration;
+import domain.Dominoes;
 
 public class DominoesSQLDao implements DominoesDao{
 	
@@ -50,7 +45,7 @@ public class DominoesSQLDao implements DominoesDao{
 	
 	public static void openDatabase() throws ClassNotFoundException, SQLException{
 		Class.forName("org.sqlite.JDBC");
-		conn = DriverManager.getConnection("jdbc:sqlite:" + databaseName);		
+		conn = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
 	}
 
     @Override
@@ -205,6 +200,7 @@ public class DominoesSQLDao implements DominoesDao{
 		// Get all commits
 		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR "
 				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + repository_name + "' ";
+		
 		
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
