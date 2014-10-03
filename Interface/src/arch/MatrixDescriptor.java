@@ -80,4 +80,12 @@ public class MatrixDescriptor {
 	public String getRowAt(int rowIndex){
 		return rowsDesc.get(rowIndex);
 	}
+	
+	public boolean hasRow(String row){
+		return rowsDesc.contains(row);
+	}
+	
+	public boolean hasCol(String col){
+		return columnsDesc.contains(col);
+	}
 }

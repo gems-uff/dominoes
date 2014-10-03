@@ -11,6 +11,7 @@ import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.Graph;
 //import edu.uci.ics.jung.graph.DirectedGraph;
@@ -22,6 +23,7 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.PluggableRenderContext;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.AnimatedPickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
@@ -37,8 +39,10 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.JSlider;
@@ -223,8 +227,14 @@ public class GraphPane extends BorderPane {
     	lblValue.setPrefSize(100, 20);
     	
     	Slider thresholdSlider = new Slider();
-    	thresholdSlider.setMin(min);
-    	thresholdSlider.setMax(max);
+    	thresholdSlider.setMin(Math.floor(min));
+    	thresholdSlider.setMax(Math.ceil(max));
+    	thresholdSlider.setMajorTickUnit(Math.ceil((max - min) / 5));
+    	thresholdSlider.setMinorTickCount(1);
+    	thresholdSlider.setBlockIncrement(1);
+    	thresholdSlider.setSnapToTicks(true);
+    	thresholdSlider.setShowTickMarks(true);
+    	
     	
     	thresholdSlider.valueProperty().addListener(new ChangeListener<Number>() {
     		
@@ -237,7 +247,7 @@ public class GraphPane extends BorderPane {
 				vv.repaint();
 				
 				lblValue.setText("Value: " +
-						String.format("%.2f", newValue.floatValue()));
+						String.format(Locale.US, "%.2f", newValue.floatValue()));
 				
 			}
 		});
@@ -271,6 +281,29 @@ public class GraphPane extends BorderPane {
 						}
 					}
 					
+					if (nodesHighlighted.size() == 1){
+						Layout<String, String> layout = vv.getGraphLayout();
+			            Point2D q = layout.transform(nodesHighlighted.get(0).id);
+			            Point2D lvc = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(vv.getCenter());
+			            final double dx = (lvc.getX() - q.getX()) / 10;
+			            final double dy = (lvc.getY() - q.getY()) / 10;
+			            
+			            Runnable animator = new Runnable() {
+
+			                public void run() {
+			                    for (int i = 0; i < 10; i++) {
+			                        vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).translate(dx, dy);
+			                        try {
+			                            Thread.sleep(100);
+			                        } catch (InterruptedException ex) {
+			                        }
+			                    }
+			                }
+			            };
+			            
+			            Thread thread = new Thread(animator);
+			            thread.start();
+					}
 					vv.repaint();
 				}
 			}
@@ -293,7 +326,7 @@ public class GraphPane extends BorderPane {
     	Label lblMouseMode = new Label("Mouse Mode: ");
     	lblMouseMode.setPrefSize(100,  20);
     	
-    	RadioButton rbTransform = new RadioButton("Translate");
+    	RadioButton rbTransform = new RadioButton("Pan & Zoom");
     	rbTransform.setPrefSize(100, 20);
     	rbTransform.setToggleGroup(optionGroup);
     	rbTransform.setUserData("T");
@@ -404,7 +437,6 @@ public class GraphPane extends BorderPane {
 		public boolean evaluate(Context<Graph<String, String>, String> context) {
 			Graph<String,String> g = context.graph;
 			
-			//System.out.println(context.element + " - " + g.degree(context.element));
 			return  g.inDegree(context.element) > 0 || 
 					g.outDegree(context.element) > 0;
 			

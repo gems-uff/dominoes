@@ -6,11 +6,17 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javafx.scene.input.KeyCode;
+
+import org.apache.commons.lang.time.StopWatch;
 
 import arch.Cell;
 import arch.IMatrix2D;
@@ -35,6 +41,7 @@ public class DominoesSQLDao implements DominoesDao{
 	public static final int File_Class = 4;
 	public static final int Class_Method = 5;
 	public static final int Bug_Commit = 6;
+	public static final int Commit_Method = 8;
 	
 	
 	public enum Group {
@@ -106,6 +113,9 @@ public class DominoesSQLDao implements DominoesDao{
     		
     	case Bug_Commit:
     		return loadBugCommit(row_name, col_name);
+    		
+    	case Commit_Method:
+    		return loadCommitMethod(row_name, col_name);
 
     	}
     	
@@ -113,75 +123,75 @@ public class DominoesSQLDao implements DominoesDao{
     }
     
     private IMatrix2D loadCommitFile(String row, String col) throws Exception {
-    	
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 		
-		// Get all commits
-		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR "
-				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + repository_name + "' ";
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading Commit x File");
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-		
-		sql = sql.concat("ORDER BY TC.Date;");
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{
-			descriptor.AddRowDesc(rs.getString("HashCode"));
-		}
-		
-		// Get all elements
-		sql = "SELECT Distinct(TF.NewName) FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' " +					
-				"AND TR.name = '" + repository_name + "' ";
-				
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-		
-		sql = sql.concat("ORDER BY TC.Date, TF.NewName;");					
-					
-		rs = smt.executeQuery(sql);
-			
-		while (rs.next())
-			descriptor.AddColDesc(rs.getString("NewName"));
-		
-		System.out.println("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		
-						
-		// Build Matrix
-		//IMatrix2D mat = new Matrix2D(descriptor);
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		stopWatch.reset();
+		stopWatch.start();
 
-		sql = "SELECT TC.HashCode, TF.NewName FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' " +
-				"AND TR.name = '" + repository_name + "' ";
+		
+		sql = "SELECT TC.HashCode, TF.NewName FROM TCOMMIT TC, TREPOSITORY TR " + 
+				"LEFT JOIN TFILE AS TF ON TF.CommitId = TC.id " + 
+				"WHERE TR.name = '" + repository_name + "' ";
 		
 		
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 		
 		sql = sql.concat("ORDER BY TC.Date, TF.NewName;");
-					
 		rs = smt.executeQuery(sql);
-					
 		
-		// temp matrix
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
+
+		
+		stopWatch.reset();
+		stopWatch.start();
+
 		ArrayList<Cell> cells = new ArrayList<Cell>();
+		String oldRow = "";
+		String oldCol = "";
 		
-		while (rs.next()){				
+		while (rs.next()){	
+			String hashCode = rs.getString("hashcode");
+			String newName = rs.getString("NewName");
+						
+			if (!oldRow.equals(hashCode)){
+				
+				if (!descriptor.hasRow(hashCode))
+					descriptor.AddRowDesc(hashCode);
+				
+				oldRow = hashCode;
+			}
+			
+			if (newName == null || newName.equals("null")) 
+				continue;
+			
+			if (!oldCol.equals(newName)){
+			
+				if (!descriptor.hasCol(newName))
+					descriptor.AddColDesc(newName);
+				
+				oldCol = newName;
+			}
+			
 			Cell c = new Cell();
-			c.row = descriptor.getRowElementIndex(rs.getString("HashCode"));
-			c.col = descriptor.getColElementIndex(rs.getString("NewName"));
+			c.row = descriptor.getRowElementIndex(hashCode);
+			c.col = descriptor.getColElementIndex(newName);
 			c.value = 1;
 			cells.add(c);
 		}
 		
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
-		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		rs.close();
 		smt.close();
@@ -190,46 +200,17 @@ public class DominoesSQLDao implements DominoesDao{
     }
     
     private IMatrix2D loadDeveloperCommit(String row, String col) throws Exception{
-    	
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(
-				row, col);
+		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
+
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading Developer x Commit");
+
+		stopWatch.reset();
+		stopWatch.start();
 		
-		// Get all commits
-		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR "
-				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + repository_name + "' ";
-		
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-		
-		sql = sql.concat("ORDER BY TC.Date;");
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{
-			descriptor.AddColDesc(rs.getString("HashCode"));
-		}
-		
-		// Get all users
-		sql = "SELECT Distinct(TU.name) FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' " +
-				"ORDER BY TC.Date, TU.name;";
-					
-		rs = smt.executeQuery(sql);
-		while (rs.next())
-		{
-			descriptor.AddRowDesc(rs.getString("name"));
-		}
-		System.out.println("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		
-		// Build Matrix
-		//Matrix2D mat = new Matrix2D(descriptor);
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
-		
-		// Get all commits
 		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +
 				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		
@@ -237,24 +218,56 @@ public class DominoesSQLDao implements DominoesDao{
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 
 		sql = sql.concat("ORDER BY TC.Date, TU.name;");
-		
 		rs = smt.executeQuery(sql);
-		
+				
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
+
+		stopWatch.reset();
+		stopWatch.start();
+
 		ArrayList<Cell> cells = new ArrayList<Cell>();
-		
-		while (rs.next()){	
+		String oldRow = "";
+		String oldCol = "";
+
+		while (rs.next()) {
+			String hashCode = rs.getString("hashcode");
+			String name = rs.getString("name");
+
+			if (!oldRow.equals(name)) {
+
+				if (!descriptor.hasRow(name))
+					descriptor.AddRowDesc(name);
+
+				oldRow = name;
+			}
+
+			if (!oldCol.equals(hashCode)) {
+
+				if (!descriptor.hasCol(hashCode))
+					descriptor.AddColDesc(hashCode);
+
+				oldCol = hashCode;
+			}
+
 			Cell c = new Cell();
-			c.row = descriptor.getRowElementIndex(rs.getString("name"));
-			c.col = descriptor.getColElementIndex(rs.getString("HashCode"));
+			c.row = descriptor.getRowElementIndex(name);
+			c.col = descriptor.getColElementIndex(hashCode);
 			c.value = 1;
+
 			cells.add(c);
-			
 		}
-		rs.close();
-		smt.close();
 		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
 		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		
+		rs.close();
+		smt.close();
 		
 		return mat;
 	}
@@ -264,72 +277,78 @@ public class DominoesSQLDao implements DominoesDao{
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
-		
-		// Get all commits
-		sql = "SELECT DISTINCT(PackageName) FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR "
-				+ "WHERE TF.NewName NOT LIKE 'null' AND TF.PackageName NOT LIKE 'null' AND "
-				+ "TF.CommitId = TC.id AND TC.RepoId = TR.id AND TR.Name = '" + repository_name + "' ";
-								
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-		
-		sql = sql.concat("ORDER BY TC.Date;");
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{
-			descriptor.AddRowDesc(rs.getString("PackageName"));
-		}
-		
-		// Get all elements
-		sql = "SELECT DISTINCT(NewName) FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR "
-				+ "WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' AND " 
-				+ "TR.Name = '" + repository_name + "' ";
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-		
-		sql = sql.concat("ORDER BY TC.Date;");				
-					
-		rs = smt.executeQuery(sql);
-			
-		while (rs.next())
-			descriptor.AddColDesc(rs.getString("NewName"));
-						
-		System.out.println("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		
-		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 
-		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' AND " + 
-				"TF.PackageName NOT LIKE 'null' AND TR.name = '" + repository_name + "' ";
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading Package x File");
+
+		stopWatch.reset();
+		stopWatch.start();
+
+		
+		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " + 
+				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
 		
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 		
-		sql = sql.concat("ORDER BY TC.Date, TF.NewName;");
-					
+		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName;");
 		rs = smt.executeQuery(sql);
-					
-		
-		// temp matrix
+				
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
+
+		stopWatch.reset();
+		stopWatch.start();
+
 		ArrayList<Cell> cells = new ArrayList<Cell>();
-		
-		while (rs.next()){				
+		String oldRow = "";
+		String oldCol = "";
+
+		while (rs.next()) {
+			String packageName = rs.getString("PackageName");
+			String newName = rs.getString("NewName");
+			
+			if (packageName == null)
+				continue;
+
+			if (!oldRow.equals(packageName)) {
+
+				if (!descriptor.hasRow(packageName))
+					descriptor.AddRowDesc(packageName);
+
+				oldRow = packageName;
+			}
+			
+			if (newName == null || newName.equals("null")){
+				continue;
+			}
+
+			if (!oldCol.equals(newName)) {
+
+				if (!descriptor.hasCol(newName))
+					descriptor.AddColDesc(newName);
+
+				oldCol = newName;
+			}
+
 			Cell c = new Cell();
-			c.row = descriptor.getRowElementIndex(rs.getString("PackageName"));
-			c.col = descriptor.getColElementIndex(rs.getString("NewName"));
+			c.row = descriptor.getRowElementIndex(packageName);
+			c.col = descriptor.getColElementIndex(newName);
 			c.value = 1;
+
 			cells.add(c);
 		}
 		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
+		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		rs.close();
 		smt.close();
-				
-		
 		
 		return mat;
     }
@@ -339,84 +358,80 @@ public class DominoesSQLDao implements DominoesDao{
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
+
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading File x Class");
+
+		stopWatch.reset();
+		stopWatch.start();
+		
+		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName, TCL.name FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " +
+				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
+				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
+		
+		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
+		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+
+		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName, TCL.Name;");
+		rs = smt.executeQuery(sql);
 				
-		sql = "SELECT DISTINCT TFL.NewName AS FileName " + 
-				"FROM TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TFL.CommitID = TC.id " + 
-				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
-				
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
 
-		sql = sql.concat("ORDER BY TC.Date, TFL.NewName;");
-		
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{
-			descriptor.AddRowDesc(rs.getString("FileName"));
-		}
-		
-		sql = "SELECT DISTINCT TFL.NewName AS FileName, TCL.name as ClassName " + 
-				"FROM TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
-				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		stopWatch.reset();
+		stopWatch.start();
 
-		sql = sql.concat("ORDER BY TC.Date, TFL.NewName, TCL.name;");
-		
-		
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{			
-			descriptor.AddColDesc(rs.getString("FileName") + "$" +
-					rs.getString("ClassName"));
-		}
-		
-		System.out.println("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		
-		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
-		
-		
-		sql = "SELECT TFL.NewName AS FileName, TCL.name as ClassName " + 
-				"FROM TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TCL.fileId = TFL.id AND TFL.CommitID = TC.id " + 
-				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-
-		sql = sql.concat("ORDER BY TC.Date, TFL.NewName, TCL.Name;");
-	
-		rs = smt.executeQuery(sql);
-					
-		
-		// temp matrix
 		ArrayList<Cell> cells = new ArrayList<Cell>();
-		
-		while (rs.next()){				
+		String oldRow = "";
+		String oldCol = "";
+
+		while (rs.next()) {
+			String fileName = rs.getString("NewName");
+			String className = rs.getString("name");
+			
+			if (fileName == null || fileName.equals("null")){
+				continue;
+			}
+
+			if (!oldRow.equals(fileName)) {
+
+				if (!descriptor.hasRow(fileName))
+					descriptor.AddRowDesc(fileName);
+
+				oldRow = fileName;
+			}
+			
+			if (className == null || className.equals("null")){
+				continue;
+			}
+
+			if (!oldCol.equals(fileName + "$" + className)) {
+
+				if (!descriptor.hasCol(fileName + "$" + className))
+					descriptor.AddColDesc(fileName + "$" + className);
+
+				oldCol = fileName + "$" + className;
+			}
+
 			Cell c = new Cell();
-			c.row = descriptor.getRowElementIndex(rs.getString("FileName"));
-			c.col = descriptor.getColElementIndex(rs.getString("FileName") + "$" +
-						rs.getString("ClassName"));
+			c.row = descriptor.getRowElementIndex(fileName);
+			c.col = descriptor.getColElementIndex(fileName + "$" + className);
 			c.value = 1;
+
 			cells.add(c);
 		}
 		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
+		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		rs.close();
 		smt.close();
 		
-		
-				
 		return mat;
     }
     
@@ -425,90 +440,171 @@ public class DominoesSQLDao implements DominoesDao{
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
+
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading Class x Method");
+
+		stopWatch.reset();
+		stopWatch.start();
 		
-		sql = "SELECT DISTINCT TFL.NewName, TCL.name as ClassName " + 
-				"FROM TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
-				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
+		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName, TCL.name AS ClassName, " + 
+				"TM.name as FuncName FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF, TCLASS TCL " +
+				"LEFT JOIN TFUNCTION AS TM ON TM.classid = TCL.id " + 
+				"WHERE TF.CommitId = TC.id AND TCL.fileid = TF.id " + 
+				"AND TF.NewName NOT LIKE 'null' AND TC.repoid = TR.id AND TR.name = '" + repository_name + "' ";
 		
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 
-		sql = sql.concat("GROUP BY TFL.NewName, TCL.name ");
-		sql = sql.concat("ORDER BY TC.date, TFL.NewName, TCL.name;");
-		
-		
+		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName, ClassName, FuncName;");
 		rs = smt.executeQuery(sql);
 		
-		while (rs.next())
-		{
-			descriptor.AddRowDesc(rs.getString("NewName") + "$" + 
-					rs.getString("ClassName"));
-		}
 		
-		sql = "SELECT DISTINCT TFL.NewName, TCL.name as ClassName, TF.name as FuncName " + 
-				"FROM TFunction TF, TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
-				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
 
-		sql = sql.concat("GROUP BY TFL.NewName, TCL.name, TF.name ");
-		sql = sql.concat("ORDER BY TC.date, TFL.NewName, TCL.name, TF.name;");
-		
-		
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{			
-			descriptor.AddColDesc(rs.getString("NewName") + "$" + 
-					rs.getString("ClassName") + "$" + rs.getString("FuncName"));
-		}
-		
-		System.out.println("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
-		
-		
-		sql = "SELECT TFL.NewName, TCL.name as ClassName, TF.name as FuncName " + 
-				"FROM TFunction TF, TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
-				"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
-			
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
-				
-		sql = sql.concat("GROUP BY TFL.NewName, TCL.name, TF.name ");
-		sql = sql.concat("ORDER BY TC.date, TFL.NewName, TCL.name, TF.name;");
-	
-		rs = smt.executeQuery(sql);
-					
-		
-		// temp matrix
+		stopWatch.reset();
+		stopWatch.start();
+
 		ArrayList<Cell> cells = new ArrayList<Cell>();
-		
-		while (rs.next()){				
-			Cell c = new Cell();
-			c.row = descriptor.getRowElementIndex(rs.getString("NewName") + "$" + 
-						rs.getString("ClassName"));
-			c.col = descriptor.getColElementIndex(rs.getString("NewName") + "$" + 
-						rs.getString("ClassName") + "$" + rs.getString("FuncName"));
-			c.value = 1;
+		String oldRow = "";
+		String oldCol = "";
+	
+		while (rs.next()) {
+			String fileName = rs.getString("NewName");
+			String className = rs.getString("ClassName");
+			String methodName = rs.getString("FuncName");
+				
+			if (className == null || className.equals("null")){
+				continue;
+			}
 			
+			if (!oldRow.equals(fileName + "$" + className)) {
+
+				if (!descriptor.hasRow(fileName + "$" + className))
+					descriptor.AddRowDesc(fileName + "$" + className);
+
+				oldRow = fileName + "$" + className;
+			}
+			
+			if (methodName == null || methodName.equals("null")){
+				continue;
+			}
+			
+
+			if (!oldCol.equals(className + "$" + methodName)) {
+
+				if (!descriptor.hasCol(className + "$" + methodName))
+					descriptor.AddColDesc(className + "$" + methodName);
+
+				oldCol = className + "$" + methodName;
+			}
+
+			Cell c = new Cell();
+			c.row = descriptor.getRowElementIndex(fileName + "$" + className);
+			c.col = descriptor.getColElementIndex(className + "$" + methodName);
+			c.value = 1;
+
 			cells.add(c);
 		}
 		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
+		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		rs.close();
 		smt.close();
-					
 		
+		return mat;
+    }
+    
+    private IMatrix2D loadCommitMethod(String row, String col) throws Exception {
+		String sql;
+		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading Commit x Method");
+
+		stopWatch.reset();
+		stopWatch.start();
 		
+		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName, TCL.name AS ClassName, " + 
+				"TM.name as FuncName FROM TCOMMIT TC, TREPOSITORY TR " +
+				"LEFT JOIN TFILE AS TF ON TF.commitid = TC.id " +
+				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
+				"LEFT JOIN TFUNCTION AS TM ON TM.classid = TCL.id " + 
+				"WHERE TR.name = '" + repository_name + "' "; 
+
+
+
+		if (beginDate != null)
+			sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' ");
+		if (endDate != null)
+			sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+
+		sql = sql.concat("ORDER BY TC.date, TF.PackageName, TF.NewName, ClassName, FuncName;");
+
+		rs = smt.executeQuery(sql);
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
+
+		stopWatch.reset();
+		stopWatch.start();
+
+		ArrayList<Cell> cells = new ArrayList<Cell>();
+		String oldRow = "";
+		String oldCol = "";
+
+		while (rs.next()) {
+			String hashCode = rs.getString("hashcode");
+			String className = rs.getString("ClassName"); 
+			String newName = rs.getString("FuncName");
+			
+
+			if (!oldRow.equals(hashCode)) {
+
+				if (!descriptor.hasRow(hashCode))
+					descriptor.AddRowDesc(hashCode);
+
+				oldRow = hashCode;
+			}
+			
+			if (newName == null || newName.equals("null")){
+				continue;
+			}
+
+			if (!oldCol.equals(className + "$" + newName)) {
+
+				if (!descriptor.hasCol(className + "$" + newName))
+					descriptor.AddColDesc(className + "$" + newName);
+
+				oldCol = className + "$" + newName;
+			}
+
+			Cell c = new Cell();
+			c.row = descriptor.getRowElementIndex(hashCode);
+			c.col = descriptor.getColElementIndex(className + "$" + newName);
+			c.value = 1;
+
+			cells.add(c);
+		}
+		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		mat.setData(cells);
+		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		
+		rs.close();
+		smt.close();
 		
 		return mat;
     }
@@ -518,49 +614,16 @@ public class DominoesSQLDao implements DominoesDao{
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
-		
-		sql = "SELECT DISTINCT TB.id FROM TBUG TB, TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TB.commitid = TC.id AND TC.RepoId = TR.id " +						
-				"AND TR.name = '" + repository_name + "' ";
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 
-		sql = sql.concat("ORDER BY TC.date, TB.id;");
-		
-		
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{
-			descriptor.AddRowDesc(rs.getString("id"));
-		}
-		
-		sql = "SELECT DISTINCT TC.Hashcode FROM TCOMMIT TC, TREPOSITORY TR " +
-			"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
-		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading Bug x Commit");
 
-		sql = sql.concat("ORDER BY TC.date;");
+		stopWatch.reset();
+		stopWatch.start();
 		
-		
-		rs = smt.executeQuery(sql);
-		
-		while (rs.next())
-		{			
-			descriptor.AddColDesc(rs.getString("Hashcode"));
-		}
-		
-		
-		System.out.println("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
-		
-		
-		sql = "SELECT TB.id, TC.hashcode FROM TBUG TB, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TB.commitid = TC.id AND TC.RepoId = TR.id " +						
-					"AND TR.name = '" + repository_name + "' ";
+		sql = "SELECT TB.id, TC.hashcode FROM TCOMMIT TC, TREPOSITORY TR " +
+				"LEFT JOIN TBUG AS TB ON TB.commitid = TC.id " +
+				"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 			
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
@@ -571,27 +634,61 @@ public class DominoesSQLDao implements DominoesDao{
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 				
 		sql = sql.concat("ORDER BY TC.date, TB.id;");
-	
 		rs = smt.executeQuery(sql);
-					
-		
-		// temp matrix
+				
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
+
+		stopWatch.reset();
+		stopWatch.start();
+
 		ArrayList<Cell> cells = new ArrayList<Cell>();
-		
-		while (rs.next()){				
-			Cell c = new Cell();
-			c.row = descriptor.getRowElementIndex(rs.getString("id"));
-			c.col = descriptor.getColElementIndex(rs.getString("Hashcode"));
-			c.value = 1;
+		String oldRow = "";
+		String oldCol = "";
+
+		while (rs.next()) {
+			String id = rs.getString("id");
+			String hashCode = rs.getString("hashCode");
+
+			if (id != null && !id.equals("null")) {
+				if (!oldRow.equals(id)) {
+	
+					if (!descriptor.hasRow(id))
+						descriptor.AddRowDesc(id);
+	
+					oldRow = id;
+				}
+			}
+
+			if (!oldCol.equals(hashCode)) {
+
+				if (!descriptor.hasCol(hashCode))
+					descriptor.AddColDesc(hashCode);
+
+				oldCol = hashCode;
+			}
+
 			
-			cells.add(c);
+			if (id != null && !id.equals("null")){
+				Cell c = new Cell();
+				c.row = descriptor.getRowElementIndex(id);
+				c.col = descriptor.getColElementIndex(hashCode);
+				c.value = 1;
+	
+				cells.add(c);
+			}
 		}
 		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
+		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		rs.close();
 		smt.close();
-					
 		
 		return mat;
     }
