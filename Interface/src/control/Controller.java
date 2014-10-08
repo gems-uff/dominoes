@@ -1,5 +1,6 @@
 package control;
 
+import java.awt.Frame;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -7,6 +8,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.JFrame;
+
+import boundary.App;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import util.ConfigurationFile;
 import dao.DaoFactory;
 import dao.DominoesDao;
@@ -14,7 +20,21 @@ import domain.Configuration;
 import domain.Dominoes;
 
 public class Controller {
-
+	
+	public static String[] args = null;
+	
+	public static final String MESSAGE_STARTED = "started";
+	public static final String MESSAGE_FINISHED = "finished";
+	
+	public static final int amout_tiles = 6;
+	
+	public static String message = "";
+	
+	public static ArrayList<Dominoes> resultLoadMatrices;
+	
+	public static int indexTileSelected = -1;
+	
+	
     /**
      * This function has begin when the user want using all matrices in Dominoes
      * database.
@@ -22,22 +42,24 @@ public class Controller {
      * @return Dominoes List
      * @throws IOException
      */
-    public static ArrayList<Dominoes> loadAllMatrices() {
+    public static void loadAllMatrices() {
+    	resultLoadMatrices = new ArrayList<Dominoes>();
         DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
+        
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }
         try {
-            return result.loadAllMatrices();
+            Controller.resultLoadMatrices = result.loadAllMatrices();
         } catch (IOException ex) {
         	ex.printStackTrace();
-            return null;
+            
         } catch (SQLException ex){
         	ex.printStackTrace();
-        	return null;
+        	
         } catch (Exception ex){
         	ex.printStackTrace();
-        	return null;
+        	
         }
     }
     
@@ -149,10 +171,23 @@ public class Controller {
 
 	public static String changeFormat(SimpleDateFormat source,
 			SimpleDateFormat target, String format) throws ParseException {		
-		System.out.println(format);
 		Date date = source.parse(format);
 		String result = target.format(date);
-		System.out.println(result);
 		return result;
+	}
+
+	public static JFrame FXToJFrame(Scene scene) {
+		JFrame jFrame = new JFrame();
+		JFXPanel panel = new JFXPanel();
+		panel.setScene(scene);
+		jFrame.add(panel);
+		
+		return jFrame;
+	}
+	
+	public static void printPrompt(String string) {
+    	Controller.message = string; 
+    	System.out.println(string);
+		
 	}
 }

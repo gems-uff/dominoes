@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.xml.ws.handler.MessageContext;
+
+import control.Controller;
 import arch.Cell;
 import arch.IMatrix2D;
 import arch.Matrix2DFactory;
@@ -36,6 +39,7 @@ public class DominoesSQLDao implements DominoesDao{
 	public static final int Class_Method = 5;
 	public static final int Bug_Commit = 6;
 	
+	public static final int Amount_Tiles = 6;
 	
 	public enum Group {
 		Month,
@@ -149,8 +153,8 @@ public class DominoesSQLDao implements DominoesDao{
 		while (rs.next())
 			descriptor.AddColDesc(rs.getString("NewName"));
 		
-		System.out.println("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
-		
+		Controller.indexTileSelected = DominoesSQLDao.Commit_File;
+		Controller.printPrompt("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 						
 		// Build Matrix
 		//IMatrix2D mat = new Matrix2D(descriptor);
@@ -188,8 +192,8 @@ public class DominoesSQLDao implements DominoesDao{
 				
 		return mat;
     }
-    
-    private IMatrix2D loadDeveloperCommit(String row, String col) throws Exception{
+
+	private IMatrix2D loadDeveloperCommit(String row, String col) throws Exception{
     	
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(
@@ -223,7 +227,9 @@ public class DominoesSQLDao implements DominoesDao{
 		{
 			descriptor.AddRowDesc(rs.getString("name"));
 		}
-		System.out.println("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+
+		Controller.indexTileSelected = DominoesSQLDao.Developer_Commit;
+		Controller.printPrompt("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		//Matrix2D mat = new Matrix2D(descriptor);
@@ -295,8 +301,9 @@ public class DominoesSQLDao implements DominoesDao{
 			
 		while (rs.next())
 			descriptor.AddColDesc(rs.getString("NewName"));
-						
-		System.out.println("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		
+		Controller.indexTileSelected = DominoesSQLDao.Package_File;
+		Controller.printPrompt("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -378,7 +385,8 @@ public class DominoesSQLDao implements DominoesDao{
 					rs.getString("ClassName"));
 		}
 		
-		System.out.println("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		Controller.indexTileSelected = DominoesSQLDao.File_Class;
+		Controller.printPrompt("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -468,7 +476,9 @@ public class DominoesSQLDao implements DominoesDao{
 					rs.getString("ClassName") + "$" + rs.getString("FuncName"));
 		}
 		
-		System.out.println("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		Controller.indexTileSelected = DominoesSQLDao.Class_Method;
+		Controller.printPrompt("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		
@@ -552,8 +562,9 @@ public class DominoesSQLDao implements DominoesDao{
 			descriptor.AddColDesc(rs.getString("Hashcode"));
 		}
 		
+		Controller.indexTileSelected = DominoesSQLDao.Bug_Commit;
+		Controller.printPrompt("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols()); 
 		
-		System.out.println("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		
@@ -711,4 +722,5 @@ public class DominoesSQLDao implements DominoesDao{
 		
 		return results;
 	}
+	
 }

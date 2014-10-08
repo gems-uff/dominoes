@@ -1,8 +1,10 @@
 package boundary;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javafx.scene.text.Font;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.RotateTransition;
@@ -679,12 +681,17 @@ public class AreaMove extends Pane {
         Dominoes domino = control.Controller.tranposeDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
         Group swap = domino.drawDominoes();
         
+        double swapFontSize = ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).getFont().getSize();
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setFont(((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).getFont());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFont(new Font(swapFontSize));
+        
         double translateX = ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).getX();
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setX(((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).getX());
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setX(translateX);       
         
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText());
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
+        
         
         
         RotateTransition rtPiece = new RotateTransition(Duration.millis(duration));
@@ -809,12 +816,19 @@ public class AreaMove extends Pane {
      */
     private void reduceLines(Group piece) throws IOException {
         
-        Dominoes domino = control.Controller.reduceDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
+    	int index = this.pieces.indexOf(piece);
+    	
+        Dominoes domino = control.Controller.reduceDominoes(this.dominoes.get(index));
+        System.out.println("\nCol:" + domino.getIdCol());
+        System.out.println("Row:" + domino.getIdRow());
+        this.dominoes.set(index, domino);
+//        Group swap = domino.drawDominoes();
         
-        Group swap = domino.drawDominoes();
-        
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText("SUM");
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
+//        String idRow = ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText();
+//        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText("/SUM "+idRow);
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(domino.getIdRow());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFont(new Font(Dominoes.GRAPH_AGGREG_FONT_SIZE));
+//        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
         //((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
         //((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
         
@@ -835,17 +849,17 @@ public class AreaMove extends Pane {
     private void reduceColumns(Group piece) throws IOException {
 
         Color colorHistoric;
-        
-        Dominoes toReduce = this.dominoes.get(this.pieces.indexOf(piece));
+        int index = this.pieces.indexOf(piece);
+        Dominoes toReduce = this.dominoes.get(index);
         toReduce.transpose();
         Dominoes domino = control.Controller.reduceDominoes(toReduce);
+        domino.transpose();
+        this.dominoes.set(index, domino);
         
         Group swap = domino.drawDominoes();
         
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText("SUM");
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
-        //((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
-        //((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(domino.getIdCol());
+        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setFont(new Font(Dominoes.GRAPH_AGGREG_FONT_SIZE));
         
         colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
         

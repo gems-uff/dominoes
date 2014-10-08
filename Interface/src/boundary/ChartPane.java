@@ -5,8 +5,10 @@
  */
 package boundary;
 
+import javafx.scene.text.Font;
 import java.util.ArrayList;
 
+import javafx.scene.control.Tooltip;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -59,6 +61,7 @@ public class ChartPane extends Pane {
         bc = new BarChart<String, Number>(xAxis, yAxis);
         bc.setTitle(domino.getHistoric().toString());
         bc.setAnimated(false);
+//        bc.set
         
         // change color BarChart
 
@@ -70,7 +73,8 @@ public class ChartPane extends Pane {
         }
         box.setItems(items);
         box.getSelectionModel().select(0);
-
+        box.toFront();
+        
         box.valueProperty().addListener(new ChangeListener<String>() {
             @SuppressWarnings("rawtypes")
 			@Override
@@ -149,12 +153,15 @@ public class ChartPane extends Pane {
         vbox.getChildren().add(box);
         vbox.getChildren().add(bc);
         this.getChildren().add(vbox);
-        
 
     }
 
     @SuppressWarnings("rawtypes")
-	private void drawChart(Dominoes domino) {
+	private synchronized void drawChart(Dominoes domino) {
+    	
+    	bc.getXAxis().setTickLabelFont(new Font("Lucida Console", (int)bc.getXAxis().getTickLabelFont().getSize()));
+    	System.out.println("fontSize: " + bc.getXAxis().getTickLabelFont().getSize());
+        // Fill Chart
         bc.getData().removeAll(bc.getData());
         XYChart.Series series = new XYChart.Series();
         
@@ -170,15 +177,15 @@ public class ChartPane extends Pane {
         
         int j = 0;
         String name = "";
-    	int limtName = 15;
+//    	int limtName = 15;
         ArrayList<Cell> cells = domino.getMat().getNonZeroData();
         
     		while(j < domino.getMat().getMatrixDescriptor().getNumCols()){
     			name = domino.getMat().getMatrixDescriptor().getColumnAt(j);
     			Data data = new XYChart.Data(name, 0);
-    			if(name.length() > limtName){
-    				data = new XYChart.Data(name.substring(0, limtName) + "...", 0);    				
-    			}
+//    			if(name.length() > limtName){
+//    				data = new XYChart.Data(name.substring(0, limtName) + "...", 0);    				
+//    			}
     			
     			//Tooltip.install(data, new Tooltip(name));
     			series.getData().add(data);
@@ -197,16 +204,54 @@ public class ChartPane extends Pane {
         	
         	name = domino.getMat().getMatrixDescriptor().getColumnAt(_matCell.col);
         	Data data = new XYChart.Data(name, _matCell.value);
-			if(name.length() > limtName){
-				data = new XYChart.Data(name.substring(0, limtName) + "...", _matCell.value);    				
-			}
+//			if(name.length() > limtName){
+//				data = new XYChart.Data(name.substring(0, limtName) + "...", _matCell.value);    				
+//			}
+//        	Tooltip.install(data.getNode(), new Tooltip(name));
         	
-        	//Tooltip.install(data, new Tooltip(name));
             series.getData().add(data);
         	
         	
         }
         bc.getData().add(series);
+
+
+        // Draw Chart        
+        int numCols = domino.getMat().getMatrixDescriptor().getNumCols();
+        float maxValue = domino.getMat().findMaxValue();
+        float minValue = domino.getMat().findMinValue();
+        int numRows = domino.getMat().getMatrixDescriptor().getNumRows();
+        
+        double fontSize = bc.getXAxis().getTickLabelFont().getSize();
+    	double textLarger = 0;
+    	
+//    	bc.getYAxis().setMinHeight(1000);
+    	
+//        if(numCols > 10){
+        	
+    	int _nCols = domino.getMat().getMatrixDescriptor().getNumCols();
+    	int select = 0;
+    	for(int i = 0; i < _nCols; i++){
+    		if(domino.getMat().getMatrixDescriptor().getColumnAt(i).length() > textLarger){
+    			textLarger = domino.getMat().getMatrixDescriptor().getColumnAt(i).length();
+    			System.out.println(domino.getMat().getMatrixDescriptor().getColumnAt(i));
+    			select = i;
+    		}
+    	}
+    	bc.setPrefWidth(numCols * fontSize * 2);
+//        }
+        	
+        
+    	System.out.println(textLarger);
+    	if(maxValue == minValue){
+    		minValue = 0;
+    		if(maxValue == minValue){
+    			maxValue = 1;
+    		}
+    	}
+    	bc.setPrefHeight(bc.getXAxis().getTickLength() + ((maxValue - 0)) * 5 + textLarger * fontSize);	
+    	System.out.println("bc.height: " + bc.getPrefHeight());
+        
     }
 
 }

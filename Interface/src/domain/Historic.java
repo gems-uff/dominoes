@@ -181,7 +181,7 @@ public class Historic {
      * This function will return the item corresponding to index 
      * 
      * <p><b>Exemple:</b>
-     * <blockquote>suppose the historic A,B,C,D. To the index: 
+     * <blockquote>suppose the historic [[A,B],[C,D]]. To the index: 
      * <br>1 => A
      * <br>2 => B
      * <br>3 => C
@@ -227,6 +227,10 @@ public class Historic {
         return this.getItem(0);
     }
 
+    public void reduceRow() {
+    	this.leftItem = "/SUM "+ this.leftItem;
+    }
+    
     public String getLastItem() {
         return this.getItem(length - 1);
     }
