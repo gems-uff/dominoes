@@ -73,12 +73,6 @@ public class ConfigurationFile {
                         }else if(valueVariable.compareTo("true") == 0) {
                         	Configuration.visibilityType = true;
                         }
-                    } else if (nameVariable.compareTo("visibilitytimepane") == 0){
-                    	if(valueVariable.compareTo("false") == 0) {
-                        	Configuration.visibilityTimePane = false;
-                        }else if(valueVariable.compareTo("true") == 0) {
-                        	Configuration.visibilityTimePane = true;
-                        }
                     } else if (nameVariable.compareTo("resizable") == 0){
                     	if(valueVariable.compareTo("false") == 0) {
                         	Configuration.resizable = false;
@@ -132,7 +126,6 @@ public class ConfigurationFile {
             + "autoSave:			false"
             + "visibilityHistoric:	true"
             + "visibilityType:		true"
-            + "visibilityTimePane:	true"
             + "resizable:			false"
             + "automaticCheck:		false"
             + "width:				1000.0"

@@ -2,7 +2,6 @@ fullscreen:				false
 autoSave:				false
 visibilityHistoric:		true
 visibilityType:			true
-visibilityTimePane:		true
 resizable:				true
 automaticCheck:			false
 resizeTimeOnFullScreen:	false

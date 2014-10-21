@@ -180,8 +180,10 @@ public class App extends Application {
         max = max - min;
         min = 0;
 
+        App.stage.show();
+        
         App.time = new TimePane(min, max, min, min);
-        App.time.setVisible(Configuration.visibilityTimePane);
+        App.time.setVisible(true);
         
 		manager = GUIManager.getInstance();
 		JFXPanel pane = new JFXPanel();
@@ -247,14 +249,10 @@ public class App extends Application {
         vSplitPane.setOrientation(Orientation.VERTICAL);
         
         vSP_body_hSplitPane = new SplitPane();
-        
         vSP_body_hSplitPane.getItems().add(App.list);
         vSP_body_hSplitPane.getItems().add(App.area);
         vSP_body_hSplitPane.getItems().add(App.visual);
-        
-        if(App.time == null){
-        	App.setTimelime();
-        }
+
         
         vSP_head_TimePane = new BorderPane();
         vSP_head_TimePane.setCenter(time);
@@ -268,24 +266,27 @@ public class App extends Application {
         			vSplitPane.getItems().add(vSP_head_TimePane);
         			vSplitPane.getItems().add(vSP_body_hSplitPane);
         			
+        			vSP_body_hSplitPane.setPrefHeight(App.height/2);
+        			vSP_head_TimePane.setPrefHeight(App.height/2);
+        			
         		}else{
         			
         			vSplitPane.getItems().remove(vSP_head_TimePane);
-
+        			vSP_body_hSplitPane.setPrefHeight(App.height);
         		}
         	}
 		});
         
-        if(Configuration.visibilityTimePane) vSplitPane.getItems().add(vSP_head_TimePane);
+        if(Configuration.visibilityTimePane) 
+        	vSplitPane.getItems().add(vSP_head_TimePane);
+       
         vSplitPane.getItems().add(vSP_body_hSplitPane);
         
         back.getChildren().addAll(menu, vSplitPane);
         
         App.scene.setRoot(back);
         App.stage.setScene(App.scene);
-//        App.setFullscreen(Configuration.fullscreen);
-//        App.stage.show();
-//        App.time.definitionSlider(stage);        
+        App.stage.show();
         
         App.setFullscreen(Configuration.fullscreen);
                 
@@ -382,27 +383,26 @@ public class App extends Application {
         App.width = App.stage.getWidth();
         App.height = App.stage.getHeight();
         
-        if(App.time.isVisible()){
+        if(Configuration.visibilityTimePane){
         	App.time.definitionSlider(stage);
         }
         App.list.setSize(Configuration.listWidth , App.height - padding);
         App.visual.setSize(App.width, App.height - padding);
         App.area.setSize(App.width, App.height - padding);
-
+        stage.show();
     }
     
     static void changeVisibleTimePane(){
 	 	Configuration.visibilityTimePane = !Configuration.visibilityTimePane;
-	 	time.setVisible(Configuration.visibilityTimePane);
-	 	vSP_head_TimePane.setVisible(Configuration.visibilityTimePane);
-    	
+	 	App.time.setVisible(Configuration.visibilityTimePane);
+	 	App.vSP_head_TimePane.setVisible(Configuration.visibilityTimePane);
     }
     
     /**
     *
     */
    public static void start() {
-       launch((String[]) null);
+       launch(Controller.args );
    }
    
    static void drawGraph(Dominoes domino) {

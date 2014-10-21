@@ -6,7 +6,6 @@ public class Configuration {
     public static boolean autoSave = false;
     public static boolean visibilityHistoric = true;
     public static boolean visibilityType = true;
-    public static boolean visibilityTimePane = true;
     public static boolean resizable = false;
     public static boolean automaticCheck = false;
     public static boolean resizableTimeOnFullScreen = false;
@@ -21,9 +20,11 @@ public class Configuration {
 	public static String beginDate = "2013-11-01 00:00:00";
     public static String endDate = "2014-01-31 00:00:00";    
     
-    public static final int amount = 15;
+    public static final int amount = 14;
 
     // not save/read file 
     public static double fullscreenWidth = Configuration.width;
     public static double fullscreenHeight = Configuration.height;
+    
+    public static boolean visibilityTimePane = true;
 }

@@ -80,7 +80,6 @@ public class TimePane extends Pane{
 			lineChart.getData().add(serie1);
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -96,32 +95,11 @@ public class TimePane extends Pane{
 			}
 			lineChart.getData().add(serie2);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		xAxis.setCategories(xItems);
 		
-		/*barChart.setOnScroll(new EventHandler<ScrollEvent>() {
-
-			@Override
-			public void handle(ScrollEvent event) {
-				if (event.getDeltaY() == 0) {
-		            return;
-		        }
-
-		        double scaleFactor = (event.getDeltaY() > 0) ? 1.1 : 1 / 1.1;
-
-		        barChart.setScaleX(barChart.getScaleX() * scaleFactor);
-		        barChart.setScaleY(barChart.getScaleY() * scaleFactor);
-		    }
-				
-		});*/
-		
-		//jLineChart = ChartFactory.createLineChart(
-			//"Tittle", "", "", ds, PlotOrientation.HORIZONTAL, true, false, false);
-		
-		// after, you have call definitionSlider() to define the slider values
 		slider = new IntervalSlider(min, max, selectMax, selectMin, max-min);
 		
 		timePaneGroup = new Group();
@@ -187,7 +165,7 @@ public class TimePane extends Pane{
         }else{
         	slider.setTranslateX(xAxis.getDisplayPosition(begin) + chartZeroX + paddingX);
         }
-        slider.setTranslateY(yAxis.getDisplayPosition(0) + chartZeroY/* + paddingY*/);
+        slider.setTranslateY(yAxis.getDisplayPosition(0) + chartZeroY);
         slider.setLinkPointers(true);
         
         int index = this.timePaneGroup.getChildren().indexOf(this.slider);
@@ -200,8 +178,6 @@ public class TimePane extends Pane{
         }
         stage.show();
 	}
-	
-	
 	
 	public String getValueToolTipMin(){
     	return slider.getValueToolTipMin();

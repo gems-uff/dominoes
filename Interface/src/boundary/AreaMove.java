@@ -86,8 +86,8 @@ public class AreaMove extends Pane {
         ContextMenu minimenu = new ContextMenu();
         
         MenuItem menuItemTranspose = new MenuItem("Transpose");
-        MenuItem menuItemAgreggateRow = new MenuItem("Aggregate Row");
-        MenuItem menuItemAgreggateCol = new MenuItem("Aggregate Col");
+        MenuItem menuItemAgreggateRow = new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getRowType());
+        MenuItem menuItemAgreggateCol = new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getColType());
         MenuItem menuItemLift = new MenuItem("Lift");
         MenuItem menuItemZScore = new MenuItem("Z-Score");
         MenuItem menuItemSaveInList = new MenuItem("Save");

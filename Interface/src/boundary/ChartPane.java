@@ -5,15 +5,16 @@
  */
 package boundary;
 
-import javafx.scene.text.Font;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
 
-import javafx.scene.control.Tooltip;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -21,10 +22,16 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import arch.Cell;
 import domain.Dominoes;
 
@@ -36,7 +43,11 @@ import domain.Dominoes;
 @SuppressWarnings("restriction")
 public class ChartPane extends Pane {
 
-    private ComboBox<String> box;
+	private static final String TYPE_ORDER_BY_NORMAL = "Normal";
+	private static final String TYPE_ORDER_BY_INCREASING = "Increasing";
+	
+    private ComboBox<String> cbSelectedRow;
+    private ComboBox<String> cbOrderBy;
 
     private final BarChart<String, Number> bc;
 
@@ -50,7 +61,6 @@ public class ChartPane extends Pane {
 
     
     public ChartPane(Dominoes domino) {
-        VBox vbox = new VBox();
 
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
@@ -65,17 +75,36 @@ public class ChartPane extends Pane {
         
         // change color BarChart
 
-        box = new ComboBox<>();
-        ObservableList<String> items = FXCollections.observableArrayList();
+        cbSelectedRow = new ComboBox<>();
+        ObservableList<String> itemsCBMatrixRows = FXCollections.observableArrayList();
         for (int i = 0; i < domino.getMat().getMatrixDescriptor().getNumRows(); i++) {
-            items.add(domino.getMat().getMatrixDescriptor().getRowAt(i));
+            itemsCBMatrixRows.add(domino.getMat().getMatrixDescriptor().getRowAt(i));
 
         }
-        box.setItems(items);
-        box.getSelectionModel().select(0);
-        box.toFront();
+        cbSelectedRow.setItems(itemsCBMatrixRows);
+        cbSelectedRow.getSelectionModel().select(0);
+        cbSelectedRow.toFront();
         
-        box.valueProperty().addListener(new ChangeListener<String>() {
+        cbSelectedRow.valueProperty().addListener(new ChangeListener<String>() {
+            @SuppressWarnings("rawtypes")
+			@Override
+            public void changed(ObservableValue ov, String t, String t1) {
+                // draw chart
+                drawChart(domino);
+            }
+        });
+        
+        cbOrderBy = new ComboBox<>();
+        ObservableList<String> itemsBCOrderBy = FXCollections.observableArrayList();
+        
+        itemsBCOrderBy.add(TYPE_ORDER_BY_NORMAL);
+        itemsBCOrderBy.add(TYPE_ORDER_BY_INCREASING);
+        
+        cbOrderBy.setItems(itemsBCOrderBy);
+        cbOrderBy.getSelectionModel().select(0);
+        cbOrderBy.toFront();
+        
+        cbOrderBy.valueProperty().addListener(new ChangeListener<String>() {
             @SuppressWarnings("rawtypes")
 			@Override
             public void changed(ObservableValue ov, String t, String t1) {
@@ -150,107 +179,120 @@ public class ChartPane extends Pane {
             }
         });
         
-        vbox.getChildren().add(box);
-        vbox.getChildren().add(bc);
-        this.getChildren().add(vbox);
+        
+        // building interface
+        
+        HBox hBox = new HBox();
+    	
+    	hBox.setPadding(new Insets(15, 12, 15, 12));
+    	hBox.setSpacing(10);
+    	hBox.setStyle("-fx-background-color: #66FFFF;");
+    	
+    	final ToggleGroup optionGroup = new ToggleGroup();
+    	
+    	Label lSelectedRow = new Label("Selected Row: ");
+    	lSelectedRow.setPrefSize(100,  20);
+    	
+    	Label lOrderBy = new Label("Order By: ");
+    	lOrderBy.setPrefSize(100,  20);
+    	
+        hBox.setPrefWidth(bc.getPrefWidth());
+        hBox.getChildren().addAll(lSelectedRow, cbSelectedRow, lOrderBy, cbOrderBy);
+        
+        BorderPane border = new BorderPane();
+        border.setTop(hBox);
+        border.toFront();
+
+        this.getChildren().addAll(bc, border);
 
     }
 
     @SuppressWarnings("rawtypes")
 	private synchronized void drawChart(Dominoes domino) {
     	
+    	int _nCols = domino.getMat().getMatrixDescriptor().getNumCols();
+    	int _nRows = domino.getMat().getMatrixDescriptor().getNumRows();
+    	
     	bc.getXAxis().setTickLabelFont(new Font("Lucida Console", (int)bc.getXAxis().getTickLabelFont().getSize()));
-    	System.out.println("fontSize: " + bc.getXAxis().getTickLabelFont().getSize());
+    	
         // Fill Chart
         bc.getData().removeAll(bc.getData());
         XYChart.Series series = new XYChart.Series();
         
-        String itemSelected = box.getSelectionModel().getSelectedItem();
-        int rowSelected = box.getSelectionModel().getSelectedIndex(); 
+        String itemSelected = cbSelectedRow.getSelectionModel().getSelectedItem();
+        int rowSelected = cbSelectedRow.getSelectionModel().getSelectedIndex();
+        String typeOrderSelected = cbOrderBy.getSelectionModel().getSelectedItem();
         
         series = new XYChart.Series();
         series.setName("row " + itemSelected); //row name
-
-//        int indexArraySelected = domino.getMat().getMatrixDescriptor().getRowElementIndex(itemSelected); 
-//        
-//        int length = domino.getMat().getMatrixDescriptor().getNumCols();
         
-        int j = 0;
         String name = "";
-//    	int limtName = 15;
+        
         ArrayList<Cell> cells = domino.getMat().getNonZeroData();
+        ArrayList<Cell> temp = new ArrayList<Cell>();
         
-    		while(j < domino.getMat().getMatrixDescriptor().getNumCols()){
-    			name = domino.getMat().getMatrixDescriptor().getColumnAt(j);
-    			Data data = new XYChart.Data(name, 0);
-//    			if(name.length() > limtName){
-//    				data = new XYChart.Data(name.substring(0, limtName) + "...", 0);    				
-//    			}
-    			
-    			//Tooltip.install(data, new Tooltip(name));
-    			series.getData().add(data);
+        // 1 - selecting the cells where its row is equals selected row
+        for(Cell cell: cells){
+        	if(cell.row == rowSelected)
+        		temp.add(cell);
+        }
+        cells = temp;
+        // 1 - end
         
-    			j++;
+        // 2 - Adding the columns where value is 0 (zero)
+        int j = 0;
+        temp = new ArrayList<Cell>(_nCols);
+        for(int column = 0; column < _nCols; column++){
+        	if(j < cells.size() && cells.get(j).col == column){
+        		temp.add(cells.get(j++));
+        	}else{
+        		temp.add(new Cell(rowSelected, column, 0));
         	}
-    	
-    	
-        for (Cell _matCell : cells){
-        	if(_matCell.row < rowSelected){
-        		continue;
-        	}
-        	if(_matCell.row > rowSelected){
-        		break;
-        	}
+        }
+        cells = temp;
+        temp = null;
+        // 2 - end
+        
+        // [Optional] 3 - order columns by value
+        if(typeOrderSelected.equals(TYPE_ORDER_BY_INCREASING)){
+        	cells.sort(new Comparator<Cell>() {
+        		public int compare(Cell c1, Cell c2) {
+        			if(c1.value < c2.value) return -1;
+        			else if(c1.value > c2.value) return 1;
+        			return 0;
+        		};
+        	});
+        }
+        // 3 - end
+        
+        // 4 - Adding in Chart
+        for(int i = 0; i < cells.size(); i++){
         	
-        	name = domino.getMat().getMatrixDescriptor().getColumnAt(_matCell.col);
-        	Data data = new XYChart.Data(name, _matCell.value);
-//			if(name.length() > limtName){
-//				data = new XYChart.Data(name.substring(0, limtName) + "...", _matCell.value);    				
-//			}
-//        	Tooltip.install(data.getNode(), new Tooltip(name));
-        	
-            series.getData().add(data);
-        	
-        	
+        	name = domino.getMat().getMatrixDescriptor().getColumnAt(i);
+        	Data data = new XYChart.Data(name, cells.get(i).value);
+        	series.getData().add(data);
+
         }
         bc.getData().add(series);
-
+        // 4 - end
 
         // Draw Chart        
-        int numCols = domino.getMat().getMatrixDescriptor().getNumCols();
+        
         float maxValue = domino.getMat().findMaxValue();
         float minValue = domino.getMat().findMinValue();
-        int numRows = domino.getMat().getMatrixDescriptor().getNumRows();
         
         double fontSize = bc.getXAxis().getTickLabelFont().getSize();
     	double textLarger = 0;
-    	
-//    	bc.getYAxis().setMinHeight(1000);
-    	
-//        if(numCols > 10){
         	
-    	int _nCols = domino.getMat().getMatrixDescriptor().getNumCols();
     	int select = 0;
     	for(int i = 0; i < _nCols; i++){
     		if(domino.getMat().getMatrixDescriptor().getColumnAt(i).length() > textLarger){
     			textLarger = domino.getMat().getMatrixDescriptor().getColumnAt(i).length();
-    			System.out.println(domino.getMat().getMatrixDescriptor().getColumnAt(i));
     			select = i;
     		}
     	}
-    	bc.setPrefWidth(numCols * fontSize * 2);
-//        }
-        	
-        
-    	System.out.println(textLarger);
-    	if(maxValue == minValue){
-    		minValue = 0;
-    		if(maxValue == minValue){
-    			maxValue = 1;
-    		}
-    	}
-    	bc.setPrefHeight(bc.getXAxis().getTickLength() + ((maxValue - 0)) * 5 + textLarger * fontSize);	
-    	System.out.println("bc.height: " + bc.getPrefHeight());
+    	bc.setPrefWidth(_nCols * fontSize * 2);
+    	bc.setPrefHeight(1.5 * textLarger * fontSize);	
         
     }
 

@@ -5,6 +5,8 @@ import java.awt.Color;
 public class NodeInfo {
 	String id;
 	String userData;
+	private float threshold = 0;
+	
 	boolean isHighlighted = false;
 	Color color = Color.BLACK;
 	
@@ -53,5 +55,12 @@ public class NodeInfo {
 		return isHighlighted;
 	}
 	
+	public float getThreshold() {
+		return threshold;
+	}
+
+	public void setThreshold(float threshold) {
+		this.threshold = threshold;
+	}
 	
 }
