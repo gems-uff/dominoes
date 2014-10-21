@@ -99,12 +99,12 @@ public class GraphPane extends BorderPane {
     /**
      * the graph
      */
-	Map<String, NodeInfo> nodes = new HashMap<>();
-	Map<String, NodeLink> edges = new HashMap<>();
-	ArrayList<NodeInfo> nodesHighlighted = new ArrayList<>();
-	DirectionDisplayPredicate edgePredicate;
-	VertexDisplayPredicate vertexPredicate;
-    Forest<String, String> graph;
+	private Map<String, NodeInfo> nodes = new HashMap<>();
+	private Map<String, NodeLink> edges = new HashMap<>();
+	private ArrayList<NodeInfo> nodesHighlighted = new ArrayList<>();
+	private DirectionDisplayPredicate edgePredicate;
+	private VertexDisplayPredicate vertexPredicate;
+	private Forest<String, String> graph;
     
     
     UndirectedGraph<String, String> graphFactory= new UndirectedSparseMultigraph<>();
@@ -121,7 +121,7 @@ public class GraphPane extends BorderPane {
     	
         // create a simple graph for the demo
         graph = new DelegateForest<String, String>();
-
+        
         createTree(domino);
 
 //        treeLayout = new TreeLayout<String, Integer>(graph);
@@ -200,7 +200,6 @@ public class GraphPane extends BorderPane {
         
         vv.getRenderContext().setEdgeIncludePredicate(edgePredicate);
         
-        vertexPredicate = new VertexDisplayPredicate();
         vv.getRenderContext().setVertexIncludePredicate(vertexPredicate);
 
         SwingNode s = new SwingNode();
@@ -244,6 +243,8 @@ public class GraphPane extends BorderPane {
 					Number oldValue, Number newValue) {
 				
 				edgePredicate.setThreshold(newValue.floatValue());
+				vertexPredicate.setThreshold(newValue.floatValue());
+				
 				vv.repaint();
 				
 				lblValue.setText("Value: " +
@@ -366,7 +367,7 @@ public class GraphPane extends BorderPane {
     }
 
 	private void createTree(Dominoes domino) {
-    	
+ 
     	// Matrix represents a relationship among elements
     	ArrayList<Cell> nz = domino.getMat().getNonZeroData();
     	MatrixDescriptor desc = domino.getMat().getMatrixDescriptor();
@@ -397,17 +398,20 @@ public class GraphPane extends BorderPane {
 				n1 = new NodeInfo(id1);
 				n1.setColor(Color.BLUE);
 				n1.setUserData(desc.getRowAt(cell.row));
+				n1.setThreshold(Float.POSITIVE_INFINITY);
 				nodes.put(n1.toString(), n1);
 				graph.addVertex(n1.toString());
 			}
 				
 			if (nodes.containsKey(id2)){
 				n2 = nodes.get(id2); 
+				n2.setThreshold(Math.max(n2.getThreshold(), cell.value));
 			}
 			else {
 				n2 = new NodeInfo(id2);
 				n2.setColor(Color.GREEN);
 				n2.setUserData(desc.getColumnAt(cell.col));
+				n2.setThreshold(cell.value);
 				nodes.put(n2.toString(), n2);
 				graph.addVertex(n2.toString());
 			}
@@ -416,30 +420,48 @@ public class GraphPane extends BorderPane {
 			
 			NodeLink edge = new NodeLink("E" + n1.toString() + n2.toString(), cell.value);
 			edge.setColor(new Color(1.0f - intensityColor, 1.0f - intensityColor, 1.0f - intensityColor));
+			
 			edges.put(edge.getId(), edge);
 			graph.addEdge(edge.getId(), n1.toString(), n2.toString());
+			
     	}
     	
+    	vertexPredicate = new VertexDisplayPredicate(nodes);
     	edgePredicate = new DirectionDisplayPredicate(nodes, edges);
     	
     	
     }
 
     private boolean isAValidDomino(Dominoes domino) {
-        return ((domino.getMat().getMatrixDescriptor().getNumRows() == domino.getMat().getMatrixDescriptor().getNumCols())
+        return ((domino.isSquare())
                 && (domino.getIdRow().equals(domino.getIdCol())));
     }
 
     private final static class VertexDisplayPredicate 
 		implements Predicate<Context<Graph<String, String>,String>> {
+    	
+    	private float threshold = 0;
+    	private Map<String, NodeInfo> nodes;
+    	
+		public VertexDisplayPredicate(Map<String, NodeInfo> nodes2) {
+			this.setNodes(nodes2);
+		}
 
 		@Override
 		public boolean evaluate(Context<Graph<String, String>, String> context) {
 			Graph<String,String> g = context.graph;
 			
-			return  g.inDegree(context.element) > 0 || 
-					g.outDegree(context.element) > 0;
-			
+			return nodes.get(context.element).getThreshold() >= threshold
+					&& (g.inDegree(context.element) > 0 || 
+					g.outDegree(context.element) > 0);		
+		}
+
+		public void setThreshold(float threshold) {
+			this.threshold = threshold;
+		}
+		
+		public void setNodes(Map<String, NodeInfo> nodes) {
+			this.nodes = nodes;
 		}
     	
     }

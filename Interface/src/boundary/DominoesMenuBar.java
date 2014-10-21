@@ -156,12 +156,7 @@ public class DominoesMenuBar extends MenuBar {
 
             @Override
             public void handle(ActionEvent event) {
-            	try{
-            		load(Configuration.beginDate, Configuration.endDate);
-            	} catch (ParseException e) {
-        			// TODO Auto-generated catch block
-        			e.printStackTrace();
-        		}
+        		App.load(Configuration.beginDate, Configuration.endDate);
             }
         });
 
@@ -270,7 +265,7 @@ public class DominoesMenuBar extends MenuBar {
         this.mDominoes_exit.setDisable(!this.mDominoes_exit.isDisable());
         this.mDominoes_exitAndSave.setDisable(!this.mDominoes_exitAndSave.isDisable());
         
-        this.mEdit.setDisable(!this.mEdit.isDisable());
+//        this.mEdit.setDisable(!this.mEdit.isDisable());
         
 //        this.mConfiguration.setDisable(!this.mConfiguration.isDisable());
         
@@ -278,24 +273,25 @@ public class DominoesMenuBar extends MenuBar {
 		
 	}
 	
-	public void load(String begin, String end) throws ParseException{
-		
+	public void load(String begin, String end) throws ParseException{	
 		try{
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
-			//sdfReduce.parse(begin);
-			//sdfReduce.parse(end);
 			System.out.println(begin);
 			System.out.println(end);
-	//		begin = sdf.parse(begin) control.Controller.changeFormat(sdfReduce, sdf, begin);
-		//	end = control.Controller.changeFormat(sdfReduce, sdf, end);
 			System.out.println(begin);
 			System.out.println(end);
 			sdf.parse(begin);
 			sdf.parse(end);
 		}catch(ParseException e){
-			System.err.println("format not found");
-			throw e;
+		}finally{
+			try{
+				sdf.parse(begin);
+				sdf.parse(end);
+			}catch(ParseException e){
+				System.err.println("format not found");
+				throw e;
+			}
 		}
 		
 		changeEnableDisble();

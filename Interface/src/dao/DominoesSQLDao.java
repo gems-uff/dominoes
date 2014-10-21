@@ -13,11 +13,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import javafx.scene.input.KeyCode;
-
 import org.apache.commons.lang.time.StopWatch;
-
+import javax.xml.ws.handler.MessageContext;
+import control.Controller;
 import arch.Cell;
 import arch.IMatrix2D;
 import arch.Matrix2DFactory;
@@ -43,6 +42,7 @@ public class DominoesSQLDao implements DominoesDao{
 	public static final int Bug_Commit = 6;
 	public static final int Commit_Method = 8;
 	
+	public static final int Amount_Tiles = 6;
 	
 	public enum Group {
 		Month,
@@ -148,7 +148,9 @@ public class DominoesSQLDao implements DominoesDao{
 		
 		stopWatch.stop();
 		System.out.println("**SQL (ms): " + stopWatch.getTime());
-
+		Controller.indexTileSelected = DominoesSQLDao.Commit_File;
+		Controller.printPrompt("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+						
 		
 		stopWatch.reset();
 		stopWatch.start();
@@ -198,9 +200,9 @@ public class DominoesSQLDao implements DominoesDao{
 				
 		return mat;
     }
-    
+     
     private IMatrix2D loadDeveloperCommit(String row, String col) throws Exception{
-    	String sql;
+		String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
@@ -210,7 +212,9 @@ public class DominoesSQLDao implements DominoesDao{
 
 		stopWatch.reset();
 		stopWatch.start();
+
 		
+		// Get all commits
 		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +
 				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		
@@ -258,6 +262,10 @@ public class DominoesSQLDao implements DominoesDao{
 			cells.add(c);
 		}
 		
+		Controller.indexTileSelected = DominoesSQLDao.Developer_Commit;
+		Controller.printPrompt("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+
+		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
@@ -293,7 +301,7 @@ public class DominoesSQLDao implements DominoesDao{
 		
 		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName;");
 		rs = smt.executeQuery(sql);
-				
+					
 		stopWatch.stop();
 		System.out.println("**SQL (ms): " + stopWatch.getTime());
 
@@ -339,6 +347,11 @@ public class DominoesSQLDao implements DominoesDao{
 			cells.add(c);
 		}
 		
+				
+		Controller.indexTileSelected = DominoesSQLDao.Package_File;
+		Controller.printPrompt("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+
+
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
 		mat.setData(cells);
@@ -362,9 +375,8 @@ public class DominoesSQLDao implements DominoesDao{
 		StopWatch stopWatch = new StopWatch();
 		System.out.println("*Loading File x Class");
 
-		stopWatch.reset();
 		stopWatch.start();
-		
+	
 		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName, TCL.name FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " +
 				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
 				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
@@ -420,6 +432,9 @@ public class DominoesSQLDao implements DominoesDao{
 
 			cells.add(c);
 		}
+		
+		Controller.indexTileSelected = DominoesSQLDao.File_Class;
+		Controller.printPrompt("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -507,6 +522,9 @@ public class DominoesSQLDao implements DominoesDao{
 
 			cells.add(c);
 		}
+		
+		Controller.indexTileSelected = DominoesSQLDao.Class_Method;
+		Controller.printPrompt("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -624,7 +642,11 @@ public class DominoesSQLDao implements DominoesDao{
 		sql = "SELECT TB.id, TC.hashcode FROM TCOMMIT TC, TREPOSITORY TR " +
 				"LEFT JOIN TBUG AS TB ON TB.commitid = TC.id " +
 				"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
-			
+				
+						
+		
+
+		
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
 		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
 
@@ -678,6 +700,9 @@ public class DominoesSQLDao implements DominoesDao{
 				cells.add(c);
 			}
 		}
+		
+		Controller.indexTileSelected = DominoesSQLDao.Bug_Commit;
+		Controller.printPrompt("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols()); 
 		
 		// Build Matrix
 		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
@@ -808,4 +833,5 @@ public class DominoesSQLDao implements DominoesDao{
 		
 		return results;
 	}
+	
 }

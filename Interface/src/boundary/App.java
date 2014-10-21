@@ -7,20 +7,24 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
-import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import javax.swing.JFrame;
+
+import control.Controller;
 import dao.DominoesSQLDao;
 import domain.Configuration;
 import domain.Dominoes;
@@ -48,11 +52,13 @@ public class App extends Application {
     private static String endDateWork = Configuration.endDate;
     
     private static ArrayList<Dominoes> array = null;
-
+    
+    private static GUIManager manager;
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-        	
+			
             App.stage = primaryStage;
             App.stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
             App.stage.centerOnScreen();
@@ -67,7 +73,7 @@ public class App extends Application {
             App.checkout(Configuration.beginDate, Configuration.endDate);
         	App.setTimelime();
             App.set();
-
+            
             time.setButtomOnAction(new EventHandler<ActionEvent>() {
     			
     			@Override
@@ -87,7 +93,7 @@ public class App extends Application {
     				}
     			}
     		});
-            
+          
             if(Configuration.resizableTimeOnFullScreen){
             	App.fillTimeHistoricPointers();
             }
@@ -95,9 +101,11 @@ public class App extends Application {
             if(!Configuration.automaticCheck){
             	App.clear();
             }
+            
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }
+        
     }
 
     private static void fillTimeHistoricPointers() {
@@ -191,24 +199,68 @@ public class App extends Application {
         max = max - min;
         min = 0;
 
+        App.stage.show();
+        
         App.time = new TimePane(min, max, min, min);
-        App.time.setVisible(Configuration.visibilityTimePane);
+        App.time.setVisible(true);
+        
+		manager = GUIManager.getInstance();
+		JFXPanel pane = new JFXPanel();
+		pane.setScene(stage.getScene());
+		JFrame window = new JFrame();
+		window.add(pane);
+		window.setAlwaysOnTop(true);
+		manager.setMainWindow(window);
+        
+        time.setButtomOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent arg0) {
+
+				beginDateWork = time.getValueToolTipMin();
+				endDateWork = time.getValueToolTipMax();
+
+				App.load(beginDateWork, endDateWork);
+			}
+        });
     	
+    }
+    
+    public static void load(String being, String end){
+    	manager.run(new Runnable(){
+			public void run(){
+				Platform.runLater(new Runnable(){
+					public void run(){
+						try {
+							App.menu.load(beginDateWork, endDateWork);
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
     }
     
     /**
      * Set the basic configuration of this Application
      */
     public static void set() {
-        if(Configuration.automaticCheck){
-        	array = control.Controller.loadAllMatrices();
+        if(Configuration.automaticCheck
+//        		&& beginDateWork.compareTo(endDateWork) < 0
+        		){
+        	control.Controller.loadAllMatrices();
+        	App.list = new ListViewDominoes(Controller.resultLoadMatrices);
         }else{
-        	array = null;
+        	App.list = new ListViewDominoes(null);
         }
-        App.list = new ListViewDominoes(array);
+        
+        
         App.visual = new Visual();
         App.area = new AreaMove();
         
+        App.scene = null;
         App.scene = new Scene(new Group());
         VBox back = new VBox();
         
@@ -216,22 +268,10 @@ public class App extends Application {
         vSplitPane.setOrientation(Orientation.VERTICAL);
         
         vSP_body_hSplitPane = new SplitPane();
-        
-//        App.scene.setOnMouseReleased(new EventHandler<MouseEvent>() {
-//
-//            @Override
-//            public void handle(MouseEvent event) {
-//                App.scene.setCursor(Cursor.DEFAULT);
-//            }
-//        });
-        
         vSP_body_hSplitPane.getItems().add(App.list);
         vSP_body_hSplitPane.getItems().add(App.area);
         vSP_body_hSplitPane.getItems().add(App.visual);
-        
-        if(App.time == null){
-        	App.setTimelime();
-        }
+
         
         vSP_head_TimePane = new BorderPane();
         vSP_head_TimePane.setCenter(time);
@@ -245,25 +285,30 @@ public class App extends Application {
         			vSplitPane.getItems().add(vSP_head_TimePane);
         			vSplitPane.getItems().add(vSP_body_hSplitPane);
         			
+        			vSP_body_hSplitPane.setPrefHeight(App.height/2);
+        			vSP_head_TimePane.setPrefHeight(App.height/2);
+        			
         		}else{
         			
         			vSplitPane.getItems().remove(vSP_head_TimePane);
-
+        			vSP_body_hSplitPane.setPrefHeight(App.height);
         		}
         	}
 		});
         
-        if(Configuration.visibilityTimePane) vSplitPane.getItems().add(vSP_head_TimePane);
+        if(Configuration.visibilityTimePane) 
+        	vSplitPane.getItems().add(vSP_head_TimePane);
+       
         vSplitPane.getItems().add(vSP_body_hSplitPane);
         
         back.getChildren().addAll(menu, vSplitPane);
         
         App.scene.setRoot(back);
         App.stage.setScene(App.scene);
-//        App.setFullscreen(Configuration.fullscreen);
-//        App.stage.show();
-//        App.time.definitionSlider(stage);
+        App.stage.show();
+        
         App.setFullscreen(Configuration.fullscreen);
+                
     }
     
     @Override
@@ -357,27 +402,26 @@ public class App extends Application {
         App.width = App.stage.getWidth();
         App.height = App.stage.getHeight();
         
-        if(App.time.isVisible()){
+        if(Configuration.visibilityTimePane){
         	App.time.definitionSlider(stage);
         }
         App.list.setSize(Configuration.listWidth , App.height - padding);
         App.visual.setSize(App.width, App.height - padding);
         App.area.setSize(App.width, App.height - padding);
-
+        stage.show();
     }
     
     static void changeVisibleTimePane(){
 	 	Configuration.visibilityTimePane = !Configuration.visibilityTimePane;
-	 	time.setVisible(Configuration.visibilityTimePane);
-	 	vSP_head_TimePane.setVisible(Configuration.visibilityTimePane);
-    	
+	 	App.time.setVisible(Configuration.visibilityTimePane);
+	 	App.vSP_head_TimePane.setVisible(Configuration.visibilityTimePane);
     }
     
     /**
     *
     */
    public static void start() {
-       launch((String[]) null);
+       launch(Controller.args );
    }
    
    static void drawGraph(Dominoes domino) {

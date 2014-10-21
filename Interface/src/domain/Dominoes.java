@@ -43,7 +43,6 @@ public final class Dominoes {
      This variables are used to know the sequence of the elements,
      the Group (Graphicaly) relative to this Domino, in time of the insert
      */
-    private static double GRAPH_ARC = 10;
     public final static int GRAPH_BORDER = 0;
     public final static int GRAPH_FILL = 1;
     public final static int GRAPH_LINE = 2;
@@ -53,9 +52,12 @@ public final class Dominoes {
     public final static int GRAPH_TRANSPOSE_ID_COL = 5;
     public final static int GRAPH_ID_ROW = 5;
     public final static int GRAPH_ID_COL = 6;
+    public final static int GRAPH_NORMAL_FONT_SIZE = 15;
+    public final static int GRAPH_AGGREG_FONT_SIZE = 12;
     
-
-    public final static int GRAPH_SIZE = 7;
+    private final static double GRAPH_ARC = 10;
+    
+    public final static int GRAPH_SIZE = 8;
 
     /*
      This variables are used to know the type of matrix
@@ -70,6 +72,8 @@ public final class Dominoes {
     public final static String TYPE_SUPPORT_CODE = "S";
     public final static String TYPE_CONFIDENCE_CODE = "C";
     public final static String TYPE_LIFT_CODE = "L";
+    
+    private final static String AGGREG_TEXT = "/SUM";
 
     private String idRow;
     private String idCol;
@@ -198,19 +202,24 @@ public final class Dominoes {
         line.setArcWidth(Dominoes.GRAPH_ARC);
 
         Text idRow = new Text(this.getIdRow());
-
-        idRow.setFont(new Font("Arial", 15));
         idRow.setFill(Dominoes.COLOR_NORMAL_FONT);
         idRow.setX(5);
         idRow.setY(2 * Dominoes.GRAPH_HEIGHT / 5);
         idRow.toFront();
+        if(this.getIdRow().startsWith(Dominoes.AGGREG_TEXT))
+        	idRow.setFont(new Font("Arial", Dominoes.GRAPH_AGGREG_FONT_SIZE));
+        else
+        	idRow.setFont(new Font("Arial", Dominoes.GRAPH_NORMAL_FONT_SIZE));
 
         Text idCol = new Text(this.getIdCol());
-        idCol.setFont(new Font("Arial", 15));
         idCol.setFill(Dominoes.COLOR_NORMAL_FONT);
         idCol.setX(Dominoes.GRAPH_WIDTH / 2 + 5);
         idCol.setY(2 * Dominoes.GRAPH_HEIGHT / 5);
         idCol.toFront();
+        if(this.getIdCol().startsWith(Dominoes.AGGREG_TEXT))
+        	idCol.setFont(new Font("Arial", Dominoes.GRAPH_AGGREG_FONT_SIZE));
+        else
+        	idCol.setFont(new Font("Arial", Dominoes.GRAPH_NORMAL_FONT_SIZE));
 
         String auxHistoric = this.historic.toString();
         Text historic;
@@ -429,23 +438,10 @@ public final class Dominoes {
             this.type = Dominoes.TYPE_SUPPORT;
         }
 
-        //String id = this.getIdRow();
-        //this.setIdRow(this.getIdCol());
-        //this.setIdCol(id);
-        
-        //System.out.println("first: "+this.getHistoric().getFirstItem());
-        //System.out.println("last: "+this.getHistoric().getLastItem());
-        // transpose this historic
-        //System.out.print(this.historic + "->");
-        this.getHistoric().reverse();
-        this.setIdRow("SUM");
-        this.setIdCol(this.getHistoric().getLastItem());
-        //System.out.println(this.historic);
-        System.out.println("first: "+this.getHistoric().getFirstItem());
-        System.out.println("last: "+this.getHistoric().getLastItem());
-        //this.setIdRow(this.getHistoric().getLastItem());
-        //this.setIdCol(this.getHistoric().getFirstItem());
-        
+//        this.getHistoric().reverse();
+        this.setIdRow(Dominoes.AGGREG_TEXT + " " + idRow);
+        this.historic.reduceRow();
+//        this.setIdCol(this.getHistoric().getLastItem());
         
         //this.historic = new Historic("SUM", this.getIdCol());
         

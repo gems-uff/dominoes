@@ -23,7 +23,7 @@ import javafx.scene.shape.Rectangle;
  */
 @SuppressWarnings("restriction")
 public class IntervalSlider extends Control {
-
+	
     private Group slider;
     
     private Rectangle back;
@@ -62,8 +62,6 @@ public class IntervalSlider extends Control {
     private double srcTranslateX;
     
     private boolean enableLinkPoint = false;
-    private double sizeLinkPoint = max - min;
-    private Double[] linkPoint;
     
     private String valueTooltipMin;
     private String valueTooltipMax;
@@ -83,7 +81,7 @@ public class IntervalSlider extends Control {
     }
     
 //    public IntervalSlider(double min, double max, double valueMin, double valueMax, double width, ArrayList<String> tooltip, Double[] linkPoint) throws IllegalArgumentException{
-    	public IntervalSlider(double min, double max, double valueMin, double valueMax, double width, ArrayList<String> tooltip) throws IllegalArgumentException{
+    public IntervalSlider(double min, double max, double valueMin, double valueMax, double width, ArrayList<String> tooltip) throws IllegalArgumentException{
     	
         this.min = min;
         this.max = max;
@@ -101,18 +99,6 @@ public class IntervalSlider extends Control {
         this.initialize();
         
     }
-
-    private void setLinkPoint(Double[] linkPoint) throws IllegalArgumentException {
-    	if(linkPoint == null
-    			|| linkPoint.length < 2
-    			|| linkPoint[0] != min
-    			|| linkPoint[linkPoint.length - 1] != max){
-    		throw new IllegalArgumentException("Invalid argument.\n"
-            		+ this.getClass().toString() + ".linkPoint attribute not is valid");
-    	}
-		this.linkPoint = linkPoint;
-		
-	}
 
 	public double getMin() {
         return min;
@@ -165,8 +151,6 @@ public class IntervalSlider extends Control {
     	Color stroke = new Color(0.3,0.3, 0.3, 1);
         Color selectedPointer = new Color(88.0/255.0,188.0/255.0, 222.0/255.0, 1);
         Color selectedAreaColor = new Color(0,150.0/255.0, 201.0/255.0, 0.5);
-        
-        double borderLine = 10;
         
         this.setHeight(sizePointer);
         
