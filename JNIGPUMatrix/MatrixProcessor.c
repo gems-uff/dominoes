@@ -320,8 +320,14 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 		fprintf(stderr, "nz1: %d\n", nonZeros_1);
 		fprintf(stderr, "nz2: %d\n", nonZeros_2);
 
-		int rows_1[nonZeros_1], cols_1[nonZeros_1], rows_2[nonZeros_2], cols_2[nonZeros_2];
-		float values_1[nonZeros_1], values_2[nonZeros_2];
+		int *rows_1 = (int*) malloc(sizeof(int) * nonZeros_1);
+		int *cols_1 = (int*) malloc(sizeof(int) * nonZeros_1);
+		int *rows_2 = (int*) malloc(sizeof(int) * nonZeros_2);
+		int *cols_2 = (int*) malloc(sizeof(int) * nonZeros_2);
+		float *values_1 = (float*) malloc(sizeof(float) * nonZeros_1);
+		float *values_2 = (float*) malloc(sizeof(float) * nonZeros_2);
+
+		fprintf(stderr, "malloc ok\n");
 
 		int k = 0;
 		for (int i = 0; i < mat1->outerSize(); ++i){
@@ -333,6 +339,8 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 			}
 		}
 
+		fprintf(stderr, "set ok\n");
+
 		k = 0;
 		for (int i = 0; i < mat2->outerSize(); ++i){
 			for (SpMatf::InnerIterator it((*mat2), i); it; ++it){
@@ -342,13 +350,15 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 				k++;
 			}
 		}
-
+		fprintf(stderr, "set2 ok\n");
 
 		int *res_rows, *res_cols, res_nz;
 		float *res_data;
 
+		fprintf(stderr, "before gpu ok\n");
 		g_MatMul(mat1->rows(), mat1->cols(), mat2->cols(), nonZeros_1, nonZeros_2,
 				rows_1, cols_1, values_1, rows_2, cols_2, values_2, &res_rows, &res_cols, &res_data, res_nz);
+		fprintf(stderr, "after gpu ok\n");
 
 		fprintf(stderr, "nz1\n");
 
@@ -359,6 +369,12 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 		free(res_rows);
 		free(res_cols);
 		free(res_data);
+		free(rows_1);
+		free(cols_1);
+		free(rows_2);
+		free(cols_2);
+		free(values_1);
+		free(values_2);
 	} else {
 		(*result) = (*mat1) * (*mat2);
 	}

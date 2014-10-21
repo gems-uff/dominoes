@@ -125,30 +125,39 @@ extern "C" {
     	int **row_res, int **col_res, float **value_res,
     	int& res_nz){
     
+    	fprintf(stderr, "before coo1\n");
+    	
     	cusp::coo_matrix<int,float,cusp::host_memory> matA(n_rowsA,n_colsA,nzA);
     	for (int i = 0; i < nzA; i++){
     		matA.row_indices[i] = rowsA[i]; matA.column_indices[i] = colsA[i]; matA.values[i] = valuesA[i];
     	}
+    	fprintf(stderr, "before coo2\n");
     	cusp::coo_matrix<int,float,cusp::device_memory> matA_d = matA;
     	
+    	fprintf(stderr, "before coo3\n");
     	cusp::coo_matrix<int,float,cusp::host_memory> matB(n_colsA,n_colsB,nzB);
     	for (int i = 0; i < nzB; i++){
     		matB.row_indices[i] = rowsB[i]; matB.column_indices[i] = colsB[i]; matB.values[i] = valuesB[i];
     	}
+    	fprintf(stderr, "before coo4\n");
     	cusp::coo_matrix<int,float,cusp::device_memory> matB_d = matB;
     	
+    	fprintf(stderr, "result: r: %d, c: %d, total: %d\n", n_rowsA,n_colsB, n_rowsA * n_colsB);
     	cusp::coo_matrix<int,float,cusp::device_memory> matRes_d(n_rowsA,n_colsB, n_rowsA * n_colsB);
-    	
+    	fprintf(stderr, "before coo6\n");
     	
     	cusp::multiply(matA_d, matB_d, matRes_d);
+    	fprintf(stderr, "before coo7\n");
     	
     	cusp::coo_matrix<int,float,cusp::host_memory> matRes = matRes_d;
+    	fprintf(stderr, "before coo8\n");
     	
     	res_nz = matRes.num_entries;
     	int *_row_res = new int[res_nz];
     	int *_col_res = new int[res_nz];
     	float *_value_res = new float[res_nz];
     	
+    	fprintf(stderr, "before coo9\n");
     	
     	for(size_t n = 0; n < res_nz; n++)
   		{
@@ -156,6 +165,8 @@ extern "C" {
     		_col_res[n] = matRes.column_indices[n];
    		 	_value_res[n] = matRes.values[n];
    		}
+   		
+   		fprintf(stderr, "before coo10\n");
 
 		*row_res = _row_res;
     	*col_res = _col_res;

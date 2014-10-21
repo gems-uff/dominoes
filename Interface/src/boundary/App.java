@@ -72,9 +72,12 @@ public class App extends Application {
     			
     			@Override
     			public void handle(ActionEvent arg0) {
+
     				try{
-	    			    beginDateWork = time.getValueToolTipMin();
-	    			    endDateWork = time.getValueToolTipMax();
+	    			    beginDateWork =  time.getValueToolTipMin().substring(3, 7) + "-" + 
+	    			    		time.getValueToolTipMin().substring(0, 2) + "-01  00:00:00";
+	    			    endDateWork =  time.getValueToolTipMax().substring(3, 7) + "-" + 
+	    			    		time.getValueToolTipMax().substring(0, 2) + "-31  00:00:00";
 	    			    System.out.println("begin: " + beginDateWork);
 	    			    System.out.println("end: " + endDateWork);
 	    				App.menu.load(beginDateWork, endDateWork);

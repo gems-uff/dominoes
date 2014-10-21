@@ -281,15 +281,14 @@ public class DominoesMenuBar extends MenuBar {
 	public void load(String begin, String end) throws ParseException{
 		
 		try{
-			SimpleDateFormat sdfReduce = new SimpleDateFormat("MM/yyyy");
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
-			sdfReduce.parse(begin);
-			sdfReduce.parse(end);
+			//sdfReduce.parse(begin);
+			//sdfReduce.parse(end);
 			System.out.println(begin);
 			System.out.println(end);
-			begin = control.Controller.changeFormat(sdfReduce, sdf, begin);
-			end = control.Controller.changeFormat(sdfReduce, sdf, end);
+	//		begin = sdf.parse(begin) control.Controller.changeFormat(sdfReduce, sdf, begin);
+		//	end = control.Controller.changeFormat(sdfReduce, sdf, end);
 			System.out.println(begin);
 			System.out.println(end);
 			sdf.parse(begin);
