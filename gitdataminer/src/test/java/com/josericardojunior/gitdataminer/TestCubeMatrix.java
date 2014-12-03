@@ -86,7 +86,7 @@ public class TestCubeMatrix {
 		// ************************************************ // ************************************************* //	
 			
 			System.out.println("Extracting EBD cube at method level");						
-			Matrix3D cubeEBD_Method = Database.ExtractDevArtifactSupportCube(Grain.METHOD, projName, null, CubeOptions.Max_Commit_Month, 100, 2);
+			Matrix3D cubeEBD_Method = Database.ExtractDevArtifactSupportCube(Grain.METHOD, projName, null, CubeOptions.Max_Commit_Month, 10, 1);
 			cubeEBD_Method = StandardScore.Process(cubeEBD_Method, Algorithm.CPU);
 						
 			// Compute the EBD at file grain considering EBD at method grain
@@ -130,6 +130,7 @@ public class TestCubeMatrix {
 							for (int offset = idxFileStard; offset < idxFileEnd; offset++){
 								float value = _mat.GetElement(row, offset);
 								
+								
 								if (value > 0) sum++;
 							}
 							
@@ -145,8 +146,10 @@ public class TestCubeMatrix {
 				cubeEBDFileFromMethod.AddLayer(entry.getKey(), _layer);						
 			}
 			
+						
+			
 			// Apply the z-score in the new EBD cube from methods
-			cubeEBDFileFromMethod = StandardScore.Process(cubeEBDFileFromMethod, Algorithm.CPU);
+			//cubeEBDFileFromMethod = StandardScore.Process(cubeEBDFileFromMethod, Algorithm.CPU);
 			
 			
 			// Flatten the cube
@@ -171,11 +174,12 @@ public class TestCubeMatrix {
 				
 				for (int row = 0; row < _matDesc.getNumRows(); row++ ){
 					float count = _mat.RowCount(row, 0);
+					//float count = _mat.SumRow(row);
 					
-					flatten.SetElement(_matDesc.getRowAt(row), entry.getKey(), count);
+					flatten.SetElement(_matDesc.getRowAt(row), entry.getKey(), _mat.GetElement(row, 0));
 				}				
 			}
-			flatten.ExportCSV("MaxMonthEDBFileFromMethods_2.txt");
+			flatten.ExportCSV("MaxMonthEDBFileFromMethods_specificFile.txt");
 			
 			
 			

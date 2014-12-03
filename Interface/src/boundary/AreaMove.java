@@ -93,7 +93,8 @@ public class AreaMove extends Pane {
         MenuItem menuItemSaveInList = new MenuItem("Save");
         MenuItem menuItemViewGraph = new MenuItem("Graph");
         MenuItem menuItemViewMatrix = new MenuItem("Matrix");
-        MenuItem menuItemViewChart = new MenuItem("Chart");
+        MenuItem menuItemViewChart = new MenuItem("Bar Chart");
+        MenuItem menuItemViewLineChart = new MenuItem("Line Chart");
         MenuItem menuItemViewTree = new MenuItem("Tree");
         MenuItem menuItemClose = new MenuItem("Close");
         
@@ -331,13 +332,16 @@ public class AreaMove extends Pane {
                     drawChart(domino);
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewTree.getText())) {
                     drawTree(domino);
-                }
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemViewLineChart.getText())) {
+        			drawLineChart(domino);
+        		}
             }
         });
         
         menuOperate.getItems().addAll(menuItemTranspose, menuItemAgreggateRow,
         		menuItemAgreggateCol, menuItemLift, menuItemZScore);
-        menuView.getItems().addAll(menuItemViewChart, menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
+        menuView.getItems().addAll(menuItemViewChart, menuItemViewLineChart, 
+        		menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
     }
 
@@ -880,6 +884,10 @@ public class AreaMove extends Pane {
     
     private void drawChart(Dominoes domino) {
         App.drawChart(domino);
+    }
+    
+    private void drawLineChart(Dominoes domino) {
+        App.drawLineChart(domino);
     }
     
     private void drawTree(Dominoes domino) {

@@ -39,7 +39,7 @@ public class TestAccuraracyLiftSupConf {
 		
 		try {
 			//Matrix2D FCM = Database.ExtractFileClassMethodComposition(projName);
-			Matrix2D CA = Database.ExtractCommitArtifactMatrix(Grain.FILE, projName);
+			Matrix2D CA = Database.ExtractCommitArtifactMatrix(Grain.FILE, projName, null);
 			System.out.println("CA " + 
 					(usingMethod ? "(Method)" : "(File)") +
 					": rows" + CA.getMatrixDescriptor().getNumRows() + " Cols: " + CA.getMatrixDescriptor().getNumCols());

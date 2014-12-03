@@ -42,6 +42,7 @@ import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -375,11 +376,39 @@ public class GraphPane extends BorderPane {
     	float max = domino.getMat().findMaxValue();
     	float dist = max - min;
     	
-    	for (Cell cell : nz){
+    	List<Cell> _cells = new ArrayList<>();
+    	
+    	if (domino.isSquare()){
+    		for (Cell cell : nz){
+    			
+    			Cell c = null;
+    			
+    			for (Cell _c : _cells){
+    				if (_c.row ==  cell.col){
+    					c = new Cell();
+    					c.row = cell.col;
+    					c.col = cell.row;
+    					c.value = cell.value;
+    					break;
+    				}
+    			}
+    			
+    			if (c != null){
+    				_cells.add(c);
+    			} else {
+    				_cells.add(cell);
+    			}
+    		}
+    	}
+    	
+    	for (Cell cell : _cells){
+    		
+    		
     		NodeInfo n1 = null;
     		NodeInfo n2 = null;
     		String id1 = null;
     		String id2 = null;
+    		
     		
     		if (domino.isSquare() && domino.getIdRow().equals(domino.getIdCol())){
     			
@@ -388,8 +417,17 @@ public class GraphPane extends BorderPane {
     			}
     		}
 			
-    		id1 = "R" + cell.row;
-    		id2 = "C" + cell.col;
+    		if (domino.isSquare()){
+    			id1 = Integer.toString(cell.row);
+    			id2 = Integer.toString(cell.col);
+    		} else {
+        		id1 = "R" + cell.row;
+        		id2 = "" + cell.col;   			
+    		}
+
+    		
+
+    	
     		
     		if (nodes.containsKey(id1)){  
 				n1 = nodes.get(id1); 

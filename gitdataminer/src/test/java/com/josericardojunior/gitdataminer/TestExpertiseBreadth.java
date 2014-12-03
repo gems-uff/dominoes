@@ -37,7 +37,8 @@ public class TestExpertiseBreadth {
 		
 		MatrixDescriptor matDesc = matrix.getMatrixDescriptor();
 		
-		for (int col = indexStart; col < matDesc.getNumCols(); col++){
+		int col = indexStart;
+		for (; col < matDesc.getNumCols(); col++){
 			String colDesc = matDesc.getColumnAt(col);
 			String file = colDesc.substring(0, colDesc.indexOf('$'));
 			
@@ -45,6 +46,10 @@ public class TestExpertiseBreadth {
 				return col;
 		}
 		
+		if (col == matDesc.getNumCols()){
+			return col -1;
+		}
+
 		return -1;
 		
 	}
@@ -68,12 +73,12 @@ public class TestExpertiseBreadth {
 			
 			// Calculate using File
 			System.out.println("Matrix CA");
-			Matrix2D CAF = Database.ExtractCommitArtifactMatrix(Grain.FILE, projName);
+			Matrix2D CAF = Database.ExtractCommitArtifactMatrix(Grain.FILE, projName, null);
 			//CAF.ExportCSV("CAF.txt");
 			//CA.Debug();
 			
 			System.out.println("Matrix DC");
-			Matrix2D DC = Database.ExtractDeveloperCommitMatrix(projName);
+			Matrix2D DC = Database.ExtractDeveloperCommitMatrix(projName, null);
 			//DC.Debug();
 			
 			//for (int i = 0; i < CAF.getMatrixDescriptor().getNumRows(); i++)
@@ -85,7 +90,7 @@ public class TestExpertiseBreadth {
 			//DAF.ExportCSV("DAF.txt");
 			
 			System.out.println("Matrix SSF");
-			Matrix2D SSF = StandardScore.Process(DAF);
+			Matrix2D SSF = StandardScore.Process(DAF, false);
 			
 			//SSF.ExportCSV("SSF.txt");
 
@@ -110,13 +115,13 @@ public class TestExpertiseBreadth {
 			
 			// Calculate using method
 			System.out.println("Matrix CAM");
-			Matrix2D CAM = Database.ExtractCommitArtifactMatrix(Grain.METHOD, projName);
+			Matrix2D CAM = Database.ExtractCommitArtifactMatrix(Grain.METHOD, projName, null);
 
 			System.out.println("Matrix DAM");
 			Matrix2D DAM = DC.GPUMultiplication(CAM);
 			
 			System.out.println("Matrix SSM");
-			Matrix2D SSM = StandardScore.Process(DAM);
+			Matrix2D SSM = StandardScore.Process(DAM, false);
 			//SSM.ExportCSV("SSM.txt");
 						
 			
@@ -179,7 +184,7 @@ public class TestExpertiseBreadth {
 			}*/
 			
 			// Process the z-scove over SSM
-			SSMCount = StandardScore.Process(SSMCount);
+			SSMCount = StandardScore.Process(SSMCount, false);
 			
 			// Get the frequencey of how many times a discrepancy occurs
 			StringBuffer analysisResust = new StringBuffer();

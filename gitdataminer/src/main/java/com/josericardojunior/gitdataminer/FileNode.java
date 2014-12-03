@@ -54,7 +54,6 @@ public class FileNode extends PatchInfo {
 	private void extractPackage(Repository _repo) throws MissingObjectException, IOException{
 		ObjectLoader newFile = _repo.open(this.newObjId);
 		String newData = readStream(newFile.openStream());
-		
 
 		
 		ASTParser parser = ASTParser.newParser(AST.JLS3);

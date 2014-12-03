@@ -69,13 +69,13 @@ public class RepositoryNode {
 		
 		Database.Open();
 		Date lastCommitDate = Database.AddRepository(repoNode);
-		CommitNode.SaveToDatabase(repoNode, lastCommitDate);
+		CommitNode.SaveToDatabase(repoNode, null);
 		
-		try {
+		/*try {
 			Database.MineBugs("derby-", repoNode);
 		} catch (SQLException ex){
 			ex.printStackTrace();
-		}
+		}*/
 		Database.UpdateRepoToLastCommit(repoNode);
 		
 		Database.Close();

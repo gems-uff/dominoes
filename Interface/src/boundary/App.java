@@ -436,6 +436,10 @@ public class App extends Application {
        visual.addTabChart(domino);
    }
    
+   static void drawLineChart(Dominoes domino) {
+       visual.addTabLineChart(domino);
+   }
+   
    static void drawTree(Dominoes domino) {
        visual.addTabTree(domino);
    }

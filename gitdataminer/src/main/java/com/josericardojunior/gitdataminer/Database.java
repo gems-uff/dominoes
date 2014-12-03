@@ -462,9 +462,8 @@ public class Database {
 	 * thre right way to do it. Use the ____ instead and multiply with compositions matrix in order to navigate from coarse to fine grain
 	 * @throws SQLException
 	 */
-	@Deprecated
 	public static Matrix2D ExtractCommitArtifactMatrix(Analyzer.Grain grain, 
-			String _repository) throws SQLException{
+			String _repository, String filename) throws SQLException{
 		
 		String sql;
 		MatrixDescriptor descriptor = new MatrixDescriptor(InfoType.COMMIT, InfoType.ARTIFACT);
@@ -472,9 +471,13 @@ public class Database {
 		ResultSet rs;
 		
 		// Get all commits
-		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR "
-				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + _repository + "' "
-				+ "ORDER BY TC.Date;";
+		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF "
+				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + _repository + "' ";
+				
+		if (filename != null)
+			sql = sql.concat("AND TF.commitid = TC.id AND TF.newName = '" + filename + "' ");
+		
+		sql = sql.concat("ORDER BY TC.Date, TC.HashCode;");
 		rs = smt.executeQuery(sql);
 		
 		while (rs.next())
@@ -486,8 +489,13 @@ public class Database {
 		switch (grain){
 		case FILE:
 			sql = "SELECT Distinct(TF.NewName) FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR " +
-					"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' " +					
-					"AND TR.name = '" + _repository + "';";					
+					"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' ";
+					
+			if (filename != null)
+				sql = sql.concat("AND TF.newName = '" + filename + "' ");
+			
+			sql = sql.concat("AND TR.name = '" + _repository + "';");					
+			
 					
 			rs = smt.executeQuery(sql);
 			
@@ -501,9 +509,13 @@ public class Database {
 			sql = "SELECT DISTINCT TFL.NewName, TCL.name as ClassName, TF.name as FuncName " + 
 						"FROM TFunction TF, TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
 					"WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id " + 
-						"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id " +						
-						"AND TR.name = '" + _repository + "' " + 
-					"GROUP BY TFL.NewName, TCL.name, TF.name;";
+						"AND TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id ";
+					
+			if (filename != null)
+				sql = sql.concat("AND TFL.newName = '" + filename + "' ");
+			
+			sql = sql.concat("AND TR.name = '" + _repository + "' "); 
+			sql = sql.concat("GROUP BY TFL.NewName, TCL.name, TF.name;");
 			
 			rs = smt.executeQuery(sql);
 			
@@ -524,8 +536,12 @@ public class Database {
 		case FILE:
 			sql = "SELECT TC.HashCode, TF.NewName FROM TFILE TF, TCOMMIT TC, TREPOSITORY TR " +
 					"WHERE TF.CommitId = TC.id AND TC.RepoId = TR.id AND TF.NewName NOT LIKE 'null' " +
-						"AND TR.name = '" + _repository + "' " +
-					"ORDER BY TC.Date, TF.NewName;";
+						"AND TR.name = '" + _repository + "' ";
+					
+			if (filename != null)
+				sql = sql.concat("AND TF.newName = '" + filename + "' ");
+			
+			sql = sql.concat("ORDER BY TC.Date, TF.NewName;");
 			
 			rs = smt.executeQuery(sql);
 			
@@ -544,9 +560,13 @@ public class Database {
 			sql = "SELECT TC.hashcode, TFL.NewName, TCL.name as ClassName, TF.name as FuncName from TFunction TF, " +
 						"TCLASS TCL, TFILE TFL, TCOMMIT TC, TREPOSITORY TR " +
 					"WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id AND " +
-						"TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id AND " +						
-						"TR.name = '" + _repository + "' " +
-					"ORDER BY TC.Date, TFL.newname, TCL.name, TF.name;";
+						"TFL.NewName NOT LIKE 'null' AND TC.RepoId = TR.id "; 
+					
+			if (filename != null)
+				sql = sql.concat("AND TFL.newName = '" + filename + "' ");
+			
+			sql = sql.concat("AND TR.name = '" + _repository + "' "); 
+			sql = sql.concat("ORDER BY TC.Date, TFL.newname, TCL.name, TF.name;");
 			
 			
 			rs = smt.executeQuery(sql);
@@ -644,7 +664,7 @@ public class Database {
 	 * @return A 2D Matrix containing information about what developer performed a commit
 	 * @throws SQLException
 	 */
-	public static Matrix2D ExtractDeveloperCommitMatrix(String _repository) 
+	public static Matrix2D ExtractDeveloperCommitMatrix(String _repository, String filename) 
 			throws SQLException{
 		
 		String sql;
@@ -653,9 +673,13 @@ public class Database {
 		ResultSet rs;
 		
 		// Get all commits
-		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR "
-				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + _repository + "' "
-				+ "ORDER BY TC.Date;";
+		sql = "SELECT TC.HashCode, TC.Date FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF "
+				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + _repository + "' ";
+		
+		if (filename != null)
+			sql = sql.concat("AND TF.commitid = TC.id AND TF.newname = '" + filename + "' ");
+		
+		sql = sql.concat("ORDER BY TC.Date, TC.HashCode;");
 		rs = smt.executeQuery(sql);
 		
 		while (rs.next())
@@ -677,8 +701,14 @@ public class Database {
 		Matrix2D mat = new Matrix2D(descriptor);
 		
 		// Get all commits
-		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + _repository + "';";
+		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR, TFILE TF " +
+				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + _repository + "' ";
+		
+		
+		if (filename != null)
+			sql = sql.concat("AND TF.commitid = TC.id AND TF.newname = '" + filename + "' ");
+		
+		sql = sql.concat("ORDER BY TC.Date, TC.HashCode;");
 
 		rs = smt.executeQuery(sql);
 		
@@ -725,6 +755,7 @@ public class Database {
 			sql = sql.concat("WHERE TF.newname != 'null' AND TF.CommitId = TC.id AND ");
 			sql = sql.concat("TC.RepoId = TR.id AND TR.name = '" + _repository + "' ");
 			if (startDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(startDate) + "'");
+			sql = sql.concat("AND TF.Newname like 'java/engine/org/apache/derby/impl/jdbc/EmbedConnection.java' ");
 			sql = sql.concat(";");
 			
 			rs = smt.executeQuery(sql);
@@ -741,6 +772,7 @@ public class Database {
 			sql = sql.concat("WHERE TF.classid = TCL.id AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id AND FileName != 'null' "); 			
 			sql = sql.concat("AND TC.RepoId = TR.id  AND TR.name = '" + _repository + "' ");
 			if (startDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(startDate) + "' ");
+			sql = sql.concat("AND FileName like 'java/engine/org/apache/derby/impl/jdbc/EmbedConnection.java' ");
 			sql = sql.concat("GROUP BY TCL.name, TF.name;");
 			
 			rs = smt.executeQuery(sql);
@@ -769,6 +801,8 @@ public class Database {
 				sql = sql.concat("TC.userid = TU.id AND TF.CommitId = TC.id AND "); 
 				sql = sql.concat("TC.repoid = tr.id and TR.name = '" + _repository + "' ");
 				if (startDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(startDate) + "' "); 
+				sql = sql.concat("AND TF.newname like 'java/engine/org/apache/derby/impl/jdbc/EmbedConnection.java' ");
+
 				sql = sql.concat("ORDER BY TC.date desc, TC.hashcode;");
 				
 				rs = smt.executeQuery(sql);
@@ -963,6 +997,7 @@ public class Database {
 				sql = sql.concat("AND TCL.fileid = TFL.id AND TFL.CommitID = TC.id AND TFL.newname != 'null' "); 
 				if (startDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(startDate) + "' "); 
 				sql = sql.concat("AND TC.userid = TU.id AND tc.repoid =  tr.id and TR.name = '" + _repository + "'" );
+				sql = sql.concat("AND TFL.newname like 'java/engine/org/apache/derby/impl/jdbc/EmbedConnection.java' ");
 				sql = sql.concat("ORDER BY tc.date desc, tc.hashcode;");
 				
 				rs = smt.executeQuery(sql);
@@ -979,10 +1014,11 @@ public class Database {
 								" Multiplicator: " + multiplicator + "Using: " + num_commits_per_layer);
 					}
 					else {
-						System.out.println("Using minimum: " + num_commits_per_layer);
+						
 					}
+					System.out.println("Month: " + entry.getKey() + " Value: " + entry.getValue() + 
+							" Multiplicator: " + multiplicator + "Using: " + num_commits_per_layer);
 					
-					break;
 				}
 				
 				
@@ -1166,8 +1202,9 @@ public class Database {
 			
 						
 			String sql = "SELECT strftime('%m-%Y', TCommit.Date) as 'month-year', "
-					+ "COUNT(TCommit.Date) AS TotalMonth FROM TCOMMIT, TREPOSITORY " +
+					+ "COUNT(TCommit.Date) AS TotalMonth FROM TCOMMIT, TREPOSITORY, TFILE " +
 					"WHERE TCOMMIT.RepoId = TREPOSITORY.id AND " +
+					"TFILE.commitId = TCOMMIT.id AND TFile.newname like 'java/engine/org/apache/derby/impl/jdbc/EmbedConnection.java' AND " +
 					"TREPOSITORY.Name = '" + projName + "' " +
 					"GROUP BY strftime('%m-%Y', Date) ORDER BY TotalMonth desc;";
 			

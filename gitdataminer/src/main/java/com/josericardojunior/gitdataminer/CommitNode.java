@@ -221,9 +221,12 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 			rw.markStart(root);
 			
 			RevCommit c = null;
+			//Map<String, String> v = new HashMap<String, String>();
+			
 			while ((c = rw.next()) != null){
 				CommitNode commit = Parse(c, 
 						repoNode.getRepository(), lastCommitDate);
+				commit.id = c.getId().toString();
 				
 				if (commit != null){
 					for (FileNode f : commit.files){
@@ -233,13 +236,20 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 					
 					commit.user = UserNode.AddOrRetrieveUser(c.getAuthorIdent().getName());
 					commit.logMessage = c.getFullMessage();
-					commit.id = c.getId().toString();
+					
 					System.out.println("Processados: " + counter);
-					System.out.println("Msg: " + commit.logMessage);
 					Database.AddCommit(commit, repoNode);
 					counter++;
+					
+				//	if (!v.containsKey(commit.user.name)){
+					//	v.put(commit.user.name, c.getCommitterIdent().getEmailAddress());
+					//}
 				}
 			}
+			
+			//for (String key : v.keySet()){
+				//System.out.println(key + " - " + v.get(key));
+			//}
 			
 		} catch (AmbiguousObjectException e) {
 			// TODO Auto-generated catch block

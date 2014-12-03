@@ -274,8 +274,11 @@ public class DominoesMenuBar extends MenuBar {
 	}
 	
 	public void load(String begin, String end) throws ParseException{	
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
 		try{
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			
 			
 			System.out.println(begin);
 			System.out.println(end);

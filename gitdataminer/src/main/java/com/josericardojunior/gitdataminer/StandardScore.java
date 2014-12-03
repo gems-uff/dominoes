@@ -9,13 +9,13 @@ import com.josericardojunior.gitdataminer.Definitions.Algorithm;
 
 public class StandardScore {
 	
-	public static Matrix2D Process(Matrix2D _mat){
+	public static Matrix2D Process(Matrix2D _mat, boolean removeNZRows){
 		
 		MatrixDescriptor desc = _mat.getMatrixDescriptor();
 		
 		// Calculates the mean
 		System.out.println("Calculating Mean and Standar Deviation");
-		Matrix2D meanSDMat = RateOfMean.ColumnMeanAndStandardDeviation(_mat);
+		Matrix2D meanSDMat = RateOfMean.ColumnMeanAndStandardDeviation(_mat, removeNZRows);
 		
 		
 		// Calculate the standard score
@@ -56,24 +56,45 @@ public class StandardScore {
 		
 		System.out.println("Processing layers...");
 		int c = 0;
+		boolean print = false;
+		boolean print2 = false;
 		for (Map.Entry<String, Matrix2D> entry : records){
 						
 			Matrix2D layer = entry.getValue();
 			MatrixDescriptor layerDesc = layer.getMatrixDescriptor();
-			//Matrix2D layerSS = new Matrix2D(layerDesc);
-			Matrix2D layerSS = layer.DoGPUStandardScore(_meanMat);
+			Matrix2D layerSS = new Matrix2D(layerDesc);
+			//Matrix2D layerSS = layer.DoGPUStandardScore(_meanMat);
 						
-			/*for (int col = 0; col < layerDesc.getNumCols(); col++){								
+			for (int col = 0; col < layerDesc.getNumCols(); col++){								
 				String colName = layerDesc.getColumnAt(col);
 				float _mean = _meanMat.GetElement(RateOfMean.Mean, layerDesc.getColumnAt(col));
 				float _sd = _meanMat.GetElement(RateOfMean.StandardDeviation, colName);
 				
 				for (int row = 0; row < layerDesc.getNumRows(); row++){
+					
+					
+					float _vv = layer.GetElement(row, col);
+					if (_vv >= 8 && print == false){
+						print = true;
+						float _ss = (layer.GetElement(row, col) - _mean) / _sd;
+						System.out.println(_ss);
+					}
+					
+
+					
 					layerSS.SetElement(layerDesc.getRowAt(row),
 							layerDesc.getColumnAt(col),
 							(layer.GetElement(row, col) - _mean) / _sd);
 				}
-			}*/
+				
+
+			}
+			
+			if (print == true && print2 == false){
+				print2 = true;
+				layerSS.Debug();
+				
+			}
 			
 			res.AddLayer(entry.getKey(), layerSS);
 			
@@ -146,7 +167,7 @@ public class StandardScore {
 		
 		System.out.println();
 		System.out.println("z-score Matrix");
-		Matrix2D ss = StandardScore.Process(testMat);
+		Matrix2D ss = StandardScore.Process(testMat, true);
 		ss.Debug();
 	}
 	

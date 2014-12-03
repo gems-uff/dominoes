@@ -230,7 +230,7 @@ public static Matrix2D ColumnDepthMeanAndStandardDeviation(Matrix3D _cube, Defin
 		return _meanSDMat;
 	}
 	
-	public static Matrix2D ColumnMeanAndStandardDeviation(Matrix2D _mat){
+	public static Matrix2D ColumnMeanAndStandardDeviation(Matrix2D _mat, boolean removeNonZeros){
 		
 				
 		MatrixDescriptor _matDesc = _mat.getMatrixDescriptor();
@@ -250,18 +250,29 @@ public static Matrix2D ColumnDepthMeanAndStandardDeviation(Matrix3D _cube, Defin
 		
 		
 		float [] sumCols = new float[_numColumns];
+		int [] nzRows = new int[_numColumns];
 					
 			
 		for (int col = 0; col < _matDesc.getNumCols(); col++){
 				
-			sumCols[col] = _mat.SumCol(col);
+			for (int row = 0; row < _numRows; row++){
+				float _elem = _mat.GetElement(row, col);
+				sumCols[col] += _elem;
+				
+				if (removeNonZeros){
+					if (_elem > 0)
+						nzRows[col]++;
+				} else nzRows[col]++;
+			}
+			
 		}
 		
 		
 		for (int col = 0; col < _meanSDDesc.getNumCols(); col++){
 						
+			float _mean = sumCols[col] / nzRows[col];
 			_meanSDMat.SetElement(Mean,
-					_meanSDDesc.getColumnAt(col), sumCols[col] / _numRows);
+					_meanSDDesc.getColumnAt(col), _mean);
 		}
 		
 		
@@ -273,15 +284,20 @@ public static Matrix2D ColumnDepthMeanAndStandardDeviation(Matrix3D _cube, Defin
 			float _colMedian = _meanSDMat.GetElement(Mean, _meanSDDesc.getColumnAt(col));
 					
 			for (int row = 0; row < _matDesc.getNumRows(); row++){	
-				float _deviate = _mat.GetElement(row, col) - _colMedian;						
+				float _elem = _mat.GetElement(row, col);
+				
+				float _deviate = _elem > 0 ? _elem- _colMedian : 0;						
 				variance[col] += _deviate * _deviate;
 			}
 		}
 		
-		for (int i = 0; i < _meanSDDesc.getNumCols(); i++) 
+		for (int i = 0; i < _meanSDDesc.getNumCols(); i++){ 
+			float _ssd = (float) Math.sqrt(variance[i] / nzRows[i]);
+		
 			_meanSDMat.SetElement(StandardDeviation,
 					_meanSDDesc.getColumnAt(i), 
-						(float) Math.sqrt(variance[i] / _numRows ));
+						_ssd);
+		}
 							
 		return _meanSDMat;
 	}

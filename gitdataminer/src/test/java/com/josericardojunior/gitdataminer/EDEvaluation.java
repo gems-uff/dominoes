@@ -18,7 +18,7 @@ public class EDEvaluation {
 		String projName = "derby";
 		String repoPath = "/home/josericardo/Projects/dominoes/" 
 				+ projName + "/";
-		String fileName = "MaxMonthED.txt";
+		String fileName = "MaxMonthEDFile.txt";
 		StopWatch timer = new StopWatch();
 		
 		Database.Open();
@@ -29,7 +29,7 @@ public class EDEvaluation {
 			timer.reset();
 			timer.start();
 			Matrix3D cubeED = Database.ExtractDevArtifactSupportCube(Grain.FILE, projName, null, 
-					CubeOptions.Max_Commit_Month, 100, 1);
+					CubeOptions.Max_Commit_Month, 10, 1);
 			timer.stop();	
 			System.out.println("---Time (ms): " + timer.getTime());
 
@@ -64,7 +64,7 @@ public class EDEvaluation {
 				MatrixDescriptor _matDesc = _mat.getMatrixDescriptor();
 							
 				for (int row = 0; row < _matDesc.getNumRows(); row++ ){
-					float count = _mat.RowCount(row, 0);
+					float count = _mat.SumRow(row);
 								
 					cubeEDflatten.SetElement(_matDesc.getRowAt(row), entry.getKey(), count);
 				}				

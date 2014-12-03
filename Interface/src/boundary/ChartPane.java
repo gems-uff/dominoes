@@ -45,6 +45,7 @@ public class ChartPane extends Pane {
 
 	private static final String TYPE_ORDER_BY_NORMAL = "Normal";
 	private static final String TYPE_ORDER_BY_INCREASING = "Increasing";
+	private static final String TYPE_ORDER_BY_DECREASING = "Decreasing";
 	
     private ComboBox<String> cbSelectedRow;
     private ComboBox<String> cbOrderBy;
@@ -99,6 +100,7 @@ public class ChartPane extends Pane {
         
         itemsBCOrderBy.add(TYPE_ORDER_BY_NORMAL);
         itemsBCOrderBy.add(TYPE_ORDER_BY_INCREASING);
+        itemsBCOrderBy.add(TYPE_ORDER_BY_DECREASING);
         
         cbOrderBy.setItems(itemsBCOrderBy);
         cbOrderBy.getSelectionModel().select(0);
@@ -262,6 +264,14 @@ public class ChartPane extends Pane {
         			return 0;
         		};
         	});
+        } else if (typeOrderSelected.equals(TYPE_ORDER_BY_DECREASING)){
+        	cells.sort(new Comparator<Cell>() {
+        		public int compare(Cell c1, Cell c2) {
+        			if(c1.value > c2.value) return -1;
+        			else if(c1.value < c2.value) return 1;
+        			return 0;
+        		};
+        	});	
         }
         // 3 - end
         
