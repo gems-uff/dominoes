@@ -20,6 +20,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import org.jfree.chart.JFreeChart;
@@ -49,6 +50,10 @@ public class TimePane extends Pane{
 		this(0,1,0,1);
 	}
 	
+	public TimePane(double min, double max){
+		this(min, max, 0, 1);
+	}
+	
 	public TimePane(double min, double max, double selectMin, double selectMax){
 		
 		ObservableList<String> xItems = FXCollections.<String>observableArrayList();
@@ -60,6 +65,7 @@ public class TimePane extends Pane{
         gridPaneSet.setCenter(bSet);
         
 		final CategoryAxis xAxis = new CategoryAxis();
+		xAxis.setTickLabelRotation(90);
         final NumberAxis yAxis = new NumberAxis();
         
         this.lineChart = new LineChart<String, Number>(xAxis, yAxis);
@@ -100,7 +106,7 @@ public class TimePane extends Pane{
 		
 		xAxis.setCategories(xItems);
 		
-		slider = new IntervalSlider(min, max, selectMax, selectMin, max-min);
+		slider = new IntervalSlider(min, max, selectMin, selectMax, max-min);
 		
 		timePaneGroup = new Group();
 		timePaneGroup.getChildren().add(lineChart);

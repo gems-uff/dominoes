@@ -1,5 +1,6 @@
 package domain;
 
+import javafx.scene.control.Tooltip;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -73,8 +74,10 @@ public final class Dominoes {
     public final static String TYPE_CONFIDENCE_CODE = "C";
     public final static String TYPE_LIFT_CODE = "L";
     
-    private final static String AGGREG_TEXT = "/SUM";
+    public final static String AGGREG_TEXT = "/SUM ";
 
+    private boolean rowIsAggragatable = false;
+    private boolean colIsAggragatable = false;
     private String idRow;
     private String idCol;
     private Historic historic;
@@ -82,6 +85,8 @@ public final class Dominoes {
     private IMatrix2D mat = null;
 
     public Dominoes() {
+    	this.rowIsAggragatable = false;
+    	this.colIsAggragatable = false;
     }
 
     /**
@@ -93,6 +98,8 @@ public final class Dominoes {
      * @throws IllegalArgumentException - in case of invalid parameters
      */
     public Dominoes(String idRow, String idCol, IMatrix2D mat) throws IllegalArgumentException {
+    	this.rowIsAggragatable = false;
+    	this.colIsAggragatable = false;
         this.setIdRow(idRow);
         this.setIdCol(idCol);
 
@@ -114,6 +121,8 @@ public final class Dominoes {
      * @throws IllegalArgumentException - in case of invalid parameters
      */
     public Dominoes(int type, String idRow, String idCol, Historic historic, Matrix2D mat) throws IllegalArgumentException {
+    	this.rowIsAggragatable = false;
+    	this.colIsAggragatable = false;
         this.setIdRow(idRow);
         this.setIdCol(idCol);
 
@@ -294,6 +303,7 @@ public final class Dominoes {
         groupType.setAutoSizeChildren(true);
         
         Group domino = new Group(border, back, line, historic, groupType,idRow, idCol);
+        Tooltip.install(domino, new Tooltip(this.idRow + "x" + this.getIdCol()));
         return domino;
     }
 
@@ -343,7 +353,15 @@ public final class Dominoes {
         return type;
     }
 
-
+    
+    public boolean isRowAggregatable(){
+    	return this.rowIsAggragatable;
+    }
+    
+    public boolean isColAggregatable(){
+    	return this.colIsAggragatable;
+    }
+    
 
     /**
      * Used to change the Historic of this Domino
@@ -420,6 +438,10 @@ public final class Dominoes {
         this.setIdRow(this.getHistoric().getFirstItem());
         this.setIdCol(this.getHistoric().getLastItem());
         
+        boolean swap = this.rowIsAggragatable;
+        this.rowIsAggragatable = this.colIsAggragatable;
+        this.colIsAggragatable = swap;
+        
         IMatrix2D _newMat = mat.transpose();
         setMat(_newMat);
     }
@@ -429,8 +451,14 @@ public final class Dominoes {
      *
      * @return the historic invert
      */
-    public void reduceRows() {
+    public boolean reduceRows() {
         
+    	if(rowIsAggragatable){
+    		return false;
+    	}
+    	
+    	rowIsAggragatable = true;
+    	
         if(!(this.type == Dominoes.TYPE_BASIC)){
         	this.type = Dominoes.TYPE_DERIVED;
         }
@@ -439,7 +467,7 @@ public final class Dominoes {
         }
 
 //        this.getHistoric().reverse();
-        this.setIdRow(Dominoes.AGGREG_TEXT + " " + idRow);
+        this.setIdRow(Dominoes.AGGREG_TEXT + idRow);
         this.historic.reduceRow();
 //        this.setIdCol(this.getHistoric().getLastItem());
         
@@ -449,6 +477,7 @@ public final class Dominoes {
         setMat(_newMat);
         
         _newMat.Debug();
+        return true;
     }
 
     public Dominoes multiply(Dominoes dom) {

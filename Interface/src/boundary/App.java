@@ -38,6 +38,10 @@ public class App extends Application {
     private static TimePane time;
     private static Visual visual;
 
+    public static Visual getVisual(){
+    	return visual;
+    }
+    
     private static SplitPane vSplitPane;
     private static SplitPane vSP_body_hSplitPane;
     private static BorderPane vSP_head_TimePane;
@@ -183,7 +187,7 @@ public class App extends Application {
     	beginDateWork = Configuration.beginDate; 
         endDateWork = Configuration.endDate;
     	
-    	double min = 0, max = 0;
+    	double min = 0, max = 0, unit = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try{
         	min = sdf.parse(beginDateWork).getYear() * 12;
@@ -201,7 +205,7 @@ public class App extends Application {
 
         App.stage.show();
         
-        App.time = new TimePane(min, max, min, min);
+        App.time = new TimePane(min, max);
         App.time.setVisible(true);
         
 		manager = GUIManager.getInstance();
@@ -305,7 +309,7 @@ public class App extends Application {
         
         App.scene.setRoot(back);
         App.stage.setScene(App.scene);
-        App.stage.show();
+//        App.stage.show();
         
         App.setFullscreen(Configuration.fullscreen);
                 

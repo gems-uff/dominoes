@@ -52,6 +52,8 @@ import javax.xml.ws.Action;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingNode;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -224,7 +226,8 @@ public class GraphPane extends BorderPane {
     	lblThreshold.setPrefSize(100, 20);
     	
     	Label lblValue = new Label("Value: ");
-    	lblValue.setPrefSize(100, 20);
+    	lblValue.setPrefSize(50, 20);
+    	TextField tfValue = new TextField(String.valueOf(min));
     	
     	Slider thresholdSlider = new Slider();
     	thresholdSlider.setMin(Math.floor(min));
@@ -248,8 +251,28 @@ public class GraphPane extends BorderPane {
 				
 				vv.repaint();
 				
-				lblValue.setText("Value: " +
-						String.format(Locale.US, "%.2f", newValue.floatValue()));
+				tfValue.setText(String.format(Locale.US, "%.2f", newValue.floatValue()));
+				
+			}
+		});
+    	
+    	tfValue.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				float value;
+				
+				try{
+					value = Float.parseFloat(tfValue.getText());
+				}catch(Exception ex){
+					value = 0;
+				}
+				edgePredicate.setThreshold(value);
+				vertexPredicate.setThreshold(value);
+				
+				vv.repaint();
+				
+				thresholdSlider.setValue(value);
 				
 			}
 		});
@@ -311,7 +334,7 @@ public class GraphPane extends BorderPane {
 			}
 		});
     	
-    	hBox.getChildren().addAll(lblThreshold, thresholdSlider, lblValue, lblSearch, tf);
+    	hBox.getChildren().addAll(lblThreshold, thresholdSlider, lblValue, tfValue, lblSearch, tf);
     	
     	return hBox;
     }

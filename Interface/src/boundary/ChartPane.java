@@ -11,8 +11,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.ibex.nestedvm.util.Sort.CompareFunc;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -38,6 +36,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import arch.Cell;
+import domain.Configuration;
 import domain.Dominoes;
 
 
@@ -81,11 +80,11 @@ public class ChartPane extends Pane {
     	CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel(domino.getIdRow());
-        yAxis.setLabel(domino.getIdCol());
+        xAxis.setLabel(domino.getMat().getMatrixDescriptor().getRowType());
+        yAxis.setLabel(domino.getMat().getMatrixDescriptor().getColType());
 
         bc = new BarChart<String, Number>(xAxis, yAxis);
-        bc.setTitle(domino.getHistoric().toString());
+//        bc.setTitle(domino.getHistoric().toString());
         bc.setAnimated(false);
         bc.getXAxis().setAutoRanging(true);
         bc.getYAxis().setAutoRanging(true);
@@ -232,12 +231,14 @@ public class ChartPane extends Pane {
     	final ToggleGroup optionGroup = new ToggleGroup();
     	
     	Label lSelectedRow = new Label("Selected Row: ");
-    	lSelectedRow.setPrefSize(100,  20);
+    	lSelectedRow.setPrefWidth(100);
+    	lSelectedRow.setPrefHeight(20);
     	
     	Label lOrderBy = new Label("Order By: ");
-    	lOrderBy.setPrefSize(100,  20);
+    	lOrderBy.setPrefWidth(100);
+    	lOrderBy.setPrefHeight(20);
     	
-        hBox.setPrefWidth(bc.getPrefWidth());
+        hBox.setPrefWidth(Configuration.width);
         hBox.getChildren().addAll(lSelectedRow, cbSelectedRow, lOrderBy, cbOrderBy);
         
         BorderPane border = new BorderPane();
@@ -319,6 +320,31 @@ public class ChartPane extends Pane {
 					if(arg0.getYValue().floatValue() > arg1.getYValue().floatValue()) return 1;
 					if(arg0.getXValue().compareTo(arg1.getXValue()) < 0) return -1;
 					if(arg0.getXValue().compareTo(arg1.getXValue()) > 0) return 1;
+					return 0;
+				}
+	    	});
+	    }else if(typeOrderSelected.equals(TYPE_ORDER_BY_DECREASING)){
+	    	
+	    	/*
+	    	 * NOTE
+	    	 * This loop is adding, in begin the word, the prefix "[Column: {id}]:".
+	    	 * It was necessary because the Javafx's Chart not update when the column name not update.
+	    	 * Maybe, there are other way to do it
+	    	 */
+	    	int numDigits = String.valueOf(chartColumns.size()).length();
+	    	for(int i = 0; i < chartColumns.size(); i++){	    		
+	    		chartColumns.get(i).setXValue("[Column: " + String.format("%0" + numDigits + "d", i)  + "]: " + chartColumns.get(i).getXValue());
+	    	}
+	    	
+	    	chartColumns.sort(new Comparator<Data<String,Number>>(){
+
+				@Override
+				public int compare(Data<String, Number> arg0,
+						Data<String, Number> arg1) {
+					if(arg0.getYValue().floatValue() > arg1.getYValue().floatValue()) return -1;
+					if(arg0.getYValue().floatValue() < arg1.getYValue().floatValue()) return 1;
+					if(arg0.getXValue().compareTo(arg1.getXValue()) > 0) return -1;
+					if(arg0.getXValue().compareTo(arg1.getXValue()) < 0) return 1;
 					return 0;
 				}
 	    	});

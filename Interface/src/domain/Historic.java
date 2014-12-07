@@ -228,7 +228,11 @@ public class Historic {
     }
 
     public void reduceRow() {
-    	this.leftItem = "/SUM "+ this.leftItem;
+    	Historic left = this;
+    	while(left != null){
+    		left.leftItem = Dominoes.AGGREG_TEXT + left.leftItem;
+    		left = left.historicLeft;
+    	}
     }
     
     public String getLastItem() {

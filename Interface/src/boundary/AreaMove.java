@@ -3,6 +3,7 @@ package boundary;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javafx.scene.text.Font;
 import javafx.animation.FillTransition;
@@ -35,7 +36,7 @@ public class AreaMove extends Pane {
     private final Rectangle background;
 
     private int indexFirstOperatorMultiplication = -1;
-    private int indexSecondOperatorMultiplication = -1;
+    private int indexSecondOperatorMultiplication = -1;    
 
     private double srcSceneX;
     private double srcSceneY;
@@ -46,6 +47,9 @@ public class AreaMove extends Pane {
     
     private boolean transposing = false;
 
+    // Controller Variables
+    private List<MenuItem> menuItemAggregateRow = new ArrayList<>();
+    private List<MenuItem> menuItemAggregateCol = new ArrayList<>();
     /**
      * Class builder with the dimension defined in parameters. here, will create
      * too a background with white color
@@ -86,8 +90,8 @@ public class AreaMove extends Pane {
         ContextMenu minimenu = new ContextMenu();
         
         MenuItem menuItemTranspose = new MenuItem("Transpose");
-        MenuItem menuItemAgreggateRow = new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getRowType());
-        MenuItem menuItemAgreggateCol = new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getColType());
+        menuItemAggregateRow.add(new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getRowType()));
+        menuItemAggregateCol.add(new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getColType()));
         MenuItem menuItemLift = new MenuItem("Lift");
         MenuItem menuItemZScore = new MenuItem("Z-Score");
         MenuItem menuItemSaveInList = new MenuItem("Save");
@@ -97,6 +101,7 @@ public class AreaMove extends Pane {
         MenuItem menuItemViewLineChart = new MenuItem("Line Chart");
         MenuItem menuItemViewTree = new MenuItem("Tree");
         MenuItem menuItemClose = new MenuItem("Close");
+        
         
         Menu menuOperate = new Menu("Operations");
         Menu menuView = new Menu("Views");
@@ -292,6 +297,7 @@ public class AreaMove extends Pane {
                 }
             }
         });
+        int index = dominoes.indexOf(domino);
         menuOperate.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -304,14 +310,14 @@ public class AreaMove extends Pane {
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAgreggateRow.getText())) {
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAggregateRow.get(index).getText())) {
                     try {
                         reduceLines(group);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
 
-                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAgreggateCol.getText())) {
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAggregateCol.get(index).getText())) {
                     try {
                         reduceColumns(group);
                     } catch (IOException ex) {
@@ -338,8 +344,8 @@ public class AreaMove extends Pane {
             }
         });
         
-        menuOperate.getItems().addAll(menuItemTranspose, menuItemAgreggateRow,
-        		menuItemAgreggateCol, menuItemLift, menuItemZScore);
+        menuOperate.getItems().addAll(menuItemTranspose, menuItemAggregateRow.get(index),
+        		menuItemAggregateCol.get(index), menuItemLift, menuItemZScore);
         menuView.getItems().addAll(menuItemViewChart, menuItemViewLineChart, 
         		menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
@@ -417,7 +423,8 @@ public class AreaMove extends Pane {
                 && (g1.getTranslateY() >= g2.getTranslateY()
                 && g1.getTranslateY() <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
-            if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).getText())
+            if (d1.getIdRow().equals(d2.getIdCol())
+            		&& !d1.getIdRow().contains(Dominoes.AGGREG_TEXT)
                     && d1.getMat().getMatrixDescriptor().getNumRows() == d2.getMat().getMatrixDescriptor().getNumCols() ) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -442,7 +449,8 @@ public class AreaMove extends Pane {
                 && g1.getTranslateY() + Dominoes.GRAPH_HEIGHT <= g2.getTranslateY()
                 + Dominoes.GRAPH_HEIGHT)) {
 
-            if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_COL)).getText())
+            if (d1.getIdRow().equals(d2.getIdCol())
+            		&& !d1.getIdRow().contains(Dominoes.AGGREG_TEXT)
                     && d1.getMat().getMatrixDescriptor().getNumRows() == d2.getMat().getMatrixDescriptor().getNumCols()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -467,7 +475,8 @@ public class AreaMove extends Pane {
                 && (g1.getTranslateY() >= g2.getTranslateY()
                 && g1.getTranslateY() <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
-            if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText())
+            if (d1.getIdCol().equals(d2.getIdRow())
+            		&& !d1.getIdCol().contains(Dominoes.AGGREG_TEXT)
                     && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -491,7 +500,8 @@ public class AreaMove extends Pane {
                 && (g1.getTranslateY() + Dominoes.GRAPH_HEIGHT >= g2.getTranslateY()
                 && g1.getTranslateY() + Dominoes.GRAPH_HEIGHT <= g2.getTranslateY() + Dominoes.GRAPH_HEIGHT)) {
 
-            if (((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).getText().equals(((Text) g2.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText())
+            if (d1.getIdCol().equals(d2.getIdRow())
+            		&& !d1.getIdCol().contains(Dominoes.AGGREG_TEXT)
                     && d1.getMat().getMatrixDescriptor().getNumCols() == d2.getMat().getMatrixDescriptor().getNumRows()) {
 
                 ((Text) g1.getChildren().get(Dominoes.GRAPH_ID_COL)).setFill(Dominoes.COLOR_OPERATE_FONT);
@@ -551,7 +561,7 @@ public class AreaMove extends Pane {
                 } else {
                     this.remove(this.indexSecondOperatorMultiplication);
                 }
-
+                
                 this.add(resultOperation, x, y);
                 if (Configuration.autoSave) {
                     this.saveAndSendToList(pieces.get(dominoes.indexOf(resultOperation)));
@@ -589,6 +599,8 @@ public class AreaMove extends Pane {
             this.pieces.get(index).setVisible(false);
             this.dominoes.remove(index);
             this.pieces.remove(index);
+            this.menuItemAggregateRow.remove(index);
+            this.menuItemAggregateCol.remove(index);
         }
         return true;
     }
@@ -680,7 +692,12 @@ public class AreaMove extends Pane {
     	
         int duration = 500;
         
-        double startAngle = piece.getRotate(); 
+        double startAngle = piece.getRotate();
+        
+        int index = pieces.indexOf(piece); 
+        MenuItem swapMenu = menuItemAggregateRow.get(index);
+        menuItemAggregateRow.set(index, menuItemAggregateCol.get(index));
+        menuItemAggregateCol.set(index, swapMenu);
         
         Dominoes domino = control.Controller.tranposeDominoes(this.dominoes.get(this.pieces.indexOf(piece)));
         Group swap = domino.drawDominoes();
@@ -695,8 +712,6 @@ public class AreaMove extends Pane {
         
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText());
         ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
-        
-        
         
         RotateTransition rtPiece = new RotateTransition(Duration.millis(duration));
         rtPiece.setFromAngle(startAngle);
@@ -798,7 +813,6 @@ public class AreaMove extends Pane {
 	            ((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
 	            ((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
 				
-	            
 			}
 		});
         
@@ -821,27 +835,23 @@ public class AreaMove extends Pane {
     private void reduceLines(Group piece) throws IOException {
         
     	int index = this.pieces.indexOf(piece);
-    	
-        Dominoes domino = control.Controller.reduceDominoes(this.dominoes.get(index));
-        System.out.println("\nCol:" + domino.getIdCol());
-        System.out.println("Row:" + domino.getIdRow());
-        this.dominoes.set(index, domino);
-//        Group swap = domino.drawDominoes();
-        
-//        String idRow = ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).getText();
-//        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText("/SUM "+idRow);
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(domino.getIdRow());
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFont(new Font(Dominoes.GRAPH_AGGREG_FONT_SIZE));
-//        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_ID_COL)).getText());
-        //((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).setText(((Text)swap.getChildren().get(Dominoes.GRAPH_HISTORIC)).getText());
-        //((Text) ((Group) piece.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).setText(((Text) ((Group) swap.getChildren().get(Dominoes.GRAPH_TYPE)).getChildren().get(1)).getText());
-        
-//        Color colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
-        
-       
-        if (Configuration.autoSave) {
-            this.saveAndSendToList(piece);
-        }
+    	Dominoes toReduce = this.dominoes.get(index);
+    	if(!toReduce.isRowAggregatable()){
+    		Dominoes domino = control.Controller.reduceDominoes(toReduce);
+    		this.dominoes.set(index, domino);
+    		
+    		((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setText(domino.getIdRow());
+    		((Text)piece.getChildren().get(Dominoes.GRAPH_ID_ROW)).setFont(new Font(Dominoes.GRAPH_AGGREG_FONT_SIZE));
+
+    		if (Configuration.autoSave) {
+    			this.saveAndSendToList(piece);
+    		}
+    		
+    		this.menuItemAggregateRow.get(index).setDisable(true);
+    		
+    	}else{
+    		System.err.println("this domino is already aggregate by " + toReduce.getMat().getMatrixDescriptor().getRowType());
+    	}
 
     }
     
@@ -851,26 +861,29 @@ public class AreaMove extends Pane {
      * @param piece The piece to animate
      */
     private void reduceColumns(Group piece) throws IOException {
-
-        Color colorHistoric;
+    	
         int index = this.pieces.indexOf(piece);
         Dominoes toReduce = this.dominoes.get(index);
-        toReduce.transpose();
-        Dominoes domino = control.Controller.reduceDominoes(toReduce);
-        domino.transpose();
-        this.dominoes.set(index, domino);
         
-        Group swap = domino.drawDominoes();
-        
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(domino.getIdCol());
-        ((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setFont(new Font(Dominoes.GRAPH_AGGREG_FONT_SIZE));
-        
-        colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
-        
-       
-        if (Configuration.autoSave) {
-            this.saveAndSendToList(piece);
-        }
+        if(!toReduce.isColAggregatable()){
+        	toReduce.transpose();
+        	Dominoes domino = control.Controller.reduceDominoes(toReduce);
+        	domino.transpose();
+        	this.dominoes.set(index, domino);
+        	
+        	Group swap = domino.drawDominoes();
+        	
+        	((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setText(domino.getIdCol());
+        	((Text)piece.getChildren().get(Dominoes.GRAPH_ID_COL)).setFont(new Font(Dominoes.GRAPH_AGGREG_FONT_SIZE));
+        	
+        	if (Configuration.autoSave) {
+        		this.saveAndSendToList(piece);
+        	}
+        	
+        	this.menuItemAggregateCol.get(index).setDisable(true);
+    	}else{
+    		System.err.println("this domino is already aggregate by " + toReduce.getMat().getMatrixDescriptor().getColType());
+    	}
 
     }
 

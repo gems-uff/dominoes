@@ -6,6 +6,7 @@
 package boundary;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
@@ -28,7 +29,7 @@ import domain.Dominoes;
  */
 @SuppressWarnings("restriction")
 public class MatrixPane extends Pane {
-
+	
     private double maxZoom = 2;
     private double minZoom = 0.05;
 
@@ -36,17 +37,29 @@ public class MatrixPane extends Pane {
     private double srcSceneY;
     private double srcTranslateX;
     private double srcTranslateY;
-
+    
+    private List<Rectangle> recHeaders;
+    private List<Rectangle> recCells;
+    private List<Float> cells;
+    
+    private float max, min;
+    
 	public MatrixPane(Dominoes domino) {
-    	
+		
+		this.setStyle("-fx-background-color: #00DD00");
+		
+		this.recHeaders = new ArrayList<>();
+		this.recCells = new ArrayList<>();
+		this.cells = new ArrayList<>();
+		
         System.out.println("Rows: " + domino.getMat().getMatrixDescriptor().getNumRows() +
         		" Cols: " + domino.getMat().getMatrixDescriptor().getNumCols());
         
         Group group = new Group();
         MatrixDescriptor _descriptor = domino.getMat().getMatrixDescriptor();
         
-        float min = domino.getMat().findMinValue();
-        float max = domino.getMat().findMaxValue();
+        this.min = domino.getMat().findMinValue();
+        this.max = domino.getMat().findMaxValue();
         
         double beginRowHead;
         double endRowHead;
@@ -90,17 +103,19 @@ public class MatrixPane extends Pane {
         for (int i = 0; i < _nRows; i++) {
         	largerSize = domino.getMat().getMatrixDescriptor().getRowAt(i).length();
         	Rectangle back = new Rectangle(width, height);
-            back.setFill(new Color(0.5, 0.5, 0.5, 0.1));
+            back.setFill(new Color(1, 1, 1, 1));
             back.setTranslateX(0);
             back.setTranslateY(0);
             back.toBack();
             
             Rectangle front = new Rectangle(width, height);
-            front.setFill(new Color(0, 0, 1, 0.5 + (0.5 * ((-1) * i%2))));
+            front.setFill(new Color(0, 0, 1, 0.5 + (0.2 * ((-1) * i%2))));
             front.setTranslateX(0);
             front.setTranslateY(0);
             front.toFront();
 
+            this.recHeaders.add(front);
+            
             Group cell = new Group(back, front);
             cell.setTranslateX(beginRowHead);
             cell.setTranslateY(i * (cellSpace + padding) + padding);
@@ -126,14 +141,16 @@ public class MatrixPane extends Pane {
         	Rectangle back = new Rectangle(width, height);
         	back.setTranslateX(0);
         	back.setTranslateY(0);
-            back.setFill(new Color(0.5, 0.5, 0.5, 0.1));
+            back.setFill(new Color(1, 1, 1,1));
 
             Rectangle front = new Rectangle(width, height);
             front.setTranslateX(0);
         	front.setTranslateY(0);
-            front.setFill(new Color(0, 0, 1, 0.5 + (0.5 * ((-1) * i%2))));
-
+            front.setFill(new Color(0, 0, 1, 0.5 + (0.2 * ((-1) * i%2))));
+            
             front.toFront();
+            
+            this.recHeaders.add(front);
             
             Group cell = new Group(back, front);
             
@@ -163,13 +180,19 @@ public class MatrixPane extends Pane {
         	Rectangle back = new Rectangle(cellSpace, cellSpace);
             back.setFill(new Color(1, 1, 1, 1));
             Rectangle front = new Rectangle(cellSpace, cellSpace);
-            front.setFill( new Color(0.0f, 0.0f, 1.0f, (_matCell.value - min) / (max - min) ));           
+            front.setFill(new Color(1,
+            		0,
+            		0,
+            		(_matCell.value - min) / (max - min)));           
             front.toFront();
+            
+            this.cells.add(_matCell.value);
+            this.recCells.add(front);
             
             Group cell = new Group(back, front);
             cell.setTranslateX(_matCell.col * (cellSpace + padding) + padding);
             cell.setTranslateY(_matCell.row * (cellSpace + padding) + padding);
-
+            
             Tooltip.install(cell, new Tooltip(String.valueOf(_matCell.value)));
                 
             group.getChildren().add(cell);
@@ -242,5 +265,6 @@ public class MatrixPane extends Pane {
         this.getChildren().add(new FlowPane(group));
         
     }
+
 
 }
