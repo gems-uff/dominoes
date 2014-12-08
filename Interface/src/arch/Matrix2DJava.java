@@ -240,5 +240,30 @@ public class Matrix2DJava implements IMatrix2D {
 		reduced.setData(resCells);
 		
 		return reduced;
+	}
+
+	@Override
+	public IMatrix2D confidence(boolean useGPU) {
+		List<Cell> nonZeros = getNonZeroData();
+		
+		ArrayList<Cell> newValues = new ArrayList<Cell>();
+		
+		for (Cell cell : nonZeros){
+			Cell c = new Cell();
+			c.row = cell.row;
+			c.col = cell.col;
+			
+			float diagonal = (float) data.get(c.row, c.row);
+			
+			if (diagonal > 0)
+				c.value = cell.value / diagonal;
+			
+			newValues.add(c);
+		}
+		
+		Matrix2DJava confidenceM = new Matrix2DJava(getMatrixDescriptor());
+		confidenceM.setData(newValues);
+		
+		return confidenceM;
 	}		
 }

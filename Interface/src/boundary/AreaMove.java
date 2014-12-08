@@ -88,7 +88,7 @@ public class AreaMove extends Pane {
         MenuItem menuItemTranspose = new MenuItem("Transpose");
         MenuItem menuItemAgreggateRow = new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getRowType());
         MenuItem menuItemAgreggateCol = new MenuItem("Aggregate by " + domino.getMat().getMatrixDescriptor().getColType());
-        MenuItem menuItemLift = new MenuItem("Lift");
+        MenuItem menuItemConfidence = new MenuItem("Confidence");
         MenuItem menuItemZScore = new MenuItem("Z-Score");
         MenuItem menuItemSaveInList = new MenuItem("Save");
         MenuItem menuItemViewGraph = new MenuItem("Graph");
@@ -318,7 +318,14 @@ public class AreaMove extends Pane {
                         System.err.println(ex.getMessage());
                     }
 
-                }
+                } else if (((MenuItem) event.getTarget()).getText().equals(menuItemConfidence.getText())) {
+                	try {
+						confidence(group);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+        		}
             }
         });
         menuView.setOnAction(new EventHandler<ActionEvent>() {
@@ -339,7 +346,7 @@ public class AreaMove extends Pane {
         });
         
         menuOperate.getItems().addAll(menuItemTranspose, menuItemAgreggateRow,
-        		menuItemAgreggateCol, menuItemLift, menuItemZScore);
+        		menuItemAgreggateCol, menuItemConfidence, menuItemZScore);
         menuView.getItems().addAll(menuItemViewChart, menuItemViewLineChart, 
         		menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
@@ -855,7 +862,6 @@ public class AreaMove extends Pane {
         Color colorHistoric;
         int index = this.pieces.indexOf(piece);
         Dominoes toReduce = this.dominoes.get(index);
-        toReduce.transpose();
         Dominoes domino = control.Controller.reduceDominoes(toReduce);
         domino.transpose();
         this.dominoes.set(index, domino);
@@ -867,6 +873,26 @@ public class AreaMove extends Pane {
         
         colorHistoric = (Color)((Text)piece.getChildren().get(Dominoes.GRAPH_HISTORIC)).getFill();
         
+       
+        if (Configuration.autoSave) {
+            this.saveAndSendToList(piece);
+        }
+
+    }
+    
+    /**
+     * This function is responsible for calculating the confidence on a matrix
+     *
+     * @param piece The piece to animate
+     * @throws IOException 
+     */
+    private void confidence(Group piece) throws IOException {
+
+        Color colorHistoric;
+        int index = this.pieces.indexOf(piece);
+        Dominoes toConfidence = this.dominoes.get(index);
+        Dominoes domino = control.Controller.confidence(toConfidence);
+        this.dominoes.set(index, domino);  
        
         if (Configuration.autoSave) {
             this.saveAndSendToList(piece);

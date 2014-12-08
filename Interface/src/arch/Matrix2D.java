@@ -271,5 +271,21 @@ public class Matrix2D implements IMatrix2D {
 		}
 		
 		return reduced;
+	}
+
+	@Override
+	public IMatrix2D confidence(boolean useGPU) {
+		MatrixDescriptor _newDescriptor = this.matrixDescriptor;
+		
+		Matrix2D confidence = null;
+		
+		try {
+			confidence = new Matrix2D(_newDescriptor);
+			MatrixProcessor.confidence(matPointer, confidence.matPointer, useGPU);
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
+		
+		return confidence;
 	}		
 }

@@ -425,6 +425,16 @@ public final class Dominoes {
     }
     
     /**
+     * This function just invert the Historic
+     *
+     * @return the historic invert
+     */
+    public void confidence() {
+        IMatrix2D _newMat = mat.confidence(Configuration.processingUnit.equalsIgnoreCase("GPU"));
+        setMat(_newMat);
+    }
+    
+    /**
      * This function reduce the lines of a matrix
      *
      * @return the historic invert

@@ -159,6 +159,14 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_transpo
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_reduceRow
   (JNIEnv *, jclass, jlong, jlong, jboolean);
 
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    confidence
+ * Signature: (JJZ)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_confidence
+  (JNIEnv *, jclass, jlong, jlong, jboolean);
+
 #ifdef __cplusplus
 }
 #endif

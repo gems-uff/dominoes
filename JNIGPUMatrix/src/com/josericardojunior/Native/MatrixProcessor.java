@@ -46,6 +46,7 @@ public class MatrixProcessor {
 	public native static void multiply(long m1, long m2, long result, boolean useGPU);
 	public native static void transpose(long m1, long result);
 	public native static void reduceRow(long m1, long result, boolean useGPU);
+	public native static void confidence(long m1, long result, boolean useGPU);
 	
 	static {
 		System.loadLibrary("MatrixProcessor");

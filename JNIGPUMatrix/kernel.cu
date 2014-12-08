@@ -118,6 +118,16 @@ __global__ void StandardScoreKernel(float* _mat, int rows, int cols,
     }
 }
 
+__global__ void ConfidenceKernel(float *values, float *diagonal, int elements, float *result){
+    int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    
+    if (idx < elements){
+    	if (diagonal[idx] > 0)
+    		result[idx] = values[idx] / diagonal[idx];
+    }
+}
+
+
 extern "C" {
     void g_MatMul(int n_rowsA, int n_colsA, int n_colsB, int nzA, int nzB,
     	int *rowsA, int *colsA, float *valuesA,
@@ -336,5 +346,31 @@ extern "C" {
     void g_SparseMultiplication(){
     
     }
+    
+    void g_Confidence(float* values, float* diagonal, int elements, float* result){
+		
+		float *d_values;
+    	float *d_diagonal;
+    	float *d_result;
+    	
+    	checkCudaErrors(cudaMalloc(&d_values, sizeof(float) * elements));
+    	checkCudaErrors(cudaMemcpy(d_values, values, sizeof(float) * elements, cudaMemcpyHostToDevice));
+    	
+    	checkCudaErrors(cudaMalloc(&d_diagonal, sizeof(float) * elements));
+    	checkCudaErrors(cudaMemcpy(d_diagonal, diagonal, sizeof(float) * elements, cudaMemcpyHostToDevice));
+    	
+    	checkCudaErrors(cudaMalloc(&d_result, sizeof(float) * elements));
+    	checkCudaErrors(cudaMemset(d_result, 0, sizeof(float) * elements));
+    	
+    	dim3 blockDim(N_THREADS_X * N_THREADS_Y, 1, 1);
+        dim3 gridDim(ceil((float) elements/(N_THREADS_X *  N_THREADS_Y)), 1, 1);
+        
+        ConfidenceKernel<<<gridDim, blockDim>>>(d_values, d_diagonal, elements, d_result);
+        
+        checkCudaErrors(cudaMemcpy(result, d_result, sizeof(float) * elements, cudaMemcpyDeviceToHost));
+    	checkCudaErrors(cudaFree(d_values));
+    	checkCudaErrors(cudaFree(d_diagonal));
+    	checkCudaErrors(cudaFree(d_result));
+	}
     
 } 

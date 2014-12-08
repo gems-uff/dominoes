@@ -39,6 +39,8 @@ extern "C" {
 
 	void g_MeanSD(int rows, int cols, int depth, float *h_data,
 			float *result, bool considerZeros);
+
+	void g_Confidence(float* values, float* diagonal, int elements, float* result);
 }
 
 
@@ -459,6 +461,79 @@ JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_create
 	return (long) mat;
 }
 
+
+void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
+
+	if (useGPU){
+		int nonZeros = mat1->nonZeros();
+
+		fprintf(stderr, "nz1: %d\n", nonZeros);
+
+		int *rows = (int*) malloc(sizeof(int) * nonZeros);
+		int *cols = (int*) malloc(sizeof(int) * nonZeros);
+		float *values = (float*) malloc(sizeof(float) * nonZeros);
+		float *diagonal = (float*) malloc(sizeof(float) * nonZeros);
+		float *res_data = (float*) malloc(sizeof(float) * nonZeros);
+
+		fprintf(stderr, "malloc ok\n");
+
+		int k = 0;
+		for (int i = 0; i < mat1->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*mat1), i); it; ++it){
+				rows[k] = it.row();
+				cols[k] = it.col();
+				values[k] = it.value();
+				diagonal[k] = mat1->coeffRef(rows[k], rows[k]);
+				k++;
+			}
+		}
+
+		fprintf(stderr, "before gpu ok\n");
+		g_Confidence(values, diagonal, nonZeros, res_data);
+		fprintf(stderr, "after gpu ok\n");
+
+		setNonZeroData(result, rows, cols, res_data, nonZeros);
+
+		fprintf(stderr, "nz2\n");
+		free(rows);
+		free(cols);
+		free(res_data);
+		free(values);
+		free(diagonal);
+	} else {
+		int nonZeros = mat1->nonZeros();
+
+		int *rows = (int*) malloc(sizeof(int) * nonZeros);
+		int *cols = (int*) malloc(sizeof(int) * nonZeros);
+		float *values = (float*) malloc(sizeof(float) * nonZeros);
+		float *res_data = (float*) malloc(sizeof(float) * nonZeros);
+		memset(res_data, 0, sizeof(float) * nonZeros);
+
+		int k = 0;
+		for (int i = 0; i < mat1->outerSize(); ++i){
+			for (SpMatf::InnerIterator it((*mat1), i); it; ++it){
+				rows[k] = it.row();
+				cols[k] = it.col();
+
+				float diagonal = mat1->coeffRef(rows[k], rows[k]);
+
+				if (diagonal > 0)
+					res_data[k] = it.value() / diagonal;
+
+				k++;
+			}
+		}
+
+		setNonZeroData(result, rows, cols, res_data, nonZeros);
+
+		fprintf(stderr, "nz2\n");
+		free(rows);
+		free(cols);
+		free(res_data);
+	}
+}
+
+
 JNIEXPORT jobjectArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getNonZeroData
   (JNIEnv *env, jclass obj, jlong pointer){
 
@@ -700,4 +775,13 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_standar
   (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
 
 
+}
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_confidence
+  (JNIEnv *env, jclass obj, jlong pointer, jlong result, jboolean useGPU){
+
+	SpMatf* _matrix = (SpMatf*) pointer;
+	SpMatf* _res = (SpMatf*) result;
+
+	calculateConfidence(_matrix, _res, useGPU);
 }

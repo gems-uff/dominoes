@@ -19,6 +19,8 @@ public interface IMatrix2D {
 	
 	public IMatrix2D reduceRows(boolean useGPU);
 	
+	public IMatrix2D confidence(boolean useGPU);
+	
 	public void Debug();
 	
 	public void ExportCSV(String filename);
