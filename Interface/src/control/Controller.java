@@ -168,9 +168,11 @@ public class Controller {
      */
     public static Dominoes reduceDominoes(Dominoes domino) {
         
-    	domino.reduceRows();
-    	
-        return domino;
+    	if(domino.reduceRows()){
+    		return domino;
+    	}
+    	return null;
+        
     }
 
     public static double opposite(double size, double index){
@@ -203,4 +205,9 @@ public class Controller {
     	System.out.println(string);
 		
 	}
+	
+//	public static void changeMatrixHeaderColor(Color color){
+//		App.getVisual().getCh
+//		
+//	}
 }

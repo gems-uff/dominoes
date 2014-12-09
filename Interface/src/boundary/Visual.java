@@ -33,7 +33,7 @@ public class Visual extends BorderPane {
     }
     
     public void addTabGraph(Dominoes domino){
-        Tab tab = new Tab(domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
+        Tab tab = new Tab("Graph: " + domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
         GraphPane graphPane = new GraphPane(domino);
         
         tab.setContent(graphPane);
@@ -43,7 +43,7 @@ public class Visual extends BorderPane {
     }
 
     void addTabMatrix(Dominoes domino) {
-        Tab tab = new Tab(domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
+        Tab tab = new Tab("Matrix: " + domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
         MatrixPane graphPane = new MatrixPane(domino);
         
         tab.setContent(graphPane);
@@ -54,7 +54,7 @@ public class Visual extends BorderPane {
     }
     
     void addTabChart(Dominoes domino) {
-        Tab tab = new Tab(domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
+        Tab tab = new Tab("Chart: " + domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
         ChartPane graphPane = new ChartPane(domino);
         
         tab.setContent(graphPane);
@@ -66,7 +66,7 @@ public class Visual extends BorderPane {
     }
     
     void addTabLineChart(Dominoes domino) {
-        Tab tab = new Tab(domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
+        Tab tab = new Tab("Line Chart: " + domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
         LineChartPane graphPane = new LineChartPane(domino);
         
         tab.setContent(graphPane);
@@ -78,7 +78,7 @@ public class Visual extends BorderPane {
     }
     
     void addTabTree(Dominoes domino) {
-        Tab tab = new Tab(domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
+        Tab tab = new Tab("Tree: " + domino.getIdRow() + "x" + domino.getIdCol() + " " + this.tabPane.getTabs().size());
         TreePane graphPane = new TreePane(domino);
         
         tab.setContent(graphPane);

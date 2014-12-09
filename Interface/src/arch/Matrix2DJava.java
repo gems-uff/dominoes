@@ -54,7 +54,7 @@ public class Matrix2DJava implements IMatrix2D {
 		
 		MatrixDescriptor resultDesc = new MatrixDescriptor(
 				matrixDescriptor.getRowType(), 
-				otherDescriptor.getRowType());
+				otherDescriptor.getColType());
 		
 		for (int i = 0; i < matrixDescriptor.getNumRows(); i++)
 			resultDesc.AddRowDesc(

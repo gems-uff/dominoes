@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+//import boundary.components.MenuColor;
+import javafx.scene.paint.Color;
+import javafx.scene.input.MouseEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckMenuItem;
@@ -19,6 +22,8 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleGroup;
 import domain.Configuration;
+import javafx.scene.control.Slider;
+import javafx.scene.control.CustomMenuItem;
 
 /**
  *
@@ -41,10 +46,10 @@ public class DominoesMenuBar extends MenuBar {
 
 //------EDIT MENU ITENS---------------------------------------------------------
     private final Menu mEdit;
-
-    //private final Menu MEdit_fillColor;
-    //private final CustomMenuItem MEdit_fillColor_custom;
-    //private Slider MEdit_fillColor_slider;
+    
+    private final Menu mEdit_editMatrix;
+    
+//    private final MenuColor mEdit_editMatrix_mcMatrixColor;
     private final CheckMenuItem mEdit_showHistoric;
     private final CheckMenuItem mEdit_showType;
 
@@ -92,20 +97,20 @@ public class DominoesMenuBar extends MenuBar {
 //------EDIT MENU ITENS---------------------------------------------------------
         this.mEdit = new Menu("Edit");
 
-        //this.MEdit_fillColor = new Menu("Color Fill");
-        //this.MEdit_fillColor_slider = new Slider(0, 1, Dominoes.COLOR_FILL.getBrightness());
-        //this.MEdit_fillColor_custom = new CustomMenuItem(this.MEdit_fillColor_slider);
-        //this.MEdit_fillColor_custom.setHideOnClick(false);
-        //this.MEdit_fillColor.getItems().addAll(this.MEdit_fillColor_custom);
+        this.mEdit_editMatrix = new Menu("Edit Matrix");
+        
+//        this.mEdit_editMatrix_mcMatrixColor = new MenuColor("Matrix colors");
 
+//        this.mEdit_editMatrix.getItems().addAll(this.mEdit_editMatrix_mcMatrixColor);
+        
         this.mEdit_showHistoric = new CheckMenuItem("Show Historic");
         this.mEdit_showHistoric.setSelected(Configuration.visibilityHistoric);
 
         mEdit_showType = new CheckMenuItem("Show Type");
         mEdit_showType.setSelected(Configuration.visibilityType);
         
-        //this.MEdit.getItems().addAll(this.MEdit_fillColor, this.MEdit_showHistoric);
         this.mEdit.getItems().addAll(this.mEdit_showHistoric, this.mEdit_showType);
+//        this.mEdit.getItems().addAll(this.mEdit_editMatrix, this.mEdit_showHistoric, this.mEdit_showType);
 
 //------CONFIGURATION MENU ITENS------------------------------------------------
         this.mConfiguration = new Menu("Configuration");
@@ -203,22 +208,7 @@ public class DominoesMenuBar extends MenuBar {
         });
 
 //----------EDIT MENU ITENS-----------------------------------------------------
-//        this.MEdit_fillColor_slider.setOnMouseDragged(new EventHandler<MouseEvent>() {
-//
-//            @Override
-//            public void handle(MouseEvent event) {
-//                Dominoes.COLOR_FILL = new Color(/*this.*/MEdit_fillColor_slider.getValue(),
-//                        /*this.*/ MEdit_fillColor_slider.getValue(),
-//                        /*this.*/ MEdit_fillColor_slider.getValue(),
-//                        Dominoes.COLOR_FILL.getOpacity());
-//                Dominoes.COLOR_LINE = new Color(0.14 * /*this.*/ MEdit_fillColor_slider.getValue(),
-//                        0.14 * /*this.*/ MEdit_fillColor_slider.getValue(),
-//                        0.14 * MEdit_fillColor_slider.getValue(),
-//                        Dominoes.COLOR_FILL.getOpacity()).invert();
-//                Dominoes.COLOR_NORMAL_FONT = Dominoes.COLOR_FILL.invert();
-//                App.changeColor();
-//            }
-//        });
+        
 
         this.mEdit_showHistoric.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -278,12 +268,6 @@ public class DominoesMenuBar extends MenuBar {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		
 		try{
-			
-			
-			System.out.println(begin);
-			System.out.println(end);
-			System.out.println(begin);
-			System.out.println(end);
 			sdf.parse(begin);
 			sdf.parse(end);
 		}catch(ParseException e){
@@ -303,6 +287,5 @@ public class DominoesMenuBar extends MenuBar {
         App.set();
 		
 	}
-	
 	
 }

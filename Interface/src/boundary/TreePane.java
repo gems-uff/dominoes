@@ -89,4 +89,5 @@ public class TreePane extends Pane {
         createTree(historic.getHistoricLeft());
         createTree(historic.getHistoricRight());
     }
+
 }
