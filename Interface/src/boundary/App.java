@@ -29,6 +29,8 @@ import dao.DominoesSQLDao;
 import domain.Configuration;
 import domain.Dominoes;
 
+// Information fragment // opened question
+
 @SuppressWarnings("restriction")
 public class App extends Application {
 

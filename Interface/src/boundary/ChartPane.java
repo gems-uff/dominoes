@@ -8,6 +8,7 @@ package boundary;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -53,6 +54,7 @@ public class ChartPane extends Pane {
 	
     private ComboBox<String> cbSelectedRow;
     private ComboBox<String> cbOrderBy;
+    private HashMap<String, Integer> unsortedList = new HashMap<>();
 
     private BarChart<String, Number> bc;
 
@@ -105,8 +107,8 @@ public class ChartPane extends Pane {
 				select = i;
 			}
 		}
-		bc.setPrefWidth(domino.getMat().getMatrixDescriptor().getNumCols() * fontSize * 2);
-		bc.setPrefHeight(1.5 * textLarger * fontSize);
+		bc.setPrefWidth(domino.getMat().getMatrixDescriptor().getNumCols() * fontSize * 4);
+		bc.setPrefHeight(2.5 * textLarger * fontSize);
         
         // change color BarChart
 
@@ -114,8 +116,10 @@ public class ChartPane extends Pane {
         ObservableList<String> itemsCBMatrixRows = FXCollections.observableArrayList();
         for (int i = 0; i < domino.getMat().getMatrixDescriptor().getNumRows(); i++) {
             itemsCBMatrixRows.add(domino.getMat().getMatrixDescriptor().getRowAt(i));
+            unsortedList.put(domino.getMat().getMatrixDescriptor().getRowAt(i), i);
 
         }
+        FXCollections.sort(itemsCBMatrixRows);
         cbSelectedRow.setItems(itemsCBMatrixRows);
         cbSelectedRow.getSelectionModel().select(0);
         cbSelectedRow.toFront();
@@ -257,7 +261,7 @@ public class ChartPane extends Pane {
 	    XYChart.Series series = new XYChart.Series();
 	    
 	    String itemSelected = cbSelectedRow.getSelectionModel().getSelectedItem();
-	    int rowSelected = cbSelectedRow.getSelectionModel().getSelectedIndex();
+	    int rowSelected = unsortedList.get(itemSelected);
 	    String typeOrderSelected = cbOrderBy.getSelectionModel().getSelectedItem();
 	    
 	    series.setName("row " + itemSelected); //row name
@@ -309,6 +313,7 @@ public class ChartPane extends Pane {
 	    	int numDigits = String.valueOf(chartColumns.size()).length();
 	    	for(int i = 0; i < chartColumns.size(); i++){	    		
 	    		chartColumns.get(i).setXValue("[Column: " + String.format("%0" + numDigits + "d", i)  + "]: " + chartColumns.get(i).getXValue());
+	    		//chartColumns.get(i).setXValue(chartColumns.get(i).getXValue());
 	    	}
 	    	
 	    	chartColumns.sort(new Comparator<Data<String,Number>>(){
@@ -334,6 +339,7 @@ public class ChartPane extends Pane {
 	    	int numDigits = String.valueOf(chartColumns.size()).length();
 	    	for(int i = 0; i < chartColumns.size(); i++){	    		
 	    		chartColumns.get(i).setXValue("[Column: " + String.format("%0" + numDigits + "d", i)  + "]: " + chartColumns.get(i).getXValue());
+	    		//chartColumns.get(i).setXValue(chartColumns.get(i).getXValue());
 	    	}
 	    	
 	    	chartColumns.sort(new Comparator<Data<String,Number>>(){
@@ -358,8 +364,6 @@ public class ChartPane extends Pane {
 	    }
 	    bc.getData().add(series);
 	    // 5 - end
-	    	
-	    
 	}
 
 }

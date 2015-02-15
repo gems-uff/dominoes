@@ -31,7 +31,16 @@ import domain.Dominoes;
 public class DominoesSQLDao implements DominoesDao{
 	
 	
+	
 	public static String repository_name = "derby";
+	/*
+		beginDate:				2014-01-01 00:00:00
+		endDate:				2014-12-31 00:00:00
+	 */
+	//public static String databaseName = "db/gitdataminer_q0.sqlite";
+	
+	//beginDate:				2013-01-01 00:00:00
+	//endDate:				2014-01-31 00:00:00
 	public static String databaseName = "db/gitdataminer.sqlite";
 	private static Date beginDate = null;
 	private static Date endDate = null;
@@ -40,12 +49,12 @@ public class DominoesSQLDao implements DominoesDao{
 			"yyyy-MM-dd HH:mm:ss");
 	
 	public static final int Developer_Commit = 1;
-	public static final int Commit_File = 2;
+	public static final int Commit_File = 7;
 	public static final int Package_File = 3;
 	public static final int File_Class = 4;
 	public static final int Class_Method = 5;
 	public static final int Bug_Commit = 6;
-	public static final int Commit_Method = 8;
+	public static final int Commit_Method = 2;
 	
 	public static final int Amount_Tiles = 6;
 	
@@ -645,7 +654,7 @@ public class DominoesSQLDao implements DominoesDao{
 		stopWatch.start();
 		
 		sql = "SELECT TB.id, TC.hashcode FROM TCOMMIT TC, TREPOSITORY TR " +
-				"LEFT JOIN TBUG AS TB ON TB.commitid = TC.id " +
+				"LEFT JOIN TBUG AS TB ON TB.commitid = TC.hashcode " +
 				"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 				
 						
@@ -804,11 +813,11 @@ public class DominoesSQLDao implements DominoesDao{
 		
 		if (group == Group.Month){
 			sql = "SELECT strftime('%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TBUG TB, TREPOSITORY TR " + 
-					"WHERE TB.commitId = TC.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+					"WHERE TB.commitId = TC.hashcode AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		}
 		else if (group == Group.Day){
 			sql = "SELECT strftime('%d/%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TBUG TB, TREPOSITORY TR " + 
-					"WHERE TB.commitId = TC.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+					"WHERE TB.commitId = TC.hascode AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		}
 		
 		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 

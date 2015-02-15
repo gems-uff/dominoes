@@ -314,14 +314,14 @@ public class AreaMove extends Pane {
                     }
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAggregateRow.get(index).getText())) {
                     try {
-                        reduceLines(group);
+                        reduceColumns(group);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
 
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemAggregateCol.get(index).getText())) {
                     try {
-                        reduceColumns(group);
+                        reduceLines(group);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                     }
@@ -355,9 +355,9 @@ public class AreaMove extends Pane {
         
 
         menuOperate.getItems().addAll(menuItemTranspose, menuItemAggregateRow.get(index),
-        		menuItemAggregateCol.get(index), menuItemConfidence, menuItemZScore);
-        menuView.getItems().addAll(menuItemViewChart, menuItemViewLineChart, 
-        		menuItemViewGraph, menuItemViewMatrix, menuItemViewTree);
+        		menuItemAggregateCol.get(index)/*, menuItemConfidence, menuItemZScore*/);
+        menuView.getItems().addAll(menuItemViewChart, /*menuItemViewLineChart,*/ 
+        		menuItemViewGraph, menuItemViewMatrix/*, menuItemViewTree*/);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
     }
 

@@ -19,6 +19,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.transform.Rotate;
 import arch.Cell;
 import arch.MatrixDescriptor;
 import domain.Dominoes;
@@ -41,12 +42,13 @@ public class MatrixPane extends Pane {
     private List<Rectangle> recHeaders;
     private List<Rectangle> recCells;
     private List<Float> cells;
+    private Color cellColor = new Color(0, 0, 1.0f, 1.0f);
     
     private float max, min;
     
 	public MatrixPane(Dominoes domino) {
 		
-		this.setStyle("-fx-background-color: #00DD00");
+		this.setStyle("-fx-background-color: #E6E6E6");
 		
 		this.recHeaders = new ArrayList<>();
 		this.recCells = new ArrayList<>();
@@ -156,7 +158,7 @@ public class MatrixPane extends Pane {
             
             Text text = new Text(domino.getMat().getMatrixDescriptor().getColumnAt(i));
             text.setTranslateX(endColumnHead);
-            text.setTranslateY(height);
+            text.setTranslateY(height - 5.0);
 
             if(i%2 == 0){
             	text.setFill(Color.WHITE);
@@ -168,7 +170,7 @@ public class MatrixPane extends Pane {
             Group g = new Group(cell, text);
             g.setTranslateX(1 + (i * (cellSpace + padding) + padding) + (height/2 - width/2));
             g.setTranslateY(-1 + ((-1) * (cellSpace + padding)) - (width/2 - height/2));
-            g.setRotate(-90);
+            g.getTransforms().add(new Rotate(-90, width / 2.0f, height / 2.0f, 1.0f, Rotate.Z_AXIS));
             
             group.getChildren().add(g);
         }
@@ -181,9 +183,9 @@ public class MatrixPane extends Pane {
             back.setFill(new Color(1, 1, 1, 1));
             Rectangle front = new Rectangle(cellSpace, cellSpace);
         
-            front.setFill(new Color(1,
-            		0,
-            		0,
+            front.setFill(new Color(cellColor.getRed(),
+            		cellColor.getGreen(),
+            		cellColor.getBlue(),
             		(_matCell.value - min) / (max - min)));           
             front.toFront();
             

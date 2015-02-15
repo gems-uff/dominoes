@@ -69,7 +69,7 @@ public class RepositoryNode {
 		
 		Database.Open();
 		Date lastCommitDate = Database.AddRepository(repoNode);
-		CommitNode.SaveToDatabase(repoNode, null);
+		CommitNode.SaveToDatabase(repoNode, lastCommitDate);
 		
 		/*try {
 			Database.MineBugs("derby-", repoNode);

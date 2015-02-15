@@ -10,12 +10,18 @@ import edu.uci.ics.jung.algorithms.filters.EdgePredicateFilter;
 import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
+import edu.uci.ics.jung.algorithms.layout.FRLayout2;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
+import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
+import edu.uci.ics.jung.graph.AbstractTypedGraph;
 import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 //import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.io.graphml.parser.NodeElementParser;
@@ -28,6 +34,7 @@ import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.AbstractEdgeShapeTransformer;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
@@ -87,6 +94,7 @@ import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.event.GraphEvent.Edge;
 import edu.uci.ics.jung.graph.util.Context;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
@@ -107,10 +115,8 @@ public class GraphPane extends BorderPane {
 	private ArrayList<NodeInfo> nodesHighlighted = new ArrayList<>();
 	private DirectionDisplayPredicate edgePredicate;
 	private VertexDisplayPredicate vertexPredicate;
-	private Forest<String, String> graph;
-    
-    
-    UndirectedGraph<String, String> graphFactory= new UndirectedSparseMultigraph<>();
+	//private Forest<String, String> graph;
+	private Graph<String, String> graph;
 
     /**
      * the visual component and renderer for the graph
@@ -118,17 +124,23 @@ public class GraphPane extends BorderPane {
     VisualizationViewer<String, String> vv;
 
     FRLayout<String, String> treeLayout;
-   // CircleLayout<String, Integer> treeLayout;
+   // ISOMLayout<String, String> treeLayout;
+    //CircleLayout<String, Integer> treeLayout;
 
     public GraphPane(Dominoes domino) {
     	
         // create a simple graph for the demo
         graph = new DelegateForest<String, String>();
+    	
+    	if (domino.getType() == Dominoes.TYPE_SUPPORT)
+    		graph = new UndirectedSparseGraph<String, String>();
+    	else
+    		graph = new DirectedSparseGraph<String, String>();
         
         createTree(domino);
 
-//        treeLayout = new TreeLayout<String, Integer>(graph);
         treeLayout = new FRLayout<>(graph);
+        //treeLayout = new CircleLayout(graph);
         
         vv = new VisualizationViewer<String, String>(treeLayout, new Dimension(400, 400));
        
@@ -139,7 +151,6 @@ public class GraphPane extends BorderPane {
 			public Paint transform(String i) {
 				return (Paint) nodes.get(i).getColor();
 			}
-     
         });
         
         vv.getRenderContext().setVertexLabelTransformer(new Transformer<String, String>() {
@@ -401,37 +412,32 @@ public class GraphPane extends BorderPane {
     	
     	List<Cell> _cells = new ArrayList<>();
     	
-    	if (domino.isSquare()){
+    	if (domino.getType() == Dominoes.TYPE_SUPPORT){
     		for (Cell cell : nz){
     			
-    			Cell c = null;
+    			boolean toAdd = true;
     			
     			for (Cell _c : _cells){
-    				if (_c.row ==  cell.col){
-    					c = new Cell();
-    					c.row = cell.col;
-    					c.col = cell.row;
-    					c.value = cell.value;
+    				if (_c.row == cell.col && _c.col == cell.row){
+    					toAdd = false;
     					break;
     				}
     			}
     			
-    			if (c != null){
-    				_cells.add(c);
-    			} else {
+    			if (toAdd){
     				_cells.add(cell);
     			}
     		}
+    	} else {
+    		_cells = nz;
     	}
     	
-    	for (Cell cell : _cells){
-    		
-    		
+    	
+    	for (Cell cell : _cells){	
     		NodeInfo n1 = null;
     		NodeInfo n2 = null;
     		String id1 = null;
     		String id2 = null;
-    		
     		
     		if (domino.isSquare() && domino.getIdRow().equals(domino.getIdCol())){
     			
@@ -449,8 +455,6 @@ public class GraphPane extends BorderPane {
     		}
 
     		
-
-    	
     		
     		if (nodes.containsKey(id1)){  
 				n1 = nodes.get(id1); 
@@ -469,8 +473,13 @@ public class GraphPane extends BorderPane {
 				n2.setThreshold(Math.max(n2.getThreshold(), cell.value));
 			}
 			else {
+				
 				n2 = new NodeInfo(id2);
-				n2.setColor(Color.GREEN);
+				if (domino.getType() == Dominoes.TYPE_SUPPORT) 
+					n2.setColor(Color.BLUE);
+				else
+					n2.setColor(Color.GREEN);
+				
 				n2.setUserData(desc.getColumnAt(cell.col));
 				n2.setThreshold(cell.value);
 				nodes.put(n2.toString(), n2);
@@ -483,7 +492,10 @@ public class GraphPane extends BorderPane {
 			edge.setColor(new Color(1.0f - intensityColor, 1.0f - intensityColor, 1.0f - intensityColor));
 			
 			edges.put(edge.getId(), edge);
-			graph.addEdge(edge.getId(), n1.toString(), n2.toString());
+			if (domino.getType() == Dominoes.TYPE_SUPPORT) 
+				graph.addEdge(edge.getId(), n1.toString(), n2.toString(), EdgeType.UNDIRECTED);
+			else
+				graph.addEdge(edge.getId(), n1.toString(), n2.toString(), EdgeType.DIRECTED);
 			
     	}
     	
