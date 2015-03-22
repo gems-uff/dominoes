@@ -154,7 +154,7 @@ public class MatrixTable extends AbstractTableModel {
 				+ projName + "/";
 				
 
-		//RepositoryNode.SaveToDatabase(repoPath, projName);
+		RepositoryNode.SaveToDatabase(repoPath, projName);
 		
 		// Statistics
 		Database.Open();

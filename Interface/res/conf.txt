@@ -12,3 +12,4 @@ accessMode:				SQL
 processingUnit:			GPU
 beginDate:				2013-01-01 00:00:00
 endDate:				2014-01-31 00:00:00
+database:               /Users/josericardo/Projects/Dominoes/Interface/db/gitdataminer.sqlite

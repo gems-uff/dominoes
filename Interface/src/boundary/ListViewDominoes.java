@@ -276,7 +276,7 @@ public class ListViewDominoes extends ListView<Group> {
         if (indexTarget > indexSource) {
             Group sourceGroup = new Group();
             sourceGroup = this.pieces.get(indexSource);
-            Dominoes sourceDominoes = new Dominoes();
+            Dominoes sourceDominoes = new Dominoes(Configuration.processingUnit);
             sourceDominoes = this.dominoes.get(indexSource);
 
             for (int i = indexSource; i < indexTarget; i++) {
@@ -290,7 +290,7 @@ public class ListViewDominoes extends ListView<Group> {
         } else if (indexTarget < indexSource) {
             Group sourceGroup = new Group();
             sourceGroup = this.pieces.get(indexSource);
-            Dominoes sourceDominoes = new Dominoes();
+            Dominoes sourceDominoes = new Dominoes(Configuration.processingUnit);
             sourceDominoes = this.dominoes.get(indexSource);
 
             for (int i = indexSource; i > indexTarget; i--) {

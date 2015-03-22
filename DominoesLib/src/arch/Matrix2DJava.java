@@ -1,19 +1,10 @@
 package arch;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.la4j.matrix.Matrices;
-import org.la4j.matrix.Matrix;
 import org.la4j.matrix.functor.MatrixProcedure;
 import org.la4j.matrix.sparse.CRSMatrix;
-
-import com.josericardojunior.Native.*;
 
 
 public class Matrix2DJava implements IMatrix2D {	

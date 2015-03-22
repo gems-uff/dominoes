@@ -21,29 +21,24 @@ import org.apache.commons.lang.time.StopWatch;
 
 import javax.xml.ws.handler.MessageContext;
 
-import control.Controller;
 import arch.Cell;
 import arch.IMatrix2D;
 import arch.Matrix2DFactory;
-import domain.Configuration;
 import domain.Dominoes;
 
-public class DominoesSQLDao implements DominoesDao{
-	
+public class DominoesSQLDao {
 	
 	
 	public static String repository_name = "derby";
 	/*
-		beginDate:				2014-01-01 00:00:00
-		endDate:				2014-12-31 00:00:00
+		_begin:				2014-01-01 00:00:00
+		_end:				2014-12-31 00:00:00
 	 */
 	//public static String databaseName = "db/gitdataminer_q0.sqlite";
 	
-	//beginDate:				2013-01-01 00:00:00
-	//endDate:				2014-01-31 00:00:00
-	public static String databaseName = "db/gitdataminer.sqlite";
-	private static Date beginDate = null;
-	private static Date endDate = null;
+	//_begin:				2013-01-01 00:00:00
+	//_end:				2014-01-31 00:00:00
+	//public static String databaseName = "db/gitdataminer.sqlite";
 	private static Connection conn = null;
 	private static SimpleDateFormat sdf = new SimpleDateFormat(
 			"yyyy-MM-dd HH:mm:ss");
@@ -64,13 +59,20 @@ public class DominoesSQLDao implements DominoesDao{
 	}
 	
 	
-	public static void openDatabase() throws ClassNotFoundException, SQLException{
+	private static void openDatabase(String _database) throws ClassNotFoundException, SQLException{
 		Class.forName("org.sqlite.JDBC");
-		conn = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
+		conn = DriverManager.getConnection("jdbc:sqlite:" + _database);
+	}
+	
+	private static void closeDatabase() throws ClassNotFoundException, SQLException{
+		conn.close();
+		conn = null;
 	}
 
-    @Override
-    public ArrayList<Dominoes> loadAllMatrices() throws IOException, SQLException, Exception {
+    public static ArrayList<Dominoes> loadAllMatrices(String _database, String _device, Date _begin, Date _end) 
+    		throws IOException, SQLException, Exception {
+    	
+    	openDatabase(_database);
     	
     	ArrayList<Dominoes> _dominoesList = new ArrayList<Dominoes>();
     	
@@ -91,10 +93,10 @@ public class DominoesSQLDao implements DominoesDao{
 				
 				//Matrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name);
 				
-				IMatrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name);
+				IMatrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name, _device, _begin, _end);
 				
 				if (_mat != null){
-					Dominoes _dom = new Dominoes(_row_ab, _col_ab, _mat);
+					Dominoes _dom = new Dominoes(_row_ab, _col_ab, _mat, _device);
 					_dominoesList.add(_dom);
 				}
 			}
@@ -102,41 +104,51 @@ public class DominoesSQLDao implements DominoesDao{
 			rs.close();
 			smt.close();
 		}
-    	
+    	closeDatabase();
     	return _dominoesList;
     }
 
-    private IMatrix2D loadMatrixFromDatabase(int id, String row_name, String col_name) throws Exception{
-
+    private static IMatrix2D loadMatrixFromDatabase(int id, String row_name, String col_name,
+    		String _device, Date _begin, Date _end) throws Exception{
+    	
+    	IMatrix2D result = null;
     	
     	switch (id){
     	case Developer_Commit:
-    		return loadDeveloperCommit(row_name, col_name);
+    		result = loadDeveloperCommit(row_name, col_name, _device, _begin, _end);
+    		break;
     		
     	case Commit_File:
-    		return loadCommitFile(row_name, col_name);
+    		result = loadCommitFile(row_name, col_name, _device, _begin, _end);
+    		break;
     		
     	case Package_File:
-    		return loadPackageFile(row_name, col_name);
+    		result = loadPackageFile(row_name, col_name, _device, _begin, _end);
+    		break;
     		
     	case File_Class:
-    		return loadFileClass(row_name, col_name);
+    		result = loadFileClass(row_name, col_name, _device, _begin, _end);
+    		break;
     		
     	case Class_Method:
-    		return loadClassMethod(row_name, col_name);
+    		result = loadClassMethod(row_name, col_name, _device, _begin, _end);
+    		break;
     		
     	case Bug_Commit:
-    		return loadBugCommit(row_name, col_name);
+    		result = loadBugCommit(row_name, col_name, _device, _begin, _end);
+    		break;
     		
     	case Commit_Method:
-    		return loadCommitMethod(row_name, col_name);
+    		result = loadCommitMethod(row_name, col_name, _device, _begin, _end);
+    		break;
 
     	}
     	
-    	return null;
+    	return result;
     }
     
-    private IMatrix2D loadCommitFile(String row, String col) throws Exception {
+    private static IMatrix2D loadCommitFile(String row, String col, String _device, Date _begin, Date _end) 
+    		throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -154,16 +166,15 @@ public class DominoesSQLDao implements DominoesDao{
 				"WHERE TR.name = '" + repository_name + "' ";
 		
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 		
 		sql = sql.concat("ORDER BY TC.Date, TF.NewName;");
 		rs = smt.executeQuery(sql);
 		
 		stopWatch.stop();
 		System.out.println("**SQL (ms): " + stopWatch.getTime());
-		Controller.indexTileSelected = DominoesSQLDao.Commit_File;
-		Controller.printPrompt("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Commit x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 						
 		
 		stopWatch.reset();
@@ -203,7 +214,7 @@ public class DominoesSQLDao implements DominoesDao{
 			cells.add(c);
 		}
 		
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		stopWatch.stop();
 		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
@@ -215,7 +226,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
      
-    private IMatrix2D loadDeveloperCommit(String row, String col) throws Exception{
+    private static IMatrix2D loadDeveloperCommit(String row, String col, String _device, Date _begin, Date _end) throws Exception{
 		String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -232,8 +243,8 @@ public class DominoesSQLDao implements DominoesDao{
 		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +
 				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 
 		sql = sql.concat("ORDER BY TC.Date, TU.name;");
 		rs = smt.executeQuery(sql);
@@ -276,12 +287,11 @@ public class DominoesSQLDao implements DominoesDao{
 			cells.add(c);
 		}
 		
-		Controller.indexTileSelected = DominoesSQLDao.Developer_Commit;
-		Controller.printPrompt("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Developer x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 
 		
 		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		
 		stopWatch.stop();
@@ -294,7 +304,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
 	}
     
-    private IMatrix2D loadPackageFile(String row, String col) throws Exception {
+    private static IMatrix2D loadPackageFile(String row, String col, String _device, Date _begin, Date _end) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -310,8 +320,8 @@ public class DominoesSQLDao implements DominoesDao{
 		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " + 
 				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 		
 		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName;");
 		rs = smt.executeQuery(sql);
@@ -362,12 +372,11 @@ public class DominoesSQLDao implements DominoesDao{
 		}
 		
 				
-		Controller.indexTileSelected = DominoesSQLDao.Package_File;
-		Controller.printPrompt("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("Package x File Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 
 
 		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		
 		stopWatch.stop();
@@ -380,7 +389,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
 
-    private IMatrix2D loadFileClass(String row, String col) throws Exception {
+    private static IMatrix2D loadFileClass(String row, String col, String _device, Date _begin, Date _end) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -395,8 +404,8 @@ public class DominoesSQLDao implements DominoesDao{
 				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
 				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 
 		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName, TCL.Name;");
 		rs = smt.executeQuery(sql);
@@ -447,11 +456,10 @@ public class DominoesSQLDao implements DominoesDao{
 			cells.add(c);
 		}
 		
-		Controller.indexTileSelected = DominoesSQLDao.File_Class;
-		Controller.printPrompt("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		System.out.println("File x Class Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		
 		stopWatch.stop();
@@ -464,7 +472,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
     
-    private IMatrix2D loadClassMethod(String row, String col) throws Exception {
+    private static IMatrix2D loadClassMethod(String row, String col, String _device, Date _begin, Date _end) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -482,8 +490,8 @@ public class DominoesSQLDao implements DominoesDao{
 				"WHERE TF.CommitId = TC.id AND TCL.fileid = TF.id " + 
 				"AND TF.NewName NOT LIKE 'null' AND TC.repoid = TR.id AND TR.name = '" + repository_name + "' ";
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 
 		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName, ClassName, FuncName;");
 		rs = smt.executeQuery(sql);
@@ -536,12 +544,11 @@ public class DominoesSQLDao implements DominoesDao{
 
 			cells.add(c);
 		}
-		
-		Controller.indexTileSelected = DominoesSQLDao.Class_Method;
-		Controller.printPrompt("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+	
+		System.out.println("Class x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
 		
 		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		
 		stopWatch.stop();
@@ -554,7 +561,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
     
-    private IMatrix2D loadCommitMethod(String row, String col) throws Exception {
+    private static IMatrix2D loadCommitMethod(String row, String col, String _device, Date _begin, Date _end) throws Exception {
 		String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -575,10 +582,10 @@ public class DominoesSQLDao implements DominoesDao{
 
 
 
-		if (beginDate != null)
-			sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' ");
-		if (endDate != null)
-			sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null)
+			sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' ");
+		if (_end != null)
+			sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 
 		sql = sql.concat("ORDER BY TC.date, TF.PackageName, TF.NewName, ClassName, FuncName;");
 
@@ -628,7 +635,7 @@ public class DominoesSQLDao implements DominoesDao{
 		}
 		
 		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		
 		stopWatch.stop();
@@ -641,7 +648,7 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
     
-    private IMatrix2D loadBugCommit(String row, String col) throws Exception {
+    private static IMatrix2D loadBugCommit(String row, String col, String _device, Date _begin, Date _end) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -661,13 +668,13 @@ public class DominoesSQLDao implements DominoesDao{
 		
 
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 
 		sql = sql.concat("ORDER BY TC.date, TB.id;");
 			
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 				
 		sql = sql.concat("ORDER BY TC.date, TB.id;");
 		rs = smt.executeQuery(sql);
@@ -715,11 +722,10 @@ public class DominoesSQLDao implements DominoesDao{
 			}
 		}
 		
-		Controller.indexTileSelected = DominoesSQLDao.Bug_Commit;
-		Controller.printPrompt("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols()); 
+		System.out.println("Bug x Commit Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols()); 
 		
 		// Build Matrix
-		IMatrix2D mat = Matrix2DFactory.getMatrix2D(Configuration.processingUnit, descriptor);
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
 		mat.setData(cells);
 		
 		stopWatch.stop();
@@ -732,39 +738,14 @@ public class DominoesSQLDao implements DominoesDao{
 		return mat;
     }
     
-    
-	@Override
-    public Dominoes loadMatrix(Dominoes dominoes) throws IOException {
-        return null;
-    }
-
-    @Override
-    public boolean removeMatrix(Dominoes dominoes) throws IOException {
-        return true;
-    }
-
-    @Override
-    public boolean saveMatrix(Dominoes dominoes) throws IOException {
-        return true;
-    }
-
-	public static Date getBeginDate() {
-		return beginDate;
-	}
-
-	public static void setBeginDate(Date beginDate) {
-		DominoesSQLDao.beginDate = beginDate;
-	}
-
-	public static Date getEndDate() {
-		return endDate;
-	}
-
-	public static void setEndDate(Date endDate) {
-		DominoesSQLDao.endDate = endDate;
-	}
-	
-	public static Map<String, Integer> getNumCommits(Group group) throws SQLException{		
+	public static Map<String, Integer> getNumCommits(Group group, String _database, Date _begin, Date _end) 
+			throws SQLException, ClassNotFoundException{	
+		
+    	if (conn != null)
+    		closeDatabase();
+    	
+    	openDatabase(_database);
+    	
 		String sql = "";
 		Statement smt = conn.createStatement();
 		ResultSet rs;
@@ -779,8 +760,8 @@ public class DominoesSQLDao implements DominoesDao{
 					"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		}
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 		
 		if (group == Group.Month){
 			sql = sql.concat("GROUP BY strftime('%m/%Y', date) ");
@@ -801,11 +782,21 @@ public class DominoesSQLDao implements DominoesDao{
 		
 		rs.close();
 		smt.close();
+		
+		closeDatabase();
 							
 		return results;
 	}
     
-	public static Map<String, Integer> getNumBugs(Group group) throws SQLException{		
+	public static Map<String, Integer> getNumBugs(Group group, Date _begin, Date _end, String _database) 
+			throws SQLException, ClassNotFoundException{	
+		
+    	if (conn != null)
+    		closeDatabase();
+    	
+    	openDatabase(_database);
+    	
+    	
 		String sql = "";
 		Statement smt = conn.createStatement();
 		ResultSet rs;
@@ -820,8 +811,8 @@ public class DominoesSQLDao implements DominoesDao{
 					"WHERE TB.commitId = TC.hascode AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
 		}
 		
-		if (beginDate != null) sql = sql.concat("AND TC.date >= '" + sdf.format(beginDate) + "' "); 
-		if (endDate != null) sql = sql.concat("AND TC.date <= '" + sdf.format(endDate) + "' ");
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
 		
 		if (group == Group.Month){
 			sql = sql.concat("GROUP BY strftime('%m/%Y', date) ");
@@ -843,7 +834,7 @@ public class DominoesSQLDao implements DominoesDao{
 		rs.close();
 		smt.close();
 					
-		
+		closeDatabase();
 		
 		return results;
 	}

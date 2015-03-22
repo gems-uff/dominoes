@@ -2,6 +2,7 @@ package boundary;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 import javafx.collections.FXCollections;
@@ -45,16 +46,20 @@ public class TimePane extends Pane{
 	private double chartZeroY = -1;
 	private double paddingX = -1;
 	JFreeChart jLineChart;
+	Date beginDate = null;
+	Date endDate = null;
 	
-	public TimePane(){
-		this(0,1,0,1);
+	public TimePane(Date _begin, Date _end, String _database){
+		this(0,1,0,1, _begin, _end, _database);
 	}
 	
-	public TimePane(double min, double max){
-		this(min, max, 0, 1);
+	public TimePane(double min, double max, Date _begin, Date _end, String _database){
+		this(min, max, 0, 1, _begin, _end, _database);
 	}
 	
-	public TimePane(double min, double max, double selectMin, double selectMax){
+	public TimePane(double min, double max, double selectMin, double selectMax, Date _begin, Date _end, String _database){
+		beginDate = _begin;
+		endDate = _end;
 		
 		ObservableList<String> xItems = FXCollections.<String>observableArrayList();
 		
@@ -75,7 +80,8 @@ public class TimePane extends Pane{
 		DefaultCategoryDataset ds = new DefaultCategoryDataset();
 		// Add commits
 		try {
-			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(dao.DominoesSQLDao.Group.Month);			
+			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(dao.DominoesSQLDao.Group.Month,
+					_database, beginDate, endDate);			
 			XYChart.Series<String, Number> serie1 = new XYChart.Series<>();
 			serie1.setName("Commits");
 			for (Map.Entry<String, Integer> value : commitsByPeriod.entrySet()){
@@ -87,11 +93,14 @@ public class TimePane extends Pane{
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 		
 		// Add Bugs
 		try {
-			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(dao.DominoesSQLDao.Group.Month);			
+			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(dao.DominoesSQLDao.Group.Month,
+					beginDate, endDate, _database);			
 			XYChart.Series serie2 = new XYChart.Series<>();
 			serie2.setName("Bugs");
 			
@@ -101,6 +110,8 @@ public class TimePane extends Pane{
 			}
 			lineChart.getData().add(serie2);
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		

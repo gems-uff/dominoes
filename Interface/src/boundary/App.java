@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -60,6 +61,8 @@ public class App extends Application {
     private static ArrayList<Dominoes> array = null;
     
     private static GUIManager manager;
+    private static Date beginDate = null;
+    private static Date endDate = null;
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -161,24 +164,20 @@ public class App extends Application {
     /**
      * check out the data
      */
-    public static void checkout(String beginDate, String endDate){
+    public static void checkout(String _beginDate, String _endDate){
     	// Open database
         try {
 			
 			// Set begin and end date
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-			DominoesSQLDao.setBeginDate(sdf.parse(beginDate));
-			DominoesSQLDao.setEndDate(sdf.parse(endDate));
+			beginDate = sdf.parse(_beginDate);
+			endDate = sdf.parse(_endDate);
+			//DominoesSQLDao.setBeginDate(sdf.parse(beginDate));
+			//DominoesSQLDao.setEndDate(sdf.parse(endDate));
 //			DominoesSQLDao.setBeginDate(sdf.parse("2013-11-01 00:00:00"));
 //			DominoesSQLDao.setEndDate(sdf.parse("2014-01-31 00:00:00"));
-			DominoesSQLDao.openDatabase();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			DominoesSQLDao.openDatabase();
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -207,7 +206,14 @@ public class App extends Application {
 
         App.stage.show();
         
-        App.time = new TimePane(min, max);
+        
+		// Set begin and end date
+        try {
+			App.time = new TimePane(min, max, sdf.parse(beginDateWork), sdf.parse(endDateWork), Configuration.database);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         App.time.setVisible(true);
         
 		manager = GUIManager.getInstance();
@@ -256,7 +262,7 @@ public class App extends Application {
         if(Configuration.automaticCheck
 //        		&& beginDateWork.compareTo(endDateWork) < 0
         		){
-        	control.Controller.loadAllMatrices();
+        	control.Controller.loadAllMatrices(beginDate, endDate);
         	App.list = new ListViewDominoes(Controller.resultLoadMatrices);
         }else{
         	App.list = new ListViewDominoes(null);

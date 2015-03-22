@@ -71,11 +71,11 @@ public class RepositoryNode {
 		Date lastCommitDate = Database.AddRepository(repoNode);
 		CommitNode.SaveToDatabase(repoNode, lastCommitDate);
 		
-		/*try {
+		try {
 			Database.MineBugs("derby-", repoNode);
 		} catch (SQLException ex){
 			ex.printStackTrace();
-		}*/
+		}
 		Database.UpdateRepoToLastCommit(repoNode);
 		
 		Database.Close();

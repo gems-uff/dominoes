@@ -25,6 +25,9 @@ public final class Dominoes {
     public static Color COLOR_HISTORIC = new Color(0.86, 0.86, 0.86, 1);
     public static Color COLOR_INIVISIBLE = new Color(0, 0, 0, 0);
     public static Color COLOR_TYPE = COLOR_BORDER;
+    
+    public static String DEVICE_GPU = "GPU";
+    public static String DEVICE_CPU = "CPU";
 
     /*
      This variables are used to know the sequence of the matrix information 
@@ -83,10 +86,12 @@ public final class Dominoes {
     private Historic historic;
     private int type;
     private IMatrix2D mat = null;
+    private String currentDevice = DEVICE_CPU;
 
-    public Dominoes() {
+    public Dominoes(String _device) {
     	this.rowIsAggragatable = false;
     	this.colIsAggragatable = false;
+    	currentDevice = _device;
     }
 
     /**
@@ -97,7 +102,7 @@ public final class Dominoes {
      * @param mat - matrix2D
      * @throws IllegalArgumentException - in case of invalid parameters
      */
-    public Dominoes(String idRow, String idCol, IMatrix2D mat) throws IllegalArgumentException {
+    public Dominoes(String idRow, String idCol, IMatrix2D mat, String _device) throws IllegalArgumentException {
     	this.rowIsAggragatable = false;
     	this.colIsAggragatable = false;
         this.setIdRow(idRow);
@@ -108,6 +113,7 @@ public final class Dominoes {
         this.setHistoric(new Historic(idRow, idCol));
 
         this.type = Dominoes.TYPE_BASIC;
+        this.currentDevice = _device;
     }
 
     /**
@@ -120,7 +126,7 @@ public final class Dominoes {
      * @param mat - matrix2D
      * @throws IllegalArgumentException - in case of invalid parameters
      */
-    public Dominoes(int type, String idRow, String idCol, Historic historic, Matrix2D mat) throws IllegalArgumentException {
+    public Dominoes(int type, String idRow, String idCol, Historic historic, Matrix2D mat, String _device) throws IllegalArgumentException {
     	this.rowIsAggragatable = false;
     	this.colIsAggragatable = false;
         this.setIdRow(idRow);
@@ -137,6 +143,7 @@ public final class Dominoes {
             throw new IllegalArgumentException("Invalid argument.\nThe Type attribute not is defined or not is valid");
         }
         this.type = type;
+        this.currentDevice = _device;
     }
     
 //    /**
@@ -452,7 +459,7 @@ public final class Dominoes {
      * @return the historic invert
      */
     public void confidence() {
-        IMatrix2D _newMat = mat.confidence(Configuration.processingUnit.equalsIgnoreCase("GPU"));
+        IMatrix2D _newMat = mat.confidence(currentDevice.equalsIgnoreCase("GPU"));
         setMat(_newMat);
     }
     
@@ -483,7 +490,7 @@ public final class Dominoes {
         
         //this.historic = new Historic("SUM", this.getIdCol());
         
-        IMatrix2D _newMat = mat.reduceRows(Configuration.processingUnit.equalsIgnoreCase("GPU"));
+        IMatrix2D _newMat = mat.reduceRows(currentDevice.equalsIgnoreCase("GPU"));
         setMat(_newMat);
         
         _newMat.Debug();
@@ -492,7 +499,7 @@ public final class Dominoes {
 
     public Dominoes multiply(Dominoes dom) {
     	
-    	Dominoes domResult = new Dominoes();
+    	Dominoes domResult = new Dominoes(dom.getDevice());
     	
     	domResult.type = Dominoes.TYPE_DERIVED;
 
@@ -503,7 +510,7 @@ public final class Dominoes {
         try {
 			domResult.setMat(
 					getMat().multiply(
-							dom.getMat(), Configuration.processingUnit.equalsIgnoreCase("GPU")));
+							dom.getMat(), currentDevice.equalsIgnoreCase("GPU")));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -523,9 +530,13 @@ public final class Dominoes {
     }
     
     public Dominoes cloneNoMatrix(){
-    	Dominoes cloned = new Dominoes(getIdRow(), getIdCol(), getMat());
+    	Dominoes cloned = new Dominoes(getIdRow(), getIdCol(), getMat(), getDevice());
     	
     	return cloned;
+    }
+    
+    public String getDevice(){
+    	return currentDevice;
     }
     
     

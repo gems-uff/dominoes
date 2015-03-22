@@ -3,8 +3,6 @@ package arch;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.josericardojunior.Native.MatrixProcessor;
-
 public class Session {
 
 	private static boolean sessionStarted = false;

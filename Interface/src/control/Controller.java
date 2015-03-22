@@ -14,8 +14,8 @@ import boundary.App;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import util.ConfigurationFile;
-import dao.DaoFactory;
 import dao.DominoesDao;
+import dao.DominoesSQLDao;
 import domain.Configuration;
 import domain.Dominoes;
 
@@ -42,15 +42,12 @@ public class Controller {
      * @return Dominoes List
      * @throws IOException
      */
-    public static void loadAllMatrices() {
+    public static void loadAllMatrices(Date _beginDate, Date _endDate) {
     	resultLoadMatrices = new ArrayList<Dominoes>();
-        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
-        
-        if (result == null) {
-            throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
-        }
+    	
         try {
-            Controller.resultLoadMatrices = result.loadAllMatrices();
+            Controller.resultLoadMatrices = DominoesSQLDao.loadAllMatrices(
+            		Configuration.database, Configuration.processingUnit, _beginDate, _endDate);
         } catch (IOException ex) {
         	ex.printStackTrace();
             
@@ -85,11 +82,13 @@ public class Controller {
      * @throws IOException
      */
     public static Dominoes loadMatrix(Dominoes dominoes) throws IOException {
-        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
+        /*DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }
-        return result.loadMatrix(dominoes);
+        return result.loadMatrix(dominoes);*/
+    	
+    	return null;
     }
     
     /**This function has begin when the user want to multiply two matrices. 
@@ -111,13 +110,14 @@ public class Controller {
      * @throws IOException 
      */
     public static boolean removeMatrix(Dominoes dominoes) throws IOException {
-        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
+        /*DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
 
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }
         
-        return result.removeMatrix(dominoes);
+        return result.removeMatrix(dominoes);*/
+    	return true;
     }
     
     /**
@@ -128,11 +128,12 @@ public class Controller {
      * @throws IOException
      */
     public static boolean saveMatrix(Dominoes dominoes) throws IOException {
-        DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
+       /* DominoesDao result = DaoFactory.getDominoesDao(Configuration.accessMode);
         if (result == null) {
             throw new IllegalArgumentException("Invalid argument.\nAccess mode not defined");
         }
-        return result.saveMatrix(dominoes);
+        return result.saveMatrix(dominoes);*/
+    	return true;
     }
 
     /**This function has begin when the user want to transpose a matrix.

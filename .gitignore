@@ -1,7 +1,9 @@
 Interface/target
 gitdataminer/target
 .metadata
+.recommenders
 JNIGPUMatrix/kernel.o
 JNIGPUMatrix/libMatrixProcessor.o
 *.log
 *.jnilib
+*.class

@@ -1,10 +1,5 @@
 package arch;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.annotation.Native;
 import java.util.ArrayList;
 
 import com.josericardojunior.Native.*;
