@@ -42,12 +42,12 @@ public class Controller {
      * @return Dominoes List
      * @throws IOException
      */
-    public static void loadAllMatrices(Date _beginDate, Date _endDate) {
+    public static void loadAllMatrices(Date _beginDate, Date _endDate, String _projectName) {
     	resultLoadMatrices = new ArrayList<Dominoes>();
     	
         try {
             Controller.resultLoadMatrices = DominoesSQLDao.loadAllMatrices(
-            		Configuration.database, Configuration.processingUnit, _beginDate, _endDate);
+            		Configuration.database, _projectName, Configuration.processingUnit, _beginDate, _endDate);
         } catch (IOException ex) {
         	ex.printStackTrace();
             

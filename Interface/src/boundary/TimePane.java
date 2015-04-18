@@ -49,15 +49,17 @@ public class TimePane extends Pane{
 	Date beginDate = null;
 	Date endDate = null;
 	
-	public TimePane(Date _begin, Date _end, String _database){
-		this(0,1,0,1, _begin, _end, _database);
+	public TimePane(Date _begin, Date _end, String _database, String _project){
+		this(0,1,0,1, _begin, _end, _database, _project);
 	}
 	
-	public TimePane(double min, double max, Date _begin, Date _end, String _database){
-		this(min, max, 0, 1, _begin, _end, _database);
+	public TimePane(double min, double max, Date _begin, Date _end, 
+			String _database, String _project){
+		this(min, max, 0, 1, _begin, _end, _database, _project);
 	}
 	
-	public TimePane(double min, double max, double selectMin, double selectMax, Date _begin, Date _end, String _database){
+	public TimePane(double min, double max, double selectMin, double selectMax, 
+			Date _begin, Date _end, String _database, String _project){
 		beginDate = _begin;
 		endDate = _end;
 		
@@ -81,7 +83,7 @@ public class TimePane extends Pane{
 		// Add commits
 		try {
 			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(dao.DominoesSQLDao.Group.Month,
-					_database, beginDate, endDate);			
+					_database, beginDate, endDate, _project);			
 			XYChart.Series<String, Number> serie1 = new XYChart.Series<>();
 			serie1.setName("Commits");
 			for (Map.Entry<String, Integer> value : commitsByPeriod.entrySet()){
@@ -100,7 +102,7 @@ public class TimePane extends Pane{
 		// Add Bugs
 		try {
 			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(dao.DominoesSQLDao.Group.Month,
-					beginDate, endDate, _database);			
+					beginDate, endDate, _database, _project);			
 			XYChart.Series serie2 = new XYChart.Series<>();
 			serie2.setName("Bugs");
 			

@@ -29,7 +29,7 @@ import domain.Dominoes;
 public class DominoesSQLDao {
 	
 	
-	public static String repository_name = "derby";
+	//public static String repository_name = "derby";
 	/*
 		_begin:				2014-01-01 00:00:00
 		_end:				2014-12-31 00:00:00
@@ -69,8 +69,8 @@ public class DominoesSQLDao {
 		conn = null;
 	}
 
-    public static ArrayList<Dominoes> loadAllMatrices(String _database, String _device, Date _begin, Date _end) 
-    		throws IOException, SQLException, Exception {
+    public static ArrayList<Dominoes> loadAllMatrices(String _database, String _project, 
+    		String _device, Date _begin, Date _end) throws IOException, SQLException, Exception {
     	
     	openDatabase(_database);
     	
@@ -91,9 +91,7 @@ public class DominoesSQLDao {
 				String _row_ab = rs.getString("row_abbreviate");
 				String _col_ab = rs.getString("column_abbreviate");
 				
-				//Matrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name);
-				
-				IMatrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name, _device, _begin, _end);
+				IMatrix2D _mat = loadMatrixFromDatabase(_id, _row_name, _col_name, _device, _begin, _end, _project);
 				
 				if (_mat != null){
 					Dominoes _dom = new Dominoes(_row_ab, _col_ab, _mat, _device);
@@ -109,37 +107,37 @@ public class DominoesSQLDao {
     }
 
     private static IMatrix2D loadMatrixFromDatabase(int id, String row_name, String col_name,
-    		String _device, Date _begin, Date _end) throws Exception{
+    		String _device, Date _begin, Date _end, String _project) throws Exception{
     	
     	IMatrix2D result = null;
     	
     	switch (id){
     	case Developer_Commit:
-    		result = loadDeveloperCommit(row_name, col_name, _device, _begin, _end);
+    		result = loadDeveloperCommit(row_name, col_name, _device, _begin, _end, _project);
     		break;
     		
     	case Commit_File:
-    		result = loadCommitFile(row_name, col_name, _device, _begin, _end);
+    		result = loadCommitFile(row_name, col_name, _device, _begin, _end, _project);
     		break;
     		
     	case Package_File:
-    		result = loadPackageFile(row_name, col_name, _device, _begin, _end);
+    		result = loadPackageFile(row_name, col_name, _device, _begin, _end, _project);
     		break;
     		
     	case File_Class:
-    		result = loadFileClass(row_name, col_name, _device, _begin, _end);
+    		result = loadFileClass(row_name, col_name, _device, _begin, _end, _project);
     		break;
     		
     	case Class_Method:
-    		result = loadClassMethod(row_name, col_name, _device, _begin, _end);
+    		result = loadClassMethod(row_name, col_name, _device, _begin, _end, _project);
     		break;
     		
     	case Bug_Commit:
-    		result = loadBugCommit(row_name, col_name, _device, _begin, _end);
+    		result = loadBugCommit(row_name, col_name, _device, _begin, _end, _project);
     		break;
     		
     	case Commit_Method:
-    		result = loadCommitMethod(row_name, col_name, _device, _begin, _end);
+    		result = loadCommitMethod(row_name, col_name, _device, _begin, _end, _project);
     		break;
 
     	}
@@ -147,8 +145,8 @@ public class DominoesSQLDao {
     	return result;
     }
     
-    private static IMatrix2D loadCommitFile(String row, String col, String _device, Date _begin, Date _end) 
-    		throws Exception {
+    private static IMatrix2D loadCommitFile(String row, String col, String 
+    		_device, Date _begin, Date _end, String _project) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -163,7 +161,7 @@ public class DominoesSQLDao {
 		
 		sql = "SELECT TC.HashCode, TF.NewName FROM TCOMMIT TC, TREPOSITORY TR " + 
 				"LEFT JOIN TFILE AS TF ON TF.CommitId = TC.id " + 
-				"WHERE TR.name = '" + repository_name + "' ";
+				"WHERE TR.name = '" + _project + "' ";
 		
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
@@ -226,7 +224,8 @@ public class DominoesSQLDao {
 		return mat;
     }
      
-    private static IMatrix2D loadDeveloperCommit(String row, String col, String _device, Date _begin, Date _end) throws Exception{
+    private static IMatrix2D loadDeveloperCommit(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception{
 		String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -241,7 +240,7 @@ public class DominoesSQLDao {
 		
 		// Get all commits
 		sql = "SELECT TU.name, TC.HashCode FROM TUser TU, TCOMMIT TC, TREPOSITORY TR " +
-				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+				"WHERE TC.userID = TU.id AND TC.RepoId = TR.id AND TR.name = '" + _project + "' ";
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
 		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
@@ -304,7 +303,8 @@ public class DominoesSQLDao {
 		return mat;
 	}
     
-    private static IMatrix2D loadPackageFile(String row, String col, String _device, Date _begin, Date _end) throws Exception {
+    private static IMatrix2D loadPackageFile(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -318,7 +318,7 @@ public class DominoesSQLDao {
 
 		
 		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " + 
-				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
+				"WHERE TF.CommitId = TC.id AND TC.repoid = TR.id AND TR.name = '" + _project + "' ";
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
 		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
@@ -389,7 +389,8 @@ public class DominoesSQLDao {
 		return mat;
     }
 
-    private static IMatrix2D loadFileClass(String row, String col, String _device, Date _begin, Date _end) throws Exception {
+    private static IMatrix2D loadFileClass(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -402,7 +403,7 @@ public class DominoesSQLDao {
 	
 		sql = "SELECT TC.HashCode, TF.NewName, TF.PackageName, TCL.name FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " +
 				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
-				"WHERE TF.CommitId = TC.id AND TR.name = '" + repository_name + "' ";
+				"WHERE TF.CommitId = TC.id AND TC.repoid = TR.id AND TR.name = '" + _project + "' ";
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
 		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
@@ -472,7 +473,8 @@ public class DominoesSQLDao {
 		return mat;
     }
     
-    private static IMatrix2D loadClassMethod(String row, String col, String _device, Date _begin, Date _end) throws Exception {
+    private static IMatrix2D loadClassMethod(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -488,7 +490,7 @@ public class DominoesSQLDao {
 				"TM.name as FuncName FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF, TCLASS TCL " +
 				"LEFT JOIN TFUNCTION AS TM ON TM.classid = TCL.id " + 
 				"WHERE TF.CommitId = TC.id AND TCL.fileid = TF.id " + 
-				"AND TF.NewName NOT LIKE 'null' AND TC.repoid = TR.id AND TR.name = '" + repository_name + "' ";
+				"AND TF.NewName NOT LIKE 'null' AND TC.repoid = TR.id AND TR.name = '" + _project + "' ";
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
 		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
@@ -561,7 +563,8 @@ public class DominoesSQLDao {
 		return mat;
     }
     
-    private static IMatrix2D loadCommitMethod(String row, String col, String _device, Date _begin, Date _end) throws Exception {
+    private static IMatrix2D loadCommitMethod(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception {
 		String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -578,7 +581,7 @@ public class DominoesSQLDao {
 				"LEFT JOIN TFILE AS TF ON TF.commitid = TC.id " +
 				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
 				"LEFT JOIN TFUNCTION AS TM ON TM.classid = TCL.id " + 
-				"WHERE TR.name = '" + repository_name + "' "; 
+				"WHERE TC.repoid = TR.id AND TR.name = '" + _project + "' "; 
 
 
 
@@ -648,7 +651,8 @@ public class DominoesSQLDao {
 		return mat;
     }
     
-    private static IMatrix2D loadBugCommit(String row, String col, String _device, Date _begin, Date _end) throws Exception {
+    private static IMatrix2D loadBugCommit(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
 		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
@@ -662,7 +666,7 @@ public class DominoesSQLDao {
 		
 		sql = "SELECT TB.id, TC.hashcode FROM TCOMMIT TC, TREPOSITORY TR " +
 				"LEFT JOIN TBUG AS TB ON TB.commitid = TC.hashcode " +
-				"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+				"WHERE TC.RepoId = TR.id AND TR.name = '" + _project + "' ";
 				
 						
 		
@@ -738,8 +742,8 @@ public class DominoesSQLDao {
 		return mat;
     }
     
-	public static Map<String, Integer> getNumCommits(Group group, String _database, Date _begin, Date _end) 
-			throws SQLException, ClassNotFoundException{	
+	public static Map<String, Integer> getNumCommits(Group group, String _database, 
+			Date _begin, Date _end, String _project) throws SQLException, ClassNotFoundException{	
 		
     	if (conn != null)
     		closeDatabase();
@@ -753,11 +757,11 @@ public class DominoesSQLDao {
 		
 		if (group == Group.Month){
 			sql = "SELECT strftime('%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TREPOSITORY TR " + 
-					"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+					"WHERE TC.RepoId = TR.id AND TR.name = '" + _project + "' ";
 		}
 		else if (group == Group.Day){
 			sql = "SELECT strftime('%d/%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TREPOSITORY TR " + 
-					"WHERE TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+					"WHERE TC.RepoId = TR.id AND TR.name = '" + _project + "' ";
 		}
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
@@ -788,8 +792,8 @@ public class DominoesSQLDao {
 		return results;
 	}
     
-	public static Map<String, Integer> getNumBugs(Group group, Date _begin, Date _end, String _database) 
-			throws SQLException, ClassNotFoundException{	
+	public static Map<String, Integer> getNumBugs(Group group, Date _begin, Date _end, 
+			String _database, String _project) throws SQLException, ClassNotFoundException{	
 		
     	if (conn != null)
     		closeDatabase();
@@ -804,11 +808,11 @@ public class DominoesSQLDao {
 		
 		if (group == Group.Month){
 			sql = "SELECT strftime('%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TBUG TB, TREPOSITORY TR " + 
-					"WHERE TB.commitId = TC.hashcode AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+					"WHERE TB.commitId = TC.hashcode AND TC.RepoId = TR.id AND TR.name = '" + _project + "' ";
 		}
 		else if (group == Group.Day){
 			sql = "SELECT strftime('%d/%m/%Y', Date) as Period, count(*) as Total FROM TCOMMIT TC, TBUG TB, TREPOSITORY TR " + 
-					"WHERE TB.commitId = TC.hascode AND TC.RepoId = TR.id AND TR.name = '" + repository_name + "' ";
+					"WHERE TB.commitId = TC.hascode AND TC.RepoId = TR.id AND TR.name = '" + _project + "' ";
 		}
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
