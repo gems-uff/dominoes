@@ -503,11 +503,15 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 	} else {
 		int nonZeros = mat1->nonZeros();
 
+		fprintf(stderr, "nz0\n");
+
 		int *rows = (int*) malloc(sizeof(int) * nonZeros);
 		int *cols = (int*) malloc(sizeof(int) * nonZeros);
 		float *values = (float*) malloc(sizeof(float) * nonZeros);
 		float *res_data = (float*) malloc(sizeof(float) * nonZeros);
 		memset(res_data, 0, sizeof(float) * nonZeros);
+
+		fprintf(stderr, "nz1\n");
 
 		int k = 0;
 		for (int i = 0; i < mat1->outerSize(); ++i){

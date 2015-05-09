@@ -157,12 +157,10 @@ public class DominoesSQLDao {
 		
 		stopWatch.reset();
 		stopWatch.start();
-
 		
 		sql = "SELECT TC.HashCode, TF.NewName FROM TCOMMIT TC, TREPOSITORY TR " + 
 				"LEFT JOIN TFILE AS TF ON TF.CommitId = TC.id " + 
-				"WHERE TR.name = '" + _project + "' ";
-		
+				"WHERE TC.repoid = TR.id AND TR.name = '" + _project + "' ";
 		
 		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
 		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");

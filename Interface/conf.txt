@@ -9,7 +9,7 @@ width:					1000.0
 height:					600.0
 listWidth:				130.0
 accessMode:				SQL
-processingUnit:			GPU
+processingUnit:			CPU
 beginDate:				2013-01-01 00:00:00
 endDate:				2014-01-31 00:00:00
-database:               /Users/josericardo/Projects/Dominoes/Interface/db/gitdataminer.sqlite
+database:               /Users/josericardo/Downloads/gitdataminer-2.sqlite

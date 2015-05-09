@@ -355,7 +355,7 @@ public class AreaMove extends Pane {
         
 
         menuOperate.getItems().addAll(menuItemTranspose, menuItemAggregateRow.get(index),
-        		menuItemAggregateCol.get(index)/*, menuItemConfidence, menuItemZScore*/);
+        		menuItemAggregateCol.get(index), menuItemConfidence, menuItemZScore);
         menuView.getItems().addAll(menuItemViewChart, /*menuItemViewLineChart,*/ 
         		menuItemViewGraph, menuItemViewMatrix/*, menuItemViewTree*/);
         minimenu.getItems().addAll(menuOperate, menuView, menuItemSaveInList, menuItemClose);
