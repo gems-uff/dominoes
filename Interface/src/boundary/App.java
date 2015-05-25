@@ -63,7 +63,7 @@ public class App extends Application {
     private static GUIManager manager;
     private static Date beginDate = null;
     private static Date endDate = null;
-    private static String projectName = "voldemort";
+    private static String projectName = "Caminho";
     
     @Override
     public void start(Stage primaryStage) throws Exception {

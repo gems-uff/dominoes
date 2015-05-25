@@ -45,13 +45,14 @@ public class DominoesSQLDao {
 	
 	public static final int Developer_Commit = 1;
 	public static final int Commit_File = 7;
+	public static final int File_Method = 8;
 	public static final int Package_File = 3;
 	public static final int File_Class = 4;
 	public static final int Class_Method = 5;
 	public static final int Bug_Commit = 6;
 	public static final int Commit_Method = 2;
 	
-	public static final int Amount_Tiles = 6;
+	public static final int Amount_Tiles = 8;
 	
 	public enum Group {
 		Month,
@@ -139,6 +140,9 @@ public class DominoesSQLDao {
     	case Commit_Method:
     		result = loadCommitMethod(row_name, col_name, _device, _begin, _end, _project);
     		break;
+    		
+    	case File_Method:
+    		result = loadFileMethod(row_name, col_name, _device, _begin, _end, _project);
 
     	}
     	
@@ -387,6 +391,94 @@ public class DominoesSQLDao {
 		return mat;
     }
 
+    private static IMatrix2D loadFileMethod(String row, String col, String _device, 
+    		Date _begin, Date _end, String _project) throws Exception {
+    	String sql;
+		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+
+		StopWatch stopWatch = new StopWatch();
+		System.out.println("*Loading File x Method");
+
+		stopWatch.start();
+	
+		sql = "SELECT TF.NewName, TCL.name, TFUNC.name as FuncName FROM TCOMMIT TC, TREPOSITORY TR, TFILE TF " +
+				"LEFT JOIN TCLASS AS TCL ON TCL.fileid = TF.id " +
+				"LEFT JOIN TFUNCTION AS TFUNC ON TCL.id = TFUNC.classid " +
+				"WHERE TF.CommitId = TC.id AND TC.repoid = TR.id AND TR.name = '" + _project + "' ";
+		
+		if (_begin != null) sql = sql.concat("AND TC.date >= '" + sdf.format(_begin) + "' "); 
+		if (_end != null) sql = sql.concat("AND TC.date <= '" + sdf.format(_end) + "' ");
+
+		sql = sql.concat("ORDER BY TC.Date, TF.PackageName, TF.NewName, TCL.Name, FuncName;");
+		rs = smt.executeQuery(sql);
+				
+		stopWatch.stop();
+		System.out.println("**SQL (ms): " + stopWatch.getTime());
+
+		stopWatch.reset();
+		stopWatch.start();
+
+		ArrayList<Cell> cells = new ArrayList<Cell>();
+		String oldRow = "";
+		String oldCol = "";
+
+		while (rs.next()) {
+			String fileName = rs.getString("NewName");
+			String className = rs.getString("name");
+			String funcName = rs.getString("FuncName");
+			String composed = className + "$" + funcName;
+			
+			if (fileName == null || fileName.equals("null")){
+				continue;
+			}
+
+			if (!oldRow.equals(fileName)) {
+
+				if (!descriptor.hasRow(fileName))
+					descriptor.AddRowDesc(fileName);
+
+				oldRow = fileName;
+			}
+			
+			if (funcName == null || funcName.equals("null")){
+				continue;
+			}
+
+			if (!oldCol.equals(fileName + "$" + composed)) {
+
+				if (!descriptor.hasCol(fileName + "$" + composed))
+					descriptor.AddColDesc(fileName + "$" + composed);
+
+				oldCol = fileName + "$" + composed;
+			}
+
+			Cell c = new Cell();
+			c.row = descriptor.getRowElementIndex(fileName);
+			c.col = descriptor.getColElementIndex(fileName + "$" + composed);
+			c.value = 1;
+
+			cells.add(c);
+		}
+			
+		System.out.println("File x Method Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		
+		// Build Matrix
+		IMatrix2D mat = Matrix2DFactory.getMatrix2D(_device, descriptor);
+		mat.setData(cells);
+		
+		stopWatch.stop();
+		System.out.println("**Building matriz (ms): " + stopWatch.getTime());
+		System.out.println("**Size: " + descriptor.getNumRows() + " x " + descriptor.getNumCols());
+		
+		rs.close();
+		smt.close();
+		
+		return mat;
+    }
+    
+    
     private static IMatrix2D loadFileClass(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
