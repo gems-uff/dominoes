@@ -5,9 +5,11 @@
  */
 package boundary;
 
+import java.awt.Dialog.ModalityType;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
 
 //import boundary.components.MenuColor;
 import javafx.scene.paint.Color;
@@ -43,6 +45,7 @@ public class DominoesMenuBar extends MenuBar {
     private final MenuItem mDominoes_save_saveAll;
     private final CheckMenuItem mDominoes_save_autoSave;
     private final SeparatorMenuItem mDominoes_separator;
+    private final MenuItem mDatabaseConfiguration;
 
 //------EDIT MENU ITENS---------------------------------------------------------
     private final Menu mEdit;
@@ -125,11 +128,14 @@ public class DominoesMenuBar extends MenuBar {
         this.mConfiguration_database_accessSQL.setToggleGroup(mConfiguration_database_accessGroup);
         this.mConfiguration_database_accessTXT.setSelected(true);
         
+        
         this.mConfiguration_separator = new SeparatorMenuItem();
+        this.mDatabaseConfiguration = new MenuItem("Database Configuration");
         
         this.mConfiguration_database.getItems().addAll(this.mConfiguration_database_accessTXT, this.mConfiguration_database_accessSQL);
         
-        this.mConfiguration.getItems().addAll(this.mConfiguration_database, this.mConfiguration_separator, this.mConfiguration_fullScreen);
+        this.mConfiguration.getItems().addAll(this.mConfiguration_database, this.mConfiguration_separator, this.mDatabaseConfiguration,
+        		this.mConfiguration_fullScreen);
 
 //------TIME MENU ITENS----------------------------------------------------
         this.mTimeline_ShowTimeline = new CheckMenuItem("View Time");
@@ -206,6 +212,16 @@ public class DominoesMenuBar extends MenuBar {
                 System.exit(0);
             }
         });
+        
+        this.mDatabaseConfiguration.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent arg0) {
+				DomionesImporter importer = new DomionesImporter(Configuration.database);
+				//importer.setModalityType(ModalityType.TOOLKIT_MODAL);
+				importer.setVisible(true);
+			}
+		});
 
 //----------EDIT MENU ITENS-----------------------------------------------------
         

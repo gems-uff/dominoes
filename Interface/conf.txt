@@ -10,6 +10,7 @@ height:					600.0
 listWidth:				130.0
 accessMode:				SQL
 processingUnit:			CPU
-beginDate:				2015-05-21 00:00:00
-endDate:				2015-05-23 00:00:00
-database:               /Users/josericardo/Downloads/gitdataminer_tst.sqlite
+Project: 			    derby
+beginDate:				2013-01-01 00:00:00
+endDate:				2014-01-31 00:00:00
+database:               db/gitdataminer.sqlite

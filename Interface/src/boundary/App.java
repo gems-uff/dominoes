@@ -63,7 +63,6 @@ public class App extends Application {
     private static GUIManager manager;
     private static Date beginDate = null;
     private static Date endDate = null;
-    private static String projectName = "Caminho";
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -210,8 +209,9 @@ public class App extends Application {
         
 		// Set begin and end date
         try {
+        	if (Configuration.projName != null && Configuration.projName.length() > 0)
 			App.time = new TimePane(min, max, sdf.parse(beginDateWork), sdf.parse(endDateWork), 
-					Configuration.database, projectName);
+					Configuration.database, Configuration.projName);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -264,7 +264,9 @@ public class App extends Application {
         if(Configuration.automaticCheck
 //        		&& beginDateWork.compareTo(endDateWork) < 0
         		){
-        	control.Controller.loadAllMatrices(beginDate, endDate, projectName);
+        	
+        	if (Configuration.projName != null && Configuration.projName.length() > 0)
+        	control.Controller.loadAllMatrices(beginDate, endDate, Configuration.projName);
         	App.list = new ListViewDominoes(Controller.resultLoadMatrices);
         }else{
         	App.list = new ListViewDominoes(null);

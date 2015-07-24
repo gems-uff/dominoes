@@ -7,3 +7,5 @@ JNIGPUMatrix/libMatrixProcessor.o
 *.log
 *.jnilib
 *.class
+*.jar
+*.sqlite

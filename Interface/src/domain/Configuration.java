@@ -17,11 +17,12 @@ public class Configuration {
     public static String accessMode = "SQL";
     public static String processingUnit = "GPU";
     public static String database = "";
+    public static String projName = "";
     
 	public static String beginDate = "2013-11-01 00:00:00";
     public static String endDate = "2014-01-31 00:00:00";    
     
-    public static final int amount = 15;
+    public static final int amount = 16;
 
     // not save/read file 
     public static double fullscreenWidth = Configuration.width;

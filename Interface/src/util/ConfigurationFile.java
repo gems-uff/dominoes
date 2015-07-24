@@ -110,6 +110,8 @@ public class ConfigurationFile {
                         Configuration.endDate = valueVariable;
                     } else if (nameVariable.compareTo("database") == 0){
                     	Configuration.database = valueVariable;
+                    } else if (nameVariable.compareTo("project") == 0){
+                    	Configuration.projName = valueVariable;
                     }
                 line = br.readLine();
                 amount++;

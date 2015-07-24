@@ -6,7 +6,9 @@
 
 package boundary;
 
+import util.ConfigurationFile;
 import control.Controller;
+import dao.DominoesSQLDao;
 import domain.Configuration;
 import arch.Session;
 
@@ -25,9 +27,11 @@ public class Main {
         	Session.startSession();
             // read the configuration file
             control.Controller.loadConfiguration();
+            DominoesSQLDao.openDatabase(Configuration.database);
             // call Application.launch()
             App.start();
             Session.closeSection();
+            DominoesSQLDao.closeDatabase();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }

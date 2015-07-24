@@ -8,12 +8,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javafx.scene.input.KeyCode;
 
@@ -21,6 +25,12 @@ import org.apache.commons.lang.time.StopWatch;
 
 import javax.xml.ws.handler.MessageContext;
 
+import RepositoryImporter.ClassNode;
+import RepositoryImporter.CommitNode;
+import RepositoryImporter.FileNode;
+import RepositoryImporter.FunctionNode;
+import RepositoryImporter.RepositoryNode;
+import RepositoryImporter.UserNode;
 import arch.Cell;
 import arch.IMatrix2D;
 import arch.Matrix2DFactory;
@@ -60,16 +70,315 @@ public class DominoesSQLDao {
 	}
 	
 	
-	private static void openDatabase(String _database) throws ClassNotFoundException, SQLException{
+	public static void openDatabase(String _database) throws ClassNotFoundException, SQLException{
 		Class.forName("org.sqlite.JDBC");
 		conn = DriverManager.getConnection("jdbc:sqlite:" + _database);
 	}
 	
-	private static void closeDatabase() throws ClassNotFoundException, SQLException{
+	public static void closeDatabase() throws ClassNotFoundException, SQLException{
 		conn.close();
 		conn = null;
 	}
+	
+	public static Map<String, RepositoryNode> retrieveRepositores() throws SQLException{
+		Map<String, RepositoryNode> repos = new HashMap<String, RepositoryNode>();
+		
+		String sql;
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+		
+		// Get all commits
+		sql = "SELECT TR.Name, TR.LastCommitId, TR.RepoLocation, TR.BugSuffix, TC.Date FROM TREPOSITORY TR, TCOMMIT TC " + 
+				"WHERE TC.repoId = TR.id AND TC.id = TR.LastCommitId";
+		
+		rs = smt.executeQuery(sql);
+		
+		SimpleDateFormat sdf = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm:ss");
+		
+		while (rs.next())
+		{
+			RepositoryNode rnode;
+			try {
+				rnode = new RepositoryNode(rs.getString("Name"), rs.getString("RepoLocation"),
+						rs.getInt("LastCommitId"), rs.getString("BugSuffix"), sdf.parse(rs.getString("Date")) );
+				repos.put(rnode.getName(), rnode);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		
+		rs.close();
+		smt.close();
+		
+		return repos;
+	}
+	
+	public static void addRepository(RepositoryNode repo) throws SQLException{
+		
+		Statement smt;
+		String sql;
+		
+		if (conn == null)
+			throw new SQLException("Database not opened!");
+		
+		smt = conn.createStatement();
 
+		
+		
+		if (repo.getBugPrefix().length() > 0){
+			sql = "INSERT INTO TREPOSITORY(Name, LastCommitId, RepoLocation, BugSuffix) VALUES ('" + 
+				repo.getName() + "', -1, '" + repo.getLocation() + "', '" + repo.getBugPrefix() + "')";
+		}
+		else{ 
+			sql = "INSERT INTO TREPOSITORY(Name, LastCommitId, RepoLocation) VALUES ('" + 
+				repo.getName() + "', -1, '" + repo.getLocation() + "')";
+		}
+		
+		smt.executeUpdate(sql);
+		smt.close();
+	}
+	
+	public static void addCommit(CommitNode commit, RepositoryNode repoNode) {
+		
+		Statement smt;
+		String sql;
+		SimpleDateFormat sdf = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm:ss");
+		
+		try {
+			smt = conn.createStatement();
+
+			sql = "INSERT INTO TCOMMIT (RepoId, UserId, HashCode, Date, Message)"
+					+ " VALUES ("
+					+ "(SELECT id FROM TREPOSITORY TR WHERE TR.Name = '"
+					+ repoNode.getName()
+					+ "')," 
+					+ Integer.toString(getUserId(commit.getUser().getName())) + ","
+					+ "'"
+					+ commit.getHashCode()
+					+ "',"
+					+ "'"
+					+ sdf.format(commit.getDate())
+					+ "',"
+					+ "'"
+					+ commit.getLogMessage().replaceAll("'", "''")
+					+ "');";
+
+			for (FileNode fileNode : commit.getFiles()) {
+				sql += "INSERT INTO TFILE (CommitId, NewName, OldName, NewObjId, PackageName, ChangeType)"
+						+ " VALUES ("
+						+ "(SELECT id FROM TCOMMIT TC WHERE TC.HashCode = '"
+						+ commit.getHashCode()
+						+ "'),"
+						+ "'"
+						+ fileNode.newName
+						+ "',"
+						+ "'"
+						+ fileNode.oldName
+						+ "',"
+						+ "'"
+						+ fileNode.newObjId
+						+ "',"
+						+ "'"
+						+ fileNode.packageName
+						+ "',"
+						+ "'"
+						+ fileNode.changeType + "');";
+
+				for (ClassNode classNode : fileNode.getClasses()) {
+					sql += "INSERT INTO TCLASS (FileId, Name, LineStart, LineEnd, ChangeType)"
+							+ " VALUES ("
+							+ "(SELECT id FROM TFILE TF WHERE TF.NewObjId = '"
+							+ fileNode.newObjId
+							+ "'),"
+							+ "'"
+							+ classNode.getName()
+							+ "',"
+							+ classNode.getLineStart()
+							+ ","
+							+ classNode.getLineEnd()
+							+ ","
+							+ "'"
+							+ classNode.getChangeType() + "');";
+
+					for (FunctionNode functionNode : classNode
+							.getFunctions()) {
+						sql += "INSERT INTO TFUNCTION (ClassId, Name, LineStart, LineEnd, ChangeType)"
+								+ " VALUES ("
+								+ "(SELECT TC.id FROM TCLASS TC, TFILE TF WHERE TC.Name = '"
+								+ classNode.getName()
+								+ "' AND "
+								+ "TF.NewObjId = '"
+								+ fileNode.newObjId
+								+ "' AND TC.FileId = TF.id),"
+								+ "'"
+								+ functionNode.getName()
+								+ "',"
+								+ functionNode.getLineStart()
+								+ ","
+								+ functionNode.getLineEnd()
+								+ ","
+								+ "'"
+								+ functionNode.getChangeType() + "');";
+					}
+				}
+			}
+			smt.executeUpdate(sql);
+		
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public static void MineBugs(RepositoryNode repository) throws SQLException {
+		
+		String sql;
+		Statement smt = conn.createStatement();
+		ResultSet rs;
+		
+		// Get all commits
+		sql = "SELECT TC.HashCode, TC.Message FROM TCommit TC, TRepository TR "
+				+ "WHERE TC.RepoId = TR.id AND TR.Name = '" + repository.getName() + "' "
+				+ "ORDER BY TC.Date;";
+		rs = smt.executeQuery(sql);
+		
+		
+		List<Entry<String, String>> bugCommit = new ArrayList<Map.Entry<String,String>>(); 
+		
+		while (rs.next())
+		{
+			String hashCode = rs.getString("HashCode");
+			String message = rs.getString("Message");
+			
+			String bugId = extractBugId(message, repository.getBugPrefix());
+			
+			if (bugId != null){
+				Map.Entry<String,String> pair = new AbstractMap.SimpleEntry(bugId, hashCode);
+				
+				bugCommit.add(pair);
+			}
+		}
+		
+		
+		// Add found bugs
+		for (Entry<String, String> record : bugCommit){
+			sql = "INSERT INTO TBUG (id, commitId)"
+					+ " VALUES ('" + record.getKey() + "', '" + record.getValue() + "');";
+
+			smt.executeUpdate(sql);
+		} 
+		
+		rs.close();
+		smt.close();
+	}
+	
+	private static String extractBugId(String text, String idBug){
+		
+		String res = idBug;
+		
+		int start = text.toLowerCase().indexOf(idBug);
+		
+		for (int i = start + idBug.length(); i < text.length(); i++){
+			if (!Character.isDigit(text.charAt(i))){
+				break;
+			}
+			res += text.charAt(i);
+		}
+		
+		if (idBug.equals(res))
+			return null;
+		
+		return res;
+	}
+
+	
+	public static CommitNode getLastCommit(RepositoryNode repoNode){
+		Statement smt;
+		String sql;
+		ResultSet rs;
+		CommitNode res = null;
+		
+		try {
+			smt = conn.createStatement();
+			
+			
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd HH:mm:ss");
+			
+			// Retrieve the last commit and date
+			sql = "SELECT Max(date) as date, TC.hashcode, TC.id, TC.message, TU.name FROM TCOMMIT TC, TREPOSITORY TR, TUSER TU "
+					+ "WHERE TC.userid = TU.id AND TC.repoid = TR.id AND TR.Name = '" + repoNode.getName() + "'";
+			
+			rs = smt.executeQuery(sql);
+			
+			while (rs.next()){
+				res = new CommitNode(rs.getString("hashcode"), rs.getString("message"), 
+						UserNode.AddOrRetrieveUser(rs.getString("name")), 
+						sdf.parse(rs.getString("date")), rs.getInt("id"));
+			}
+			
+			smt.close();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		
+		return res;
+	}
+	
+	public static CommitNode getFirstCommit(RepositoryNode repoNode){
+		Statement smt;
+		String sql;
+		ResultSet rs;
+		CommitNode res = null;
+		
+		try {
+			smt = conn.createStatement();
+			
+			
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd HH:mm:ss");
+			
+			// Retrieve the last commit and date
+			sql = "SELECT Min(date) as date, TC.hashcode, TC.id, TC.message, TU.name FROM TCOMMIT TC, TREPOSITORY TR, TUSER TU "
+					+ "WHERE TC.userid = TU.id AND TC.repoid = TR.id AND TR.Name = '" + repoNode.getName() + "'";
+			
+			rs = smt.executeQuery(sql);
+			
+			while (rs.next()){
+				res = new CommitNode(rs.getString("hashcode"), rs.getString("message"), 
+						UserNode.AddOrRetrieveUser(rs.getString("name")), 
+						sdf.parse(rs.getString("date")), rs.getInt("id"));
+			}
+			
+			smt.close();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		
+		return res;
+	}
+
+	public static void updateRepot(RepositoryNode repoNode){
+		Statement smt;
+		String sql;
+		
+		try {
+			smt = conn.createStatement();
+			
+			// Update the repository with the last commit
+			sql = "UPDATE TREPOSITORY SET LastCommitId = " + repoNode.getLastCommitId() + 
+					" WHERE Name = '" + repoNode.getName() + "'";
+				
+			smt.executeUpdate(sql);
+			smt.close();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+	
     public static ArrayList<Dominoes> loadAllMatrices(String _database, String _project, 
     		String _device, Date _begin, Date _end) throws IOException, SQLException, Exception {
     	
@@ -103,7 +412,6 @@ public class DominoesSQLDao {
 			rs.close();
 			smt.close();
 		}
-    	closeDatabase();
     	return _dominoesList;
     }
 
@@ -834,11 +1142,6 @@ public class DominoesSQLDao {
     
 	public static Map<String, Integer> getNumCommits(Group group, String _database, 
 			Date _begin, Date _end, String _project) throws SQLException, ClassNotFoundException{	
-		
-    	if (conn != null)
-    		closeDatabase();
-    	
-    	openDatabase(_database);
     	
 		String sql = "";
 		Statement smt = conn.createStatement();
@@ -877,18 +1180,12 @@ public class DominoesSQLDao {
 		rs.close();
 		smt.close();
 		
-		closeDatabase();
 							
 		return results;
 	}
     
 	public static Map<String, Integer> getNumBugs(Group group, Date _begin, Date _end, 
 			String _database, String _project) throws SQLException, ClassNotFoundException{	
-		
-    	if (conn != null)
-    		closeDatabase();
-    	
-    	openDatabase(_database);
     	
     	
 		String sql = "";
@@ -927,10 +1224,41 @@ public class DominoesSQLDao {
 		
 		rs.close();
 		smt.close();
-					
-		closeDatabase();
 		
 		return results;
+	}
+	
+	public static int getUserId(String name) {
+		
+		name = name.replaceAll("'", "''");
+		
+		try {	
+			Statement smt = conn.createStatement();
+			
+			String sql = "SELECT * FROM TUSER WHERE name = '" + name + "';";			
+			ResultSet rs = smt.executeQuery(sql);
+			
+			if (!rs.next()){
+				sql = "INSERT INTO TUSER (Name) VALUES ('" + name + "');";
+				smt.executeUpdate(sql);
+			} else {
+				return rs.getInt("id");
+			}
+			
+			
+			sql = "SELECT * FROM TUSER WHERE name = '" + name + "';";			
+			rs = smt.executeQuery(sql);
+			
+			if (rs.next())			
+				return rs.getInt("id");
+		
+			smt.close();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		
+		// Error
+		return -1;
 	}
 	
 }
