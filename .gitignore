@@ -10,4 +10,4 @@ JNIGPUMatrix/libMatrixProcessor.o
 *.jar
 *.sqlite
 *.dylib
-
+*~
