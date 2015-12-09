@@ -139,7 +139,7 @@ public class ListViewDominoes extends ListView<Group> {
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                     if (mouseEvent.getClickCount() == 2) {
-                        System.out.println("copy to area move");
+                        //System.out.println("copy to area move");
                         copyFromListToAreaMove(group);
                     }
                 }
@@ -160,7 +160,7 @@ public class ListViewDominoes extends ListView<Group> {
             public void handle(ActionEvent event) {
                 // choise menu item multiply
                 if (((MenuItem) event.getTarget()).getText().equals(menuItemToAreaMove.getText())) {
-                    System.out.println("copy to area move");
+                   // System.out.println("copy to area move");
                     copyFromListToAreaMove(group);
                 } else if (((MenuItem) event.getTarget()).getText().equals(menuItemRemove.getText())) {
                     System.out.println("removing");

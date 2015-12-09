@@ -20,9 +20,11 @@ public class Configuration {
     public static String projName = "";
     
 	public static String beginDate = "2013-11-01 00:00:00";
-    public static String endDate = "2014-01-31 00:00:00";    
+    public static String endDate = "2014-01-31 00:00:00";  
     
-    public static final int amount = 16;
+    public static int gpuDevice = 0;
+    
+    public static final int amount = 17;
 
     // not save/read file 
     public static double fullscreenWidth = Configuration.width;

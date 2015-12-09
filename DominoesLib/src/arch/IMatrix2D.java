@@ -8,6 +8,7 @@ public interface IMatrix2D {
 	public void setData(ArrayList<Cell> cells);
 	public ArrayList<Cell> getNonZeroData();
 	
+	public int getMemUsed();
 	
 	public IMatrix2D transpose();
 	

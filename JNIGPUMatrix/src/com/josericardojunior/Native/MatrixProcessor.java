@@ -29,7 +29,7 @@ public class MatrixProcessor {
 			int rows, int cols, int depth, boolean considerZeros);
 	
 	
-	
+	public native static void resetGPU(int deviceToUse);
 	public native static long createMatrixData(int rows, int cols);
 	public native static void setData(long pointer, int rows[], int cols[], float values[]);
 	//public native static void setRowData(long pointer, float[] rowData, int row);

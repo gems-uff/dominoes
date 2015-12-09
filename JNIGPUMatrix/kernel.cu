@@ -129,45 +129,53 @@ __global__ void ConfidenceKernel(float *values, float *diagonal, int elements, f
 
 
 extern "C" {
+
+	void g_ResetAndSetGPUDevice(int gpuDevice){
+		fprintf(stderr, "\nSetting GPU to %d\n", gpuDevice);
+		checkCudaErrors(cudaSetDevice(gpuDevice));
+		checkCudaErrors(cudaDeviceReset());
+		checkCudaErrors(cudaSetDevice(gpuDevice));
+	}
+	
     void g_MatMul(int n_rowsA, int n_colsA, int n_colsB, int nzA, int nzB,
     	int *rowsA, int *colsA, float *valuesA,
     	int *rowsB, int *colsB, float *valuesB,
     	int **row_res, int **col_res, float **value_res,
     	int& res_nz){
     
-    	fprintf(stderr, "before coo1\n");
+    	//fprintf(stderr, "before coo1\n");
     	
     	cusp::coo_matrix<int,float,cusp::host_memory> matA(n_rowsA,n_colsA,nzA);
     	for (int i = 0; i < nzA; i++){
     		matA.row_indices[i] = rowsA[i]; matA.column_indices[i] = colsA[i]; matA.values[i] = valuesA[i];
     	}
-    	fprintf(stderr, "before coo2\n");
+    	//fprintf(stderr, "before coo2\n");
     	cusp::coo_matrix<int,float,cusp::device_memory> matA_d = matA;
     	
-    	fprintf(stderr, "before coo3\n");
+    	//fprintf(stderr, "before coo3\n");
     	cusp::coo_matrix<int,float,cusp::host_memory> matB(n_colsA,n_colsB,nzB);
     	for (int i = 0; i < nzB; i++){
     		matB.row_indices[i] = rowsB[i]; matB.column_indices[i] = colsB[i]; matB.values[i] = valuesB[i];
     	}
-    	fprintf(stderr, "before coo4\n");
+    	//fprintf(stderr, "before coo4\n");
     	cusp::coo_matrix<int,float,cusp::device_memory> matB_d = matB;
     	
-    	fprintf(stderr, "result: r: %d, c: %d, total: %d\n", n_rowsA,n_colsB, n_rowsA * n_colsB);
+    	//fprintf(stderr, "result: r: %d, c: %d, total: %d\n", n_rowsA,n_colsB, n_rowsA * n_colsB);
     	cusp::coo_matrix<int,float,cusp::device_memory> matRes_d(n_rowsA,n_colsB, n_rowsA * n_colsB);
-    	fprintf(stderr, "before coo6\n");
+    	//fprintf(stderr, "before coo6\n");
     	
     	cusp::multiply(matA_d, matB_d, matRes_d);
-    	fprintf(stderr, "before coo7\n");
+    	//fprintf(stderr, "before coo7\n");
     	
     	cusp::coo_matrix<int,float,cusp::host_memory> matRes = matRes_d;
-    	fprintf(stderr, "before coo8\n");
+    	//fprintf(stderr, "before coo8\n");
     	
     	res_nz = matRes.num_entries;
     	int *_row_res = new int[res_nz];
     	int *_col_res = new int[res_nz];
     	float *_value_res = new float[res_nz];
     	
-    	fprintf(stderr, "before coo9\n");
+    	//fprintf(stderr, "before coo9\n");
     	
     	for(size_t n = 0; n < res_nz; n++)
   		{
@@ -176,7 +184,7 @@ extern "C" {
    		 	_value_res[n] = matRes.values[n];
    		}
    		
-   		fprintf(stderr, "before coo10\n");
+   		//fprintf(stderr, "before coo10\n");
 
 		*row_res = _row_res;
     	*col_res = _col_res;
@@ -214,8 +222,6 @@ extern "C" {
     
     
     void g_MeanSD(int rows, int cols, int depth, float *h_data, float *result, bool considerZeros){
-    	//cudaSetDevice(0);
-
     	// Generate the keys array
     	int h_layer_keys[rows * cols];
     	for (int i = 0; i < rows; i++){
@@ -265,19 +271,19 @@ extern "C" {
     		}
         	       	
     		thrust::sort_by_key(dev_ptr_k, dev_ptr_k + (rows * cols), dev_ptr);
-    		cudaDeviceSynchronize();
+    		checkCudaErrors(cudaDeviceSynchronize());
     		thrust::reduce_by_key(dev_ptr_k, dev_ptr_k+(rows * cols), dev_ptr, dev_ptr_k_res, dev_ptr_v_res);
-    		cudaDeviceSynchronize();
+    		checkCudaErrors(cudaDeviceSynchronize());
     		checkCudaErrors(cudaMemcpy(&d_sum_depths[i * cols], d_val_res, 
     				sizeof(float) * cols, cudaMemcpyDeviceToDevice));
     		
     	}
     	
     	float _result[cols*depth];
-    	cudaMemcpy(_result, d_mean_sd, sizeof(float) * cols * depth, cudaMemcpyDeviceToHost);
+    	checkCudaErrors(cudaMemcpy(_result, d_mean_sd, sizeof(float) * cols * depth, cudaMemcpyDeviceToHost));
 
-    	for (int i = 0; i < cols*depth; i++)
-    		fprintf(stderr, "mean: %f\n", _result[i]);
+    	//for (int i = 0; i < cols*depth; i++)
+    	//	fprintf(stderr, "mean: %f\n", _result[i]);
 
     	// Calculate the mean
     	int divide_by = rows * depth;
@@ -285,18 +291,18 @@ extern "C" {
     	if (!considerZeros){
     		thrust::device_ptr<int> dev_ptr_nonZeros(d_nonZeros);
     		divide_by = thrust::reduce(dev_ptr_nonZeros, dev_ptr_nonZeros + rows) * depth;
-    		fprintf(stderr, "dividby: %d\n", divide_by);
+    		//fprintf(stderr, "dividby: %d\n", divide_by);
     	}
-    	cudaDeviceSynchronize();
+    	checkCudaErrors(cudaDeviceSynchronize());
     	
     	dim3 blockDim_m(256, 1, 1);
     	dim3 gridDim_m( ceil((float)cols/256), 1, 1);
     	K_Mean<<<gridDim_m, blockDim_m>>>(d_sum_depths, d_mean_sd, rows, cols, (float)divide_by);
-    	cudaDeviceSynchronize();
+    	checkCudaErrors(cudaDeviceSynchronize());
     	
     	
     	/*float _result[cols];
-    	cudaMemcpy(_result, d_mean_sd, sizeof(float) * cols, cudaMemcpyDeviceToHost);
+    	checkCudaErrors(cudaMemcpy(_result, d_mean_sd, sizeof(float) * cols, cudaMemcpyDeviceToHost));
 
     	for (int i = 0; i < cols; i++)
     		fprintf(stderr, "mean: %f\n", _result[i]);*/
@@ -338,8 +344,6 @@ extern "C" {
     	cudaFree(d_kraw);
     	cudaFree(d_val_res);
     	cudaFree(d_keys_res);
-    	
-    	
     }
     
     

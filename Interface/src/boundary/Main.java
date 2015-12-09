@@ -24,9 +24,9 @@ public class Main {
     
     public static void init(){
         try {
-        	Session.startSession();
             // read the configuration file
             control.Controller.loadConfiguration();
+        	Session.startSession(Configuration.gpuDevice);
             DominoesSQLDao.openDatabase(Configuration.database);
             // call Application.launch()
             App.start();

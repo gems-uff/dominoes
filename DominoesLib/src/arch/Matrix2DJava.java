@@ -25,6 +25,11 @@ public class Matrix2DJava implements IMatrix2D {
 				matrixDescriptor.getNumCols());
 	}
 	
+	@Override
+	public int getMemUsed() {
+		return matrixDescriptor.getNumCols() * matrixDescriptor.getNumRows() * (Float.SIZE / 8);
+	}	
+	
 	public void finalize(){
 	}
 	
@@ -256,5 +261,5 @@ public class Matrix2DJava implements IMatrix2D {
 		confidenceM.setData(newValues);
 		
 		return confidenceM;
-	}		
+	}	
 }

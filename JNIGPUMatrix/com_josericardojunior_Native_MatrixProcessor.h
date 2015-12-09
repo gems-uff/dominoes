@@ -65,6 +65,14 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 
 /*
  * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    resetGPU
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_resetGPU
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
  * Method:    createMatrixData
  * Signature: (II)J
  */

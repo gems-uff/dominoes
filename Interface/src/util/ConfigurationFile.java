@@ -112,6 +112,8 @@ public class ConfigurationFile {
                     	Configuration.database = valueVariable;
                     } else if (nameVariable.compareTo("project") == 0){
                     	Configuration.projName = valueVariable;
+                    } else if (nameVariable.compareTo("GPUDevice") == 0){
+                    	Configuration.gpuDevice = Integer.parseInt(valueVariable);
                     }
                 line = br.readLine();
                 amount++;
@@ -137,6 +139,7 @@ public class ConfigurationFile {
             + "listWidth:			130.0"
             + "accessMode:			SQL"
             + "processingUnit:		CPU"
+            + "GPUDevice:             0"
             + "beginDate:			2013-11-01 00:00:00"
             + "endDate:			2014-01-31 00:00:00");
             

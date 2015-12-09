@@ -14,6 +14,11 @@ public class Matrix2D implements IMatrix2D {
 	public MatrixDescriptor getMatrixDescriptor() {		
 		return matrixDescriptor;
 	}
+	
+	@Override
+	public int getMemUsed(){
+		return matrixDescriptor.getNumCols() * matrixDescriptor.getNumRows() * (Float.SIZE / 8);
+	}
 
 	public Matrix2D(MatrixDescriptor _matrixDescriptor) throws Exception{
 		

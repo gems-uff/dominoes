@@ -41,6 +41,8 @@ extern "C" {
 			float *result, bool considerZeros);
 
 	void g_Confidence(float* values, float* diagonal, int elements, float* result);
+	
+	void g_ResetAndSetGPUDevice(int gpuDevice);
 }
 
 
@@ -71,6 +73,13 @@ using namespace arma;
 	env->DeleteLocalRef(m2);
 	return jres;
 }*/
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_resetGPU
+  (JNIEnv *env, jclass obj, jint gpuDevice)
+{
+	g_ResetAndSetGPUDevice(gpuDevice);
+}  
+  
 
 JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_BLASMatMult
   (JNIEnv *env, jclass obj, jfloatArray m1, jfloatArray m2, jint rows1, jint cols1, jint cols2)
@@ -205,7 +214,7 @@ void deleteMatrix(SpMatf *matrix){
 	delete matrix;
 	matrix = NULL;
 
-	fprintf(stderr, "Matrix deleted!\n");
+	//fprintf(stderr, "Matrix deleted!\n");
 }
 
 void setNonZeroData(SpMatf *mat, int *rows, int *cols, float *values, int size){
@@ -319,8 +328,8 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 		int nonZeros_1 = mat1->nonZeros();
 		int nonZeros_2 = mat2->nonZeros();
 
-		fprintf(stderr, "nz1: %d\n", nonZeros_1);
-		fprintf(stderr, "nz2: %d\n", nonZeros_2);
+		//fprintf(stderr, "nz1: %d\n", nonZeros_1);
+		//fprintf(stderr, "nz2: %d\n", nonZeros_2);
 
 		int *rows_1 = (int*) malloc(sizeof(int) * nonZeros_1);
 		int *cols_1 = (int*) malloc(sizeof(int) * nonZeros_1);
@@ -329,7 +338,7 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 		float *values_1 = (float*) malloc(sizeof(float) * nonZeros_1);
 		float *values_2 = (float*) malloc(sizeof(float) * nonZeros_2);
 
-		fprintf(stderr, "malloc ok\n");
+		//fprintf(stderr, "malloc ok\n");
 
 		int k = 0;
 		for (int i = 0; i < mat1->outerSize(); ++i){
@@ -341,7 +350,7 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 			}
 		}
 
-		fprintf(stderr, "set ok\n");
+		//fprintf(stderr, "set ok\n");
 
 		k = 0;
 		for (int i = 0; i < mat2->outerSize(); ++i){
@@ -352,22 +361,22 @@ void matrixMult(SpMatf *mat1, SpMatf *mat2, SpMatf *result, bool useGPU){
 				k++;
 			}
 		}
-		fprintf(stderr, "set2 ok\n");
+		//fprintf(stderr, "set2 ok\n");
 
 		int *res_rows, *res_cols, res_nz;
 		float *res_data;
 
-		fprintf(stderr, "before gpu ok\n");
+		//fprintf(stderr, "before gpu ok\n");
 		g_MatMul(mat1->rows(), mat1->cols(), mat2->cols(), nonZeros_1, nonZeros_2,
 				rows_1, cols_1, values_1, rows_2, cols_2, values_2, &res_rows, &res_cols, &res_data, res_nz);
-		fprintf(stderr, "after gpu ok\n");
+		//fprintf(stderr, "after gpu ok\n");
 
-		fprintf(stderr, "nz1\n");
+		//fprintf(stderr, "nz1\n");
 
 
 		setNonZeroData(result, res_rows, res_cols, res_data, res_nz);
 
-		fprintf(stderr, "nz2\n");
+		//fprintf(stderr, "nz2\n");
 		free(res_rows);
 		free(res_cols);
 		free(res_data);
@@ -457,7 +466,7 @@ JNIEXPORT jlong JNICALL Java_com_josericardojunior_Native_MatrixProcessor_create
   (JNIEnv *env, jclass obj, jint rows, jint cols){
 
 	SpMatf *mat = createMatrix(rows, cols);
-
+	
 	return (long) mat;
 }
 
@@ -467,7 +476,7 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 	if (useGPU){
 		int nonZeros = mat1->nonZeros();
 
-		fprintf(stderr, "nz1: %d\n", nonZeros);
+		//fprintf(stderr, "nz1: %d\n", nonZeros);
 
 		int *rows = (int*) malloc(sizeof(int) * nonZeros);
 		int *cols = (int*) malloc(sizeof(int) * nonZeros);
@@ -475,7 +484,7 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 		float *diagonal = (float*) malloc(sizeof(float) * nonZeros);
 		float *res_data = (float*) malloc(sizeof(float) * nonZeros);
 
-		fprintf(stderr, "malloc ok\n");
+		//fprintf(stderr, "malloc ok\n");
 
 		int k = 0;
 		for (int i = 0; i < mat1->outerSize(); ++i){
@@ -488,13 +497,13 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 			}
 		}
 
-		fprintf(stderr, "before gpu ok\n");
+		//fprintf(stderr, "before gpu ok\n");
 		g_Confidence(values, diagonal, nonZeros, res_data);
-		fprintf(stderr, "after gpu ok\n");
+		//fprintf(stderr, "after gpu ok\n");
 
 		setNonZeroData(result, rows, cols, res_data, nonZeros);
 
-		fprintf(stderr, "nz2\n");
+		//fprintf(stderr, "nz2\n");
 		free(rows);
 		free(cols);
 		free(res_data);
@@ -503,7 +512,7 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 	} else {
 		int nonZeros = mat1->nonZeros();
 
-		fprintf(stderr, "nz0\n");
+		//fprintf(stderr, "nz0\n");
 
 		int *rows = (int*) malloc(sizeof(int) * nonZeros);
 		int *cols = (int*) malloc(sizeof(int) * nonZeros);
@@ -511,7 +520,7 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 		float *res_data = (float*) malloc(sizeof(float) * nonZeros);
 		memset(res_data, 0, sizeof(float) * nonZeros);
 
-		fprintf(stderr, "nz1\n");
+		//fprintf(stderr, "nz1\n");
 
 		int k = 0;
 		for (int i = 0; i < mat1->outerSize(); ++i){
@@ -530,7 +539,7 @@ void calculateConfidence(SpMatf *mat1, SpMatf *result, bool useGPU){
 
 		setNonZeroData(result, rows, cols, res_data, nonZeros);
 
-		fprintf(stderr, "nz2\n");
+		//fprintf(stderr, "nz2\n");
 		free(rows);
 		free(cols);
 		free(res_data);
@@ -545,7 +554,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor
 
 	std::vector<NonZeroInfo> nonZeros;
 
-	fprintf(stderr, "pointer: %d\n", mat);
+	//fprintf(stderr, "pointer: %d\n", mat);
 
 	//fprintf(stderr, "rows: %d - cols: %d - NZ: %d\n", mat->rows(), mat->cols(), mat->nonZeros());
 
@@ -561,7 +570,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor
 		}
 	}
 
-	fprintf(stderr, "Num nonzeros: %d\n", nonZeros.size());
+	//fprintf(stderr, "Num nonzeros: %d\n", nonZeros.size());
 
 
 	jclass java_to_c_info_class = env->FindClass("com/josericardojunior/Native/java_to_c_info");
@@ -572,25 +581,25 @@ JNIEXPORT jobjectArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor
 	// find the class constructor
 
 
-	fprintf(stderr, "class: %d!\n", jav_to_c_info_row);
+	/*fprintf(stderr, "class: %d!\n", jav_to_c_info_row);
 	fprintf(stderr, "row: %d!\n", jav_to_c_info_row);
 	fprintf(stderr, "col: %d!\n", jav_to_c_info_col);
 	fprintf(stderr, "value: %d!\n", jav_to_c_info_value);
-	fprintf(stderr, "constructor: %d!\n", defConstructor);
+	fprintf(stderr, "constructor: %d!\n", defConstructor);*/
 
 
 	jobjectArray jNonZeroArray = env->NewObjectArray(nonZeros.size(),
 			java_to_c_info_class, NULL);
 
-	fprintf(stderr, "Created object array!\n");
+	//fprintf(stderr, "Created object array!\n");
 
 	for (int i = 0; i < nonZeros.size(); i++){
 
-		fprintf(stderr, "Creating obj...\n");
+		//fprintf(stderr, "Creating obj...\n");
 		jobject obj = env->NewObject(java_to_c_info_class,
 				defConstructor);
 
-		fprintf(stderr, "Object: %d!\n", obj);
+		//fprintf(stderr, "Object: %d!\n", obj);
 
 		env->SetIntField(obj, jav_to_c_info_row, nonZeros[i].row);
 		env->SetIntField(obj, jav_to_c_info_col, nonZeros[i].col);
