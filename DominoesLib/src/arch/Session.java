@@ -34,6 +34,10 @@ public class Session {
 			
 	}
 	
+	public static void debugInfo(){
+		System.out.println("Memory used: " + getMemUsed() + " KB");
+	}
+	
 	public static void register2DMatrix(Matrix2D mat){
 		gpuMemoryUsed += mat.getMemUsed();
 		matrices.add(mat);

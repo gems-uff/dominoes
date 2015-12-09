@@ -25,6 +25,9 @@ public class Matrix2D implements IMatrix2D {
 		if (!Session.isSessionStarted())
 			throw new Exception("Session is not started");
 		
+		System.out.println("Creating matrix. Rows: " + _matrixDescriptor.getNumRows() + 
+				" Cols: " + _matrixDescriptor.getNumCols());
+		
 		matrixDescriptor = _matrixDescriptor;
 		
 		matPointer = MatrixProcessor.createMatrixData(matrixDescriptor.getNumRows(),
@@ -59,8 +62,12 @@ public class Matrix2D implements IMatrix2D {
 		
 		Matrix2D result = new Matrix2D(resultDesc);
 		
+		
+		System.out.println("Operation: Multiplication - Using " + getMemUsed() + other.getMemUsed() + " KB of GPU Memory.");
+		
 		MatrixProcessor.multiply(matPointer, ((Matrix2D)other).matPointer,
 				result.matPointer, useGPU);
+		System.out.println("Releasing " + getMemUsed() + other.getMemUsed() + " KB of GPU Memory.");
 		
 		return result;
 	}
@@ -80,7 +87,9 @@ public class Matrix2D implements IMatrix2D {
 		
 		try {
 			transpose = new Matrix2D(_newDescriptor);
+			System.out.println("Operation: Transposing - Using " + getMemUsed() + " KB of GPU Memory.");
 			MatrixProcessor.transpose(matPointer, transpose.matPointer);
+			System.out.println("Releasing " + getMemUsed() + " KB of GPU Memory.");
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -265,7 +274,9 @@ public class Matrix2D implements IMatrix2D {
 		
 		try {
 			reduced = new Matrix2D(_newDescriptor);
+			System.out.println("Operation: Reduction - Using " + getMemUsed() + " KB of GPU Memory.");
 			MatrixProcessor.reduceRow(matPointer, reduced.matPointer, useGPU);
+			System.out.println("Releasing " + getMemUsed() + " KB of GPU Memory.");
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -280,8 +291,10 @@ public class Matrix2D implements IMatrix2D {
 		Matrix2D confidence = null;
 		
 		try {
+			System.out.println("Operation: Confidence - Using " + getMemUsed() + " KB of GPU Memory.");
 			confidence = new Matrix2D(_newDescriptor);
 			MatrixProcessor.confidence(matPointer, confidence.matPointer, useGPU);
+			System.out.println("Releasing " + getMemUsed() + " KB of GPU Memory.");
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
