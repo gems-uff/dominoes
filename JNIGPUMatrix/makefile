@@ -1,6 +1,6 @@
 #CUDA := /usr/local/cuda
 #LIBS := /Users/josericardo/Documents/Projects/Libs
-JAVAJNI := /System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
+#JAVAJNI := /System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
 
 UNAME := $(shell uname -s)
 LIBNAME := 
@@ -34,22 +34,36 @@ com_josericardojunior_Native_MatrixProcessor.h :
 MatrixProcessor.o : com_josericardojunior_Native_MatrixProcessor.h
 
    ifeq ($(UNAME),Linux)
-	g++ -fPIC -c -I /usr/lib/jvm/java/include -I /usr/lib/jvm/java-1.7.0-openjdk.x86_64/include/linux \
-	   MatrixProcessor.c -o libMatrixProcessor.o -m64 
+	g++ -fPIC -c -I $(JAVAJNI) -I $(JAVAJNI)/linux -I $(LIBS)/armadillo/include -I $(LIBS)/eigen/include/eigen3 \
+	    -c MatrixProcessor.c -o libMatrixProcessor.o -m64 
    endif
-   
+
    ifeq ($(UNAME),Darwin)
-	   g++ -I $(JAVAJNI) -I $(LIBS)/armadillo-4.650.3/Inst/include -I \
-	      $(LIBS)/eigen/inst/include/eigen3 -c MatrixProcessor.c -o libMatrixProcessor.o -m64 -fPIC 
+	   g++ -I $(JAVAJNI) -I $(LIBS)/armadillo/include -I $(LIBS)/eigen/include/eigen3 \
+	      -c MatrixProcessor.c -o libMatrixProcessor.o -m64 -fPIC 
    endif
 	 
 kernel.o : 
+   ifeq ($(UNAME),Linux)
+	$(CUDA)/bin/nvcc -Xcompiler -fpic -I$(cuda)/include -I$(CUDA)/samples/common/inc -L$(cuda)/lib -lm -m64 -c -arch=sm_20 kernel.cu -o kernel.o 
+   endif
+
+   ifeq ($(UNAME),Darwin)
 	$(CUDA)/bin/nvcc  -ccbin  /usr/bin/clang -Xcompiler -fpic -I$(cuda)/include -I$(CUDA)/samples/common/inc -L$(cuda)/lib -lm -m64 -c -arch=sm_20 kernel.cu -o kernel.o 
+   endif
 		
 MatrixProcessor.jnilib : MatrixProcessor.o kernel.o
+   ifeq ($(UNAME),Darwin)
 	g++ -shared libMatrixProcessor.o \
-	 -Wl,-rpath,$(LIBS)/armadillo-4.650.3/Inst/lib -Wl,-rpath,$(CUDA)/lib  \
+	 -Wl,-rpath,$(LIBS)/armadillo/lib -Wl,-rpath,$(CUDA)/lib  \
 	 kernel.o -o $(LIBNAME) -m64 -L $(CUDA)/lib -lcudart -L$(LIBS)/armadillo-4.650.3/Inst/lib -larmadillo 	
+   endif
+
+   ifeq ($(UNAME),Linux)
+	g++ -shared libMatrixProcessor.o \
+	 -Wl,-rpath,$(LIBS)/armadillo/lib -Wl,-rpath,$(CUDA)/lib64  \
+	 kernel.o -o $(LIBNAME) -m64 -L $(CUDA)/lib64 -lcudart -L$(LIBS)/armadillo/lib -larmadillo 	
+   endif
 	
 clean : 
 	-rm com_josericardojunior_Native_MatrixProcessor.h
