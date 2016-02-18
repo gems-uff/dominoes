@@ -56,7 +56,7 @@ MatrixProcessor.jnilib : MatrixProcessor.o kernel.o
    ifeq ($(UNAME),Darwin)
 	g++ -shared libMatrixProcessor.o \
 	 -Wl,-rpath,$(LIBS)/armadillo/lib -Wl,-rpath,$(CUDA)/lib  \
-	 kernel.o -o $(LIBNAME) -m64 -L $(CUDA)/lib -lcudart -L$(LIBS)/armadillo-4.650.3/Inst/lib -larmadillo 	
+	 kernel.o -o $(LIBNAME) -m64 -L $(CUDA)/lib -lcudart -L$(LIBS)/armadillo/lib -larmadillo 	
    endif
 
    ifeq ($(UNAME),Linux)

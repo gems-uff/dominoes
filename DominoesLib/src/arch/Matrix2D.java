@@ -60,10 +60,19 @@ public class Matrix2D implements IMatrix2D {
 			resultDesc.AddColDesc(
 					otherDescriptor.getColumnAt(i));
 		
+		
+		System.out.println("Matrix 1: Rows: " + matrixDescriptor.getNumRows() + " Cols: " + matrixDescriptor.getNumCols() +
+				" Size: " + getMemUsed());
+		System.out.println("Matrix 2: Rows: " + otherDescriptor.getNumRows() + " Cols: " + otherDescriptor.getNumCols() +
+				" Size: " + other.getMemUsed());
+		
+		System.out.println("1) Operation: Multiplication - Using " + getMemUsed() + other.getMemUsed() + " KB of GPU Memory.");
+		
+		
 		Matrix2D result = new Matrix2D(resultDesc);
+	
 		
-		
-		System.out.println("Operation: Multiplication - Using " + getMemUsed() + other.getMemUsed() + " KB of GPU Memory.");
+		System.out.println("2) Operation: Multiplication - Using " + getMemUsed() + other.getMemUsed() + " KB of GPU Memory.");
 		
 		MatrixProcessor.multiply(matPointer, ((Matrix2D)other).matPointer,
 				result.matPointer, useGPU);

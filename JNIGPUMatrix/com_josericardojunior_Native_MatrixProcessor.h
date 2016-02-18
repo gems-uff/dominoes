@@ -175,6 +175,14 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_reduceR
 JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_confidence
   (JNIEnv *, jclass, jlong, jlong, jboolean);
 
+/*
+ * Class:     com_josericardojunior_Native_MatrixProcessor
+ * Method:    isGPUEnabled
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_josericardojunior_Native_MatrixProcessor_isGPUEnabled
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

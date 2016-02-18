@@ -43,6 +43,8 @@ extern "C" {
 	void g_Confidence(float* values, float* diagonal, int elements, float* result);
 	
 	void g_ResetAndSetGPUDevice(int gpuDevice);
+	
+	bool g_IsDeviceEnabled();
 }
 
 
@@ -797,4 +799,10 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_confide
 	SpMatf* _res = (SpMatf*) result;
 
 	calculateConfidence(_matrix, _res, useGPU);
+}
+
+JNIEXPORT jboolean JNICALL Java_com_josericardojunior_Native_MatrixProcessor_isGPUEnabled
+  (JNIEnv *env, jclass obj){
+
+	return g_IsDeviceEnabled();
 }

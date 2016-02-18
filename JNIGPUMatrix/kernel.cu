@@ -376,5 +376,13 @@ extern "C" {
     	checkCudaErrors(cudaFree(d_diagonal));
     	checkCudaErrors(cudaFree(d_result));
 	}
+	
+	bool g_IsDeviceEnabled(){		
+		int nDevices;
+	
+		checkCudaErrors(cudaGetDeviceCount(&nDevices));
+	
+		return nDevices > 0;
+	}
     
 } 

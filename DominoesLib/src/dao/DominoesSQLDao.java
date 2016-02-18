@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
@@ -71,8 +72,90 @@ public class DominoesSQLDao {
 	
 	
 	public static void openDatabase(String _database) throws ClassNotFoundException, SQLException{
+		
+		// Check if db exist
+		File db = new File(_database);
+		boolean needsToReestructure = false;
+		
+		if (!db.exists()){
+			new File(db.getParent()).mkdirs();
+			needsToReestructure = true;
+			
+		}
+		
 		Class.forName("org.sqlite.JDBC");
 		conn = DriverManager.getConnection("jdbc:sqlite:" + _database);
+		
+		if (needsToReestructure)
+			createDatabase();
+	}
+	
+	private static void createDatabase(){
+		
+		Statement stmt = null;
+		
+		try {
+			stmt = conn.createStatement();
+			
+			// Create TREPOSITORY
+		    String sql = "CREATE TABLE TREPOSITORY " +
+		    		"(id INTEGER PRIMARY KEY AUTOINCREMENT,Name STRING UNIQUE NOT NULL, " +
+		    		"LastCommitId INTEGER REFERENCES TCOMMIT(id), RepoLocation String, BugSuffix String)";	  
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TBUG
+		   sql = "CREATE TABLE TBUG(id STRING NOT NULL,CommitID STRING NOT NULL)";
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TCOMMIT
+		   sql = "CREATE TABLE TCOMMIT " +
+				   "(id INTEGER PRIMARY KEY AUTOINCREMENT,RepoId INTEGER REFERENCES TREPOSITORY(id) NOT NULL, " +
+				   "UserID INTEGER REFERENCES TUSER(id) NOT NULL,HashCode STRING NOT NULL,Date STRING NOT NULL, " +
+				   "Message STRING NOT NULL)";
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TFILE
+		   sql = "CREATE TABLE TFILE " +
+				   "(id INTEGER PRIMARY KEY AUTOINCREMENT,CommitId INTEGER REFERENCES TCOMMIT(id), " + 
+				   "NewName STRING NOT NULL,OldName STRING NOT NULL,NewObjId STRING NOT NULL, " + 
+				   "PackageName STRING NOT NULL,ChangeType STRING NOT NULL)";
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TCLASS
+		   sql = "CREATE TABLE TCLASS " +
+				   "(id INTEGER PRIMARY KEY AUTOINCREMENT,FileId INTEGER REFERENCES TFILE(id), " +
+				   "Name STRING NOT NULL,LineStart INT NOT NULL,LineEnd INT NOT NULL,ChangeType STRING NOT NULL)";
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TFUNCTION
+		   sql = "CREATE TABLE TFUNCTION " +
+				   "(id INTEGER PRIMARY KEY AUTOINCREMENT,ClassId INTEGER REFERENCES TCLASS(id), " +
+				   "Name STRING NOT NULL,LineStart INT NOT NULL,LineEnd INT NOT NULL,ChangeType STRING NOT NULL)";
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TUSER
+		   sql = "CREATE TABLE TUSER(id INTEGER PRIMARY KEY AUTOINCREMENT,Name STRING NOT NULL)";
+		   stmt.executeUpdate(sql);
+		   
+		   // Create TMATDESC
+		   sql = "CREATE TABLE TMATDESC " +
+				   "(mat_id INTEGER PRIMARY KEY  NOT NULL , column_name VARCHAR, " +
+				   "row_name VARCHAR DEFAULT (null) , row_abbreviate VARCHAR, column_abbreviate VARCHAR)";
+		   stmt.executeUpdate(sql);
+		   
+		   sql = "INSERT INTO TMATDESC (column_name, row_name, row_abbreviate, column_abbreviate) " +
+				   "VALUES ('Commit', 'Developer', 'D', 'C'), ('Method', 'Commit', 'C', 'M'), " +
+				   "('File', 'Package', 'P', 'F'), ('Class', 'File', 'F', 'Cl'), " +
+				   "('Method', 'Class', 'Cl', 'M'), ('Commit', 'Issue', 'I', 'C'), " +
+				   "('File', 'Commit', 'C', 'F')";
+		   stmt.executeUpdate(sql);
+		   
+		   stmt.close();
+		   
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void closeDatabase() throws ClassNotFoundException, SQLException{

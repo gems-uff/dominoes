@@ -1,0 +1,12 @@
+fullscreen:			false
+autoSave:			false
+visibilityHistoric:	true
+visibilityType:		true
+resizable:			true
+automaticCheck:		false
+width:				1000.0
+height:				600.0
+listWidth:			130.0
+accessMode:			SQL
+database:            db/gitdataminer.sqlite
+GPUDevice:             0
