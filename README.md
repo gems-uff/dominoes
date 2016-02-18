@@ -16,9 +16,15 @@ Dominoes can support automated exploration of different relationships among proj
 
 #Documentation
 
-* [Exploratory Data Analysis of Software Repositories via GPU Processing](http://ksiresearchorg.ipage.com/seke/seke14paper/seke14paper_173.pdf)
 * [Niche vs. breadth: Calculating expertise over time through a fine-grained analysis](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7081851&tag=1)
+* [Multi-Perspective Exploratory Analysis of Software Development Data](http://www.worldscientific.com/doi/abs/10.1142/S0218194015400033)
+* [Exploratory Data Analysis of Software Repositories via GPU Processing](http://ksiresearchorg.ipage.com/seke/seke14paper/seke14paper_173.pdf)
 
+#Usage
+
+A compiled version of Dominoes is already available for use. It will automatically detect for a GPU enable device and switch to a CPU processing in case of fail. 
+
+This compiled version is under the name of *DominoesGUI.zip* in the repository. After extracting the to a directory, just run *./DominoesGUI.sh* under a terminal window.
 
 #Development
 
