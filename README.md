@@ -22,9 +22,15 @@ Dominoes can support automated exploration of different relationships among proj
 
 #Usage
 
-A compiled version of Dominoes is already available for use. It will automatically detect for a GPU enable device and switch to a CPU processing in case of fail. 
+In order to ease Dominoes usage, it can be loaded over internet by using the Java Web Start technology. It will automatically detect for a GPU enable device and switch to a CPU processing in case of fail.
 
-This compiled version is under the name of *DominoesGUI.zip* in the repository. After extracting the to a directory, just run *./DominoesGUI.sh* under a terminal window.
+In order to start Dominoes, please follow the steps:
+
+1. Due to the security issues imposed by Java Web Start technology, it is necessary to add a new entry to the exception site list. In order to perform this, open the Java Panel and select **Security** tab. In there, select **"Edit Site List"** button and add http://josericardojunior.com/Dominoes/ site.
+
+2. After adding this site to the list of exception, Dominoes can be loaded directly through [here](http://josericardojunior.com/Dominoes/Dominoes.jnlp).
+
+**Observation**: *Please notice that right now the library is just available for MacOSX. In a few weeks, this library will be compiled for both Linux and Windows.*
 
 #Development
 
