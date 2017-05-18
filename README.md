@@ -1,11 +1,10 @@
-# Dominoes
-## About
+# About
 
 Dominoes is an approach for analyzing software repositories with thousands of artifacts by considering multiple perspectives of the software development data. We model the data extracted from software repositories and its relationships as matrices, making possible to efficiently process them with a GPUs (Graphics Processing Unit) based architectures. 
 
 Dominoes can support automated exploration of different relationships among project artifacts, where users have the flexibility to interactively combine and compose them.
 
-## Team
+# Team
 
 * Jose Ricardo da Silva Junior (joined in January 2013)
 * Leonardo Gresta Paulino Murta (joined in January 2013)
@@ -13,13 +12,13 @@ Dominoes can support automated exploration of different relationships among proj
 * Anita Sarma (joined in January 2013)
 * Daniel Prett (joined in March 2014)
 
-## Documentation
+# Documentation
 
 * [Niche vs. breadth: Calculating expertise over time through a fine-grained analysis](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7081851&tag=1)
 * [Multi-Perspective Exploratory Analysis of Software Development Data](http://www.worldscientific.com/doi/abs/10.1142/S0218194015400033)
 * [Exploratory Data Analysis of Software Repositories via GPU Processing](http://ksiresearchorg.ipage.com/seke/seke14paper/seke14paper_173.pdf)
 
-## Usage
+# Usage
 
 In order to ease Dominoes usage, it can be loaded over internet by using the Java Web Start technology. It will automatically detect for a GPU enable device and switch to a CPU processing in case of fail.
 
@@ -31,19 +30,19 @@ In order to start Dominoes, please follow the steps:
 
 **Observation**: *Please notice that right now the library is just available for MacOSX. In a few weeks, this library will be compiled for both Linux and Windows.*
 
-## Development
+# Development
 
 * [Source Code](https://github.com/gems-uff/dominoes)
 * [Issue Tracking](https://github.com/gems-uff/dominoes/issues)
 
-## Technologies
+# Technologies
 
 * [Java](http://java.com)
 * [JavaFX](http://docs.oracle.com/javafx/)
 * [CUDA](http://www.nvidia.com/object/cuda_home_new.html)
 * [SQLite](http://www.sqlite.org)
 
-## License
+# License
 
 Copyright (c) 2015-2017 Universidade Federal Fluminense (UFF), University of Nebraska-Lincoln (UNL)
 
