@@ -1,6 +1,6 @@
 # About
 
-Dominoes is an approach for analyzing software repositories with thousands of artifacts by considering multiple perspectives of the software development data. We model the data extracted from software repositories and its relationships as matrices, making possible to efficiently process them with a GPUs (Graphics Processing Unit) based architectures. 
+Dominoes is an approach for analyzing software repositories with thousands of artifacts by considering multiple perspectives of the software development data. We model the data extracted from software repositories and its relationships as matrices, making possible to efficiently process them with a GPUs (Graphics Processing Unit) based architectures.
 
 Dominoes can support automated exploration of different relationships among project artifacts, where users have the flexibility to interactively combine and compose them.
 
