@@ -14,10 +14,10 @@ import boundary.App;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import util.ConfigurationFile;
-import dao.DominoesDao;
-import dao.DominoesSQLDao;
+import com.josericardojunior.dao.DominoesDao;
+import com.josericardojunior.dao.DominoesSQLDao;
 import domain.Configuration;
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 
 public class Controller {
 	

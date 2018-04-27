@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 
 
-import RepositoryImporter.RepositoryNode;
-import dao.DominoesSQLDao;
+import com.josericardojunior.RepositoryImporter.RepositoryNode;
+import com.josericardojunior.dao.DominoesSQLDao;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;

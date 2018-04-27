@@ -1,4 +1,4 @@
-package RepositoryImporter;
+package com.josericardojunior.RepositoryImporter;
 
 import java.io.IOException;
 import java.util.ArrayList;

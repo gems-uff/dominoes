@@ -1,4 +1,4 @@
-package dao;
+package com.josericardojunior.dao;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,16 +26,17 @@ import org.apache.commons.lang.time.StopWatch;
 
 import javax.xml.ws.handler.MessageContext;
 
-import RepositoryImporter.ClassNode;
-import RepositoryImporter.CommitNode;
-import RepositoryImporter.FileNode;
-import RepositoryImporter.FunctionNode;
-import RepositoryImporter.RepositoryNode;
-import RepositoryImporter.UserNode;
-import arch.Cell;
-import arch.IMatrix2D;
-import arch.Matrix2DFactory;
-import domain.Dominoes;
+import com.josericardojunior.RepositoryImporter.ClassNode;
+import com.josericardojunior.RepositoryImporter.CommitNode;
+import com.josericardojunior.RepositoryImporter.FileNode;
+import com.josericardojunior.RepositoryImporter.FunctionNode;
+import com.josericardojunior.RepositoryImporter.RepositoryNode;
+import com.josericardojunior.RepositoryImporter.UserNode;
+import com.josericardojunior.arch.Cell;
+import com.josericardojunior.arch.IMatrix2D;
+import com.josericardojunior.arch.Matrix2DFactory;
+import com.josericardojunior.arch.MatrixDescriptor;
+import com.josericardojunior.domain.Dominoes;
 
 public class DominoesSQLDao {
 	
@@ -543,7 +544,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadCommitFile(String row, String col, String 
     		_device, Date _begin, Date _end, String _project) throws Exception {
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 		
@@ -620,7 +621,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadDeveloperCommit(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception{
 		String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 
@@ -699,7 +700,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadPackageFile(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 
@@ -785,7 +786,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadFileMethod(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 
@@ -873,7 +874,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadFileClass(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 
@@ -957,7 +958,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadClassMethod(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 
@@ -1047,7 +1048,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadCommitMethod(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
 		String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 
@@ -1135,7 +1136,7 @@ public class DominoesSQLDao {
     private static IMatrix2D loadBugCommit(String row, String col, String _device, 
     		Date _begin, Date _end, String _project) throws Exception {
     	String sql;
-		arch.MatrixDescriptor descriptor = new arch.MatrixDescriptor(row, col);
+		MatrixDescriptor descriptor = new MatrixDescriptor(row, col);
 		Statement smt = conn.createStatement();
 		ResultSet rs;
 

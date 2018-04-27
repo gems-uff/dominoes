@@ -1,7 +1,7 @@
 package boundary;
 
 import domain.Configuration;
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;

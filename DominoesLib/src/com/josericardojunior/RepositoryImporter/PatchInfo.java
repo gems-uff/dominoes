@@ -1,4 +1,4 @@
-package RepositoryImporter;
+package com.josericardojunior.RepositoryImporter;
 
 
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;

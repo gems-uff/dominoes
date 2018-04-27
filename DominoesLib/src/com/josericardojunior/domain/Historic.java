@@ -1,4 +1,4 @@
-package domain;
+package com.josericardojunior.domain;
 
 public class Historic {
 

@@ -1,7 +1,7 @@
 package boundary;
 
 import domain.Configuration;
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 
 import java.io.IOException;
 import java.util.ArrayList;

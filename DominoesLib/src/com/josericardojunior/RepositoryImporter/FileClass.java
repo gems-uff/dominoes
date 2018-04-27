@@ -1,4 +1,4 @@
-package RepositoryImporter;
+package com.josericardojunior.RepositoryImporter;
 
 import java.util.ArrayList;
 import java.util.List;

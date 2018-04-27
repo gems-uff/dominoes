@@ -1,4 +1,4 @@
-package RepositoryImporter;
+package com.josericardojunior.RepositoryImporter;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
-import dao.DominoesSQLDao;
+import com.josericardojunior.dao.DominoesSQLDao;
 
 /* Teste
  * 

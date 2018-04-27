@@ -1,4 +1,4 @@
-package domain;
+package com.josericardojunior.domain;
 
 import javafx.scene.control.Tooltip;
 import javafx.scene.Group;
@@ -7,8 +7,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import arch.IMatrix2D;
-import arch.Matrix2D;
+import com.josericardojunior.arch.IMatrix2D;
+import com.josericardojunior.arch.Matrix2D;
 
 @SuppressWarnings("restriction")
 public final class Dominoes {

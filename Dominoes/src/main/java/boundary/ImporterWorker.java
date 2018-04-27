@@ -7,12 +7,12 @@ import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 
-import dao.DominoesSQLDao;
+import com.josericardojunior.dao.DominoesSQLDao;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
-import RepositoryImporter.CommitNode;
-import RepositoryImporter.RepositoryNode;
+import com.josericardojunior.RepositoryImporter.CommitNode;
+import com.josericardojunior.RepositoryImporter.RepositoryNode;
 
 
 public class ImporterWorker extends SwingWorker<String, String> {

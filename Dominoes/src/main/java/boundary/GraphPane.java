@@ -5,7 +5,7 @@
  */
 package boundary;
 
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 import edu.uci.ics.jung.algorithms.filters.EdgePredicateFilter;
 import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
@@ -83,9 +83,9 @@ import org.apache.commons.collections15.Predicate;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ConstantTransformer;
 
-import arch.Cell;
-import arch.MatrixDescriptor;
-import domain.Dominoes;
+import com.josericardojunior.arch.Cell;
+import com.josericardojunior.arch.MatrixDescriptor;
+import com.josericardojunior.domain.Dominoes;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.Forest;

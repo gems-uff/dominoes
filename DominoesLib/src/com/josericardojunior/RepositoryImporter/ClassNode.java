@@ -1,4 +1,4 @@
-package RepositoryImporter;
+package com.josericardojunior.RepositoryImporter;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package arch;
+package com.josericardojunior.arch;
 
 public class Matrix2DFactory {
 

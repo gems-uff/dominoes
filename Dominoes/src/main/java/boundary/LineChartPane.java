@@ -35,8 +35,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
-import arch.Cell;
-import domain.Dominoes;
+import com.josericardojunior.arch.Cell;
+import com.josericardojunior.domain.Dominoes;
 
 
 /**

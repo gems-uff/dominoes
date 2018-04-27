@@ -20,9 +20,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
-import arch.Cell;
-import arch.MatrixDescriptor;
-import domain.Dominoes;
+import com.josericardojunior.arch.Cell;
+import com.josericardojunior.arch.MatrixDescriptor;
+import com.josericardojunior.domain.Dominoes;
 
 /**
  *

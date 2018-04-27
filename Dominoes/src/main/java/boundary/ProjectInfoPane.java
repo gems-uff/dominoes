@@ -14,9 +14,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import RepositoryImporter.CommitNode;
-import RepositoryImporter.RepositoryNode;
-import dao.DominoesSQLDao;
+import com.josericardojunior.RepositoryImporter.CommitNode;
+import com.josericardojunior.RepositoryImporter.RepositoryNode;
+import com.josericardojunior.dao.DominoesSQLDao;
 import domain.Configuration;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

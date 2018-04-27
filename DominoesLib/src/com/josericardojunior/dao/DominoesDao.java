@@ -1,6 +1,6 @@
-package dao;
+package com.josericardojunior.dao;
 
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 
 import java.io.IOException;
 import java.sql.SQLException;

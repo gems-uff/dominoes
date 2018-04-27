@@ -9,7 +9,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <cusp/format.h>
+//#include <cusp/format.h>
 #include <cusp/complex.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/multiply.h>

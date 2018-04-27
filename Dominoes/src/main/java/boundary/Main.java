@@ -8,9 +8,9 @@ package boundary;
 
 import util.ConfigurationFile;
 import control.Controller;
-import dao.DominoesSQLDao;
+import com.josericardojunior.dao.DominoesSQLDao;
 import domain.Configuration;
-import arch.Session;
+import com.josericardojunior.arch.Session;
 
 /**
  *

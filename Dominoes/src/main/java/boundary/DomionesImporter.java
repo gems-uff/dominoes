@@ -45,12 +45,12 @@ import java.util.StringTokenizer;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
-import util.JGitDirectoryFilter;
+import com.josericardojunior.util.JGitDirectoryFilter;
 
 import javax.swing.JComboBox;
 
-import dao.DominoesSQLDao;
-import RepositoryImporter.RepositoryNode;
+import com.josericardojunior.dao.DominoesSQLDao;
+import com.josericardojunior.RepositoryImporter.RepositoryNode;
 import javax.swing.JFormattedTextField;
 
 

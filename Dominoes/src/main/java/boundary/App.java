@@ -26,9 +26,9 @@ import javafx.stage.Stage;
 import javax.swing.JFrame;
 
 import control.Controller;
-import dao.DominoesSQLDao;
+import com.josericardojunior.dao.DominoesSQLDao;
 import domain.Configuration;
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 
 // Information fragment // opened question
 

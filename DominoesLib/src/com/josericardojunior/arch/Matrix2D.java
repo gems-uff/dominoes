@@ -1,4 +1,4 @@
-package arch;
+package com.josericardojunior.arch;
 
 import java.util.ArrayList;
 

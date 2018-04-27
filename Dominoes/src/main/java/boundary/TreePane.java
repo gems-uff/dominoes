@@ -9,8 +9,8 @@ import javafx.scene.layout.Pane;
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.functors.ConstantTransformer;
 
-import domain.Dominoes;
-import domain.Historic;
+import com.josericardojunior.domain.Dominoes;
+import com.josericardojunior.domain.Historic;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 //import edu.uci.ics.jung.graph.DirectedGraph;

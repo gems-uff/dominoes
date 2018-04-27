@@ -26,7 +26,7 @@ import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import domain.Configuration;
-import domain.Dominoes;
+import com.josericardojunior.domain.Dominoes;
 
 @SuppressWarnings("restriction")
 public class AreaMove extends Pane {

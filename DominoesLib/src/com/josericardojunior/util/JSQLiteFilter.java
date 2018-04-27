@@ -1,4 +1,4 @@
-package util;
+package com.josericardojunior.util;
 
 import java.io.File;
 

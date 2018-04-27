@@ -27,7 +27,7 @@ import javafx.stage.Stage;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-import dao.DominoesSQLDao;
+import com.josericardojunior.dao.DominoesSQLDao;
 import domain.Configuration;
 
 
@@ -60,7 +60,7 @@ public class TimePane extends Pane{
 		DefaultCategoryDataset ds = new DefaultCategoryDataset();
 		// Add commits
 		try {
-			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(dao.DominoesSQLDao.Group.Month,
+			Map<String, Integer> commitsByPeriod = DominoesSQLDao.getNumCommits(DominoesSQLDao.Group.Month,
 					_database, _beginDate, _endDate, _project);			
 			XYChart.Series<String, Number> serie1 = new XYChart.Series<>();
 			serie1.setName("Commits");
@@ -79,7 +79,7 @@ public class TimePane extends Pane{
 		
 		// Add Bugs
 		try {
-			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(dao.DominoesSQLDao.Group.Month,
+			Map<String, Integer> bugsByPeriod = DominoesSQLDao.getNumBugs(DominoesSQLDao.Group.Month,
 					_beginDate, _endDate, _database, _project);			
 			XYChart.Series serie2 = new XYChart.Series<>();
 			serie2.setName("Issues");
