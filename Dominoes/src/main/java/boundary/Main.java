@@ -26,11 +26,17 @@ public class Main {
         try {
             // read the configuration file
             control.Controller.loadConfiguration();
-        	Session.startSession(Configuration.gpuDevice);
+            
+            if (Configuration.processingUnit == Configuration.GPU_DEVICE)
+            	Session.startSession(Configuration.gpuDevice);
+            
             DominoesSQLDao.openDatabase(Configuration.database);
             // call Application.launch()
             App.start();
-            Session.closeSection();
+           
+            if (Configuration.processingUnit == Configuration.GPU_DEVICE)
+            	Session.closeSection();
+            
             DominoesSQLDao.closeDatabase();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());

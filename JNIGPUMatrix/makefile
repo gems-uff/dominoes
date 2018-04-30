@@ -6,12 +6,12 @@ UNAME := $(shell uname -s)
 LIBNAME := 
 
 ifeq ($(UNAME),Linux)
-   OUT_DIR := native_linux
+   OUT_DIR := resources/lib/linux_64
    LIBNAME := libMatrixProcessor.so
 endif
 	
 ifeq ($(UNAME),Darwin) 
-   OUT_DIR := native_osx
+   OUT_DIR := resources/lib/osx_64
    LIBNAME := libMatrixProcessor.jnilib
 endif
 
@@ -44,7 +44,7 @@ endif
 all : directories | MatrixProcessor.jnilib
 	
 com_josericardojunior_Native_MatrixProcessor.h : 
-	javac src/com/josericardojunior/Native/java_to_c_info.java src/com/josericardojunior/Native/MatrixProcessor.java
+	javac src/com/josericardojunior/Native/java_to_c_info.java src/com/josericardojunior/Native/MatrixProcessor.java 
 	javah -verbose -jni -classpath .:./src com.josericardojunior.Native.MatrixProcessor
 	
 MatrixProcessor.o : com_josericardojunior_Native_MatrixProcessor.h
@@ -65,13 +65,12 @@ kernel.o :
    endif
 
    ifeq ($(UNAME),Darwin)
-	$(CUDA)/bin/nvcc  -ccbin  /usr/bin/clang -Xcompiler -fpic -I$(cuda)/include -I$(CUDA)/samples/common/inc -L$(cuda)/lib -lm -m64 -c -arch=sm_30 kernel.cu -o kernel.o 
+	$(CUDA)/bin/nvcc --cudart=static -Xcompiler -static -ccbin  /usr/bin/clang -Xcompiler -fpic -I$(cuda)/include -I$(CUDA)/samples/common/inc -L$(cuda)/lib -lm -m64 -c -arch=sm_30 kernel.cu -o kernel.o 
    endif
 		
 MatrixProcessor.jnilib : MatrixProcessor.o kernel.o
    ifeq ($(UNAME),Darwin)
 	g++ -shared libMatrixProcessor.o \
-	 -Wl,-rpath,$(LIBS)/armadillo/lib -Wl,-rpath,$(CUDA)/lib  \
 	 kernel.o -o $(OUT_DIR)/$(LIBNAME) -m64 -L $(CUDA)/lib -lcudart -L$(LIBS)/armadillo/lib -larmadillo 	
    endif
 
@@ -85,6 +84,6 @@ MatrixProcessor.jnilib : MatrixProcessor.o kernel.o
 	
 clean : 
 	-rm com_josericardojunior_Native_MatrixProcessor.h
-	-rm $(LIBNAME)
+	-rm $(OUT_DIR)/$(LIBNAME)
 	-rm libMatrixProcessor.o
 	-rm kernel.o

@@ -1,12 +1,9 @@
 package com.josericardojunior.Native;
 
+
 public class MatrixProcessor {
 	
-	public enum Processor {
-		P_CPU,
-		P_GPU
-	}
-	
+
 	public native static float[] CPUMatMult(float m1[], 
 			float m2[], int rows1, int cols1, int cols2);
 	
@@ -49,7 +46,10 @@ public class MatrixProcessor {
 	public native static void confidence(long m1, long result, boolean useGPU);
 	public native static boolean isGPUEnabled();
 	
+	
+	
 	static {
-		System.loadLibrary("MatrixProcessor");
+		JNILoadLib.loadCUDART();
+		JNILoadLib.loadLibrary("MatrixProcessor");
 	}
 }

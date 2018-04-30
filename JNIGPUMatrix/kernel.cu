@@ -379,9 +379,13 @@ extern "C" {
 	
 	bool g_IsDeviceEnabled(){		
 		int nDevices;
-	
-		checkCudaErrors(cudaGetDeviceCount(&nDevices));
-	
+		
+		if (cudaGetDeviceCount(&nDevices) != cudaSuccess) {
+    		cudaGetLastError();
+    		nDevices = 0;
+    	}
+    	fprintf(stderr, "Devices: %d\n", nDevices);
+		
 		return nDevices > 0;
 	}
     

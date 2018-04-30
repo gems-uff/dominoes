@@ -22,13 +22,13 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/JNIGPUMatrix"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/DominoesLib"/>
+	<classpathentry kind="lib" path="/DominoesLib/target/DominoesLib-0.0.1-SNAPSHOT-jar-with-dependencies.jar" sourcepath="/DominoesLib/src"/>
+	<classpathentry kind="lib" path="/JNIGPUMatrix/jar/JNIGPUMatrix.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

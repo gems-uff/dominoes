@@ -5,6 +5,10 @@ import java.util.Date;
 import com.josericardojunior.Native.MatrixProcessor;
 
 public class Configuration {
+	
+	public static final String GPU_DEVICE = "GPU";
+	public static final String CPU_DEVICE = "CPU";
+	
     // to read file
     public static boolean fullscreen = false;
     public static boolean autoSave = false;
@@ -19,7 +23,7 @@ public class Configuration {
     public static double listWidth = 130.0f;
     
     public static String accessMode = "SQL";
-    public static String processingUnit =  MatrixProcessor.isGPUEnabled() ? "GPU" : "CPU";
+    public static String processingUnit =  MatrixProcessor.isGPUEnabled() ? GPU_DEVICE : CPU_DEVICE;
     public static String database = "db/gitdataminer.sqlite";
     public static String projName = "";
     
