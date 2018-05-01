@@ -115,6 +115,7 @@ public final class Dominoes {
         this.type = Dominoes.TYPE_BASIC;
         this.currentDevice = _device;
     }
+    
 
     /**
      * Class build. The type, for default, is Derived
@@ -461,6 +462,7 @@ public final class Dominoes {
     public void confidence() {
         IMatrix2D _newMat = mat.confidence(currentDevice.equalsIgnoreCase("GPU"));
         setMat(_newMat);
+        this.type = Dominoes.TYPE_CONFIDENCE;
     }
     
     /**

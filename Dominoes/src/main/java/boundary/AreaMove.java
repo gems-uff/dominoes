@@ -909,8 +909,11 @@ public class AreaMove extends Pane {
         int index = this.pieces.indexOf(piece);
         Dominoes toConfidence = this.dominoes.get(index);
         Dominoes domino = control.Controller.confidence(toConfidence);
-        this.dominoes.set(index, domino);  
-       
+          
+        remove(index);
+        add(domino, piece.getTranslateX(), piece.getTranslateY() );
+        
+
         if (Configuration.autoSave) {
             this.saveAndSendToList(piece);
         }
