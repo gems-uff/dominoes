@@ -28,7 +28,7 @@ In order to start Dominoes, please follow the steps:
 
 * sudo yum install armadillo (Fedora)
 * sudo apt-get install armadillo (Ubuntu)
-* [brew] (https://github.com/Homebrew/install) install armadillo (OSX)
+* [brew](https://github.com/Homebrew/install) install armadillo (OSX)
 
 2. Install CUDA Video Driver for supported Nvidia Graphics Card ([Linux](https://developer.nvidia.com/cuda-downloads) and [OSX](http://www.nvidia.com/object/mac-driver-archive.html)). 
 
