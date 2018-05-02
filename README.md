@@ -20,15 +20,23 @@ Dominoes can support automated exploration of different relationships among proj
 
 # Usage
 
-In order to ease Dominoes usage, it can be loaded over internet by using the Java Web Start technology. It will automatically detect for a GPU enable device and switch to a CPU processing in case of fail.
+In order to ease Dominoes usage, it can be loaded over internet by using the Java Web Start technology. It will automatically detect for a GPU enable device and switch to a CPU processing in case of fail. 
 
 In order to start Dominoes, please follow the steps:
 
-1. Due to the security issues imposed by Java Web Start technology, it is necessary to add a new entry to the exception site list. In order to perform this, open the Java Panel and select **Security** tab. In there, select **"Edit Site List"** button and add http://josericardojunior.com/Dominoes/ site.
+1. Install [Armadillo] (http://arma.sourceforge.net) (linear algebra for CPU processing). It can be installed through a package manger in Linux or Unix using the following commands:
 
-2. After adding this site to the list of exception, Dominoes can be loaded directly through [here](http://josericardojunior.com/Dominoes/Dominoes.jnlp).
+* sudo yum install armadillo (Fedora)
+* sudo apt-get install armadillo (Ubuntu)
+* [brew] (https://github.com/Homebrew/install) install armadillo (OSX)
 
-**Observation**: *Please notice that right now the library is just available for MacOSX. In a few weeks, this library will be compiled for both Linux and Windows.*
+2. Install CUDA Video Driver for supported Nvidia Graphics Card ([Linux](https://developer.nvidia.com/cuda-downloads) and [OSX](http://www.nvidia.com/object/mac-driver-archive.html)). 
+
+3. Due to the security issues imposed by Java Web Start technology, it is necessary to add a new entry to the exception site list. In order to perform this, open the Java Panel and select **Security** tab. In there, select **"Edit Site List"** button and add http://josericardojunior.com/Dominoes/ site.
+
+4. After adding this site to the list of exception, Dominoes can be loaded directly through [here](http://josericardojunior.com/Dominoes/Dominoes.jnlp).
+
+**Observation**: *Please notice that right now the library is just available for MacOSX and Linux.*
 
 # Development
 
