@@ -3,6 +3,13 @@
   <groupId>DominoesLib</groupId>
   <artifactId>DominoesLib</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <repositories>
+  	<repository>
+  		<id>mvnrepository</id>
+        <name>mvnrepository</name>
+        <url>https://www.mvnrepository.com</url>
+    </repository>
+  </repositories>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -49,10 +56,30 @@
   		<artifactId>core</artifactId>
   		<version>3.3.0-v_771</version>
   	</dependency>
-  	    <dependency>
-    	<groupId>com.madgag</groupId>
+    <dependency>
+      <groupId>JNIGPUMatrix</groupId>
+      <artifactId>JNIGPUMatrix</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+    	<groupId>net.java.dev.jna</groupId>
+    	<artifactId>jna</artifactId>
+    	<version>5.1.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.eclipse.jgit</groupId>
     	<artifactId>org.eclipse.jgit</artifactId>
-    	<version>2.0.0.0.1-UNOFFICIAL-ROBERTO-RELEASE</version>
+    	<version>5.2.0.201812061821-r</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-log4j12</artifactId>
+    	<version>1.7.2</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-simple</artifactId>
+    	<version>1.7.2</version>
     </dependency>
   </dependencies>
 </project>

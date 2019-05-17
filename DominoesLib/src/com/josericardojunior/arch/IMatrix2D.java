@@ -22,6 +22,10 @@ public interface IMatrix2D {
 	
 	public IMatrix2D confidence(boolean useGPU);
 	
+	public IMatrix2D meanAndSD(boolean useGPU);
+	
+	public IMatrix2D standardScore(boolean useGPU);
+	
 	public void Debug();
 	
 	public void ExportCSV(String filename);

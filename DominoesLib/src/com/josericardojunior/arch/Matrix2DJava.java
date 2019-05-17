@@ -261,5 +261,182 @@ public class Matrix2DJava implements IMatrix2D {
 		confidenceM.setData(newValues);
 		
 		return confidenceM;
+	}
+
+	@Override
+	public IMatrix2D meanAndSD(boolean useGPU) {
+		MatrixDescriptor _newDescriptor = new MatrixDescriptor(
+				this.matrixDescriptor.getColType(), 
+				this.matrixDescriptor.getRowType());
+		
+		_newDescriptor.AddRowDesc("MEAN");
+		_newDescriptor.AddRowDesc("SD");
+		
+		for (int i = 0; i < this.matrixDescriptor.getNumCols(); i++)
+			_newDescriptor.AddColDesc(this.matrixDescriptor.getColumnAt(i));
+		
+		
+		Matrix2DJava meanSD = new Matrix2DJava(_newDescriptor);
+		
+		float meanCol[] = new float[meanSD.getMatrixDescriptor().getNumCols()];
+		float sdCol[] = new float[meanSD.getMatrixDescriptor().getNumCols()];
+		float values[] = new float[meanSD.getMatrixDescriptor().getNumCols()];
+		int numElements[] = new int[meanSD.getMatrixDescriptor().getNumCols()];
+		
+		data.eachNonZero(new MatrixProcedure() {
+			
+			@Override
+			public void apply(int row, int col, double value) {
+				numElements[col]++;
+				values[col] += value;
+			}
+		});
+		
+		for (int i = 0; i < values.length; i++)
+			meanCol[i] = values[i] / (float) numElements[i];
+		
+		
+		data.eachNonZero(new MatrixProcedure() {
+			
+			@Override
+			public void apply(int row, int col, double value) {
+				sdCol[col] += (value - meanCol[col]) * (value - meanCol[col]);
+			}
+		});
+		
+		for (int i = 0; i < sdCol.length; i++)
+			sdCol[i] = (float)Math.sqrt((double)(sdCol[i] * (1.0f / (float) numElements[i])));
+		
+		
+		ArrayList<Cell> _data = new ArrayList<>();
+		for (int i = 0; i < sdCol.length; i++) {
+			Cell cMean = new Cell(0, i, meanCol[i]);
+			Cell cStd = new Cell(1, i, sdCol[i]);
+			_data.add(cMean);
+			_data.add(cStd);
+		}
+		
+		meanSD.setData(_data);
+			
+		return meanSD;
+	}
+	
+	
+
+	@Override
+	public IMatrix2D standardScore(boolean useGPU) {
+		
+		MatrixDescriptor _newDescriptor = new MatrixDescriptor(
+				this.matrixDescriptor.getColType(), 
+				this.matrixDescriptor.getRowType());
+		
+		for (int i = 0; i < this.matrixDescriptor.getNumCols(); i++)
+			_newDescriptor.AddColDesc(this.matrixDescriptor.getColumnAt(i));
+		
+		for (int i = 0; i < this.matrixDescriptor.getNumRows(); i++)
+			_newDescriptor.AddRowDesc(this.matrixDescriptor.getRowAt(i));
+		
+		Matrix2DJava _standardScore = new Matrix2DJava(_newDescriptor);
+		
+		
+		float meanCol[] = new float[_standardScore.getMatrixDescriptor().getNumCols()];
+		float sdCol[] = new float[_standardScore.getMatrixDescriptor().getNumCols()];
+		float values[] = new float[_standardScore.getMatrixDescriptor().getNumCols()];
+		int numElements[] = new int[_standardScore.getMatrixDescriptor().getNumCols()];
+		
+		data.eachNonZero(new MatrixProcedure() {
+			
+			@Override
+			public void apply(int row, int col, double value) {
+				numElements[col]++;
+				values[col] += value;
+			}
+		});
+		
+		for (int i = 0; i < values.length; i++)
+			meanCol[i] = values[i] / (float) numElements[i];
+		
+		
+		data.eachNonZero(new MatrixProcedure() {
+			
+			@Override
+			public void apply(int row, int col, double value) {
+				sdCol[col] += (value - meanCol[col]) * (value - meanCol[col]);
+				values[col] += value;
+			}
+		});
+		
+		for (int i = 0; i < sdCol.length; i++)
+			sdCol[i] = (float)Math.sqrt((double)(sdCol[i] * (1.0f / (float) numElements[i])));
+		
+		
+		ArrayList<Cell> _data = new ArrayList<>();
+		data.eachNonZero(new MatrixProcedure() {
+			
+			@Override
+			public void apply(int row, int col, double value) {
+				Cell _cell = new Cell();
+				_cell.col = col;
+				_cell.row = row;
+				_cell.value = ((float)value - meanCol[col]) / sdCol[col];
+				
+				_data.add(_cell);
+			}
+		});		
+		
+		
+		_standardScore.setData(_data);
+		
+
+		return _standardScore;
 	}	
+	
+	public static void main(String args[]) {
+		
+		ArrayList<Cell> cells1 = new ArrayList<>();
+		cells1.add(new Cell(0, 0, 1));
+		cells1.add(new Cell(0, 2, 5));
+		cells1.add(new Cell(1, 1, 8));
+		cells1.add(new Cell(1, 2, 9));
+		
+		
+		ArrayList<Cell> cells2 = new ArrayList<>();
+		cells2.add(new Cell(0, 0, 1));
+		cells2.add(new Cell(0, 1, 7));
+		cells2.add(new Cell(1, 0, 7));
+		cells2.add(new Cell(1, 1, 2));
+		cells2.add(new Cell(2, 0, 10));
+		cells2.add(new Cell(2, 1, 5));
+		
+
+		
+		MatrixDescriptor desc1 = new MatrixDescriptor("T1", "T2");
+		desc1.AddRowDesc("R1");
+		desc1.AddRowDesc("R2");
+		desc1.AddColDesc("C1");
+		desc1.AddColDesc("C2");
+		desc1.AddColDesc("C3");
+		
+		try {
+			Matrix2DJava mat1 = new Matrix2DJava(desc1);
+			mat1.setData(cells1);
+			mat1.Debug();
+		
+			MatrixDescriptor desc2 = new MatrixDescriptor("T1", "T2");
+			desc2.AddRowDesc("R1");
+			desc2.AddRowDesc("R2");
+			desc2.AddRowDesc("R3");
+			desc2.AddColDesc("C1");
+			desc2.AddColDesc("C2");
+			Matrix2DJava mat2 = new Matrix2DJava(desc2);
+			mat2.setData(cells2);
+			mat2.Debug();
+			
+			IMatrix2D meanstd = mat2.standardScore(false);
+			meanstd.Debug();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
 }

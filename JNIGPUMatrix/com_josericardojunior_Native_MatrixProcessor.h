@@ -17,14 +17,6 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 
 /*
  * Class:     com_josericardojunior_Native_MatrixProcessor
- * Method:    BLASMatMult
- * Signature: ([F[FIII)[F
- */
-JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_BLASMatMult
-  (JNIEnv *, jclass, jfloatArray, jfloatArray, jint, jint, jint);
-
-/*
- * Class:     com_josericardojunior_Native_MatrixProcessor
  * Method:    GPUMatMult
  * Signature: ([F[FIII)[F
  */
@@ -121,10 +113,10 @@ JNIEXPORT jfloat JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getMa
 
 /*
  * Class:     com_josericardojunior_Native_MatrixProcessor
- * Method:    mean
+ * Method:    meanSD
  * Signature: (JJZ)V
  */
-JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_mean
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_meanSD
   (JNIEnv *, jclass, jlong, jlong, jboolean);
 
 /*

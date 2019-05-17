@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+" xmlns:jfx="http://javafx.com" codebase="http://josericardojr.com/dominoes/" href="Dominoes.jnlp">
+	<information>
+		<title>Dominoes</title>
+		<vendor>Universidade Federal Fluminense</vendor>
+		<homepage href="http://josericardojr.com/dominoes/" />
+		<description>Dominoes exploratory tool</description>
+	</information>
+	<security>
+		<all-permissions/>
+	</security>
+	<resources>
+		<j2se version="1.6" initial-heap-size="64m" max-heap-size="3072M"/>
+		<jar href="Dominoes.jar" download="eager"/>
+		<jar href="libs/commons-io-2.0.1.jar" />
+		<jar href="libs/commons-lang-2.2.jar" />
+		<jar href="libs/slf4j-simple-1.7.2.jar" />
+		<jar href="libs/la4j-0.4.9.jar" />
+		<jar href="libs/core-3.3.0-v_771.jar" />
+		<jar href="libs/sqlite-jdbc-3.25.2.jar"/>
+		<jar href="libs/jsch-0.1.44-1.jar" />
+		<jar href="libs/slf4j-api-1.7.2.jar"/>
+		<jar href="libs/jzlib-1.1.1.jar"/>
+		<jar href="libs/jsch-0.1.54.jar"/>
+		<jar href="libs/JavaEWAH-1.1.6.jar"/>
+		<jar href="libs/org.eclipse.jgit-5.2.0.201812061821-r.jar"/>
+		<jar href="libs/DominoesLib.jar" download="eager"/>
+		<jar href="libs/JNIGPUMatrix.jar" download="eager"/>
+	</resources>
+	<resources os="Mac OS X" arch="x86_64">
+		<nativelib href="libs/osx_64/libsz.jar"/>
+		<nativelib href="libs/osx_64/libhdf5.jar"/>
+		<nativelib href="libs/osx_64/libarmadillo.jar"/>
+	  <nativelib href="libs/osx_64/libcudart.jar"/>
+		<nativelib href="libs/osx_64/libMatrixProcessor.jar"/>
+  </resources>
+    <resources os="Linux" arch="amd64">
+	  	<nativelib href="libs/linux_64/libarmadillo.jar"/>
+	  	<nativelib href="libs/linux_64/libcudart.jar"/>
+	  	<nativelib href="libs/linux_64/libMatrixProcessor.jar"/>
+    </resources>
+		<property key="java.library.path" value="." />
+
+		<application-desc main-class="boundary.App" />
+
+</jnlp>

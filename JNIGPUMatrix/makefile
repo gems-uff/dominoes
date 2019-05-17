@@ -1,6 +1,7 @@
 CUDA := /usr/local/cuda
 EIGEN_INC := /usr/local/include
 JAVAJNI := /System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
+LIBS := .
 
 UNAME := $(shell uname -s)
 LIBNAME := 
@@ -71,13 +72,14 @@ kernel.o :
 MatrixProcessor.jnilib : MatrixProcessor.o kernel.o
    ifeq ($(UNAME),Darwin)
 	g++ -shared libMatrixProcessor.o \
-	 kernel.o -o $(OUT_DIR)/$(LIBNAME) -m64 -L $(CUDA)/lib -lcudart -L$(LIBS)/armadillo/lib -larmadillo 	
+	 -Wl,-rpath,$(LIBS)/armadillo/lib -Wl,-rpath,$(CUDA)/lib \
+	 kernel.o -o $(OUT_DIR)/$(LIBNAME) -m64 -L $(CUDA)/lib -lcudart_static -L$(LIBS)/armadillo/lib  	
    endif
 
    ifeq ($(UNAME),Linux)
 	g++ -shared libMatrixProcessor.o \
 	 -Wl,-rpath,$(LIBS)/armadillo/lib -Wl,-rpath,$(CUDA)/lib64  \
-	 kernel.o -o $(OUT_DIR)/$(LIBNAME) -m64 -L $(CUDA)/lib64 -lcudart -L$(LIBS)/armadillo/lib -larmadillo 	
+	 kernel.o -o $(OUT_DIR)/$(LIBNAME) -m64 -L $(CUDA)/lib64 -lcudart -L$(LIBS)/armadillo/lib 	
    endif
 
 

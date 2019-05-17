@@ -1,5 +1,11 @@
 package com.josericardojunior.Native;
 
+import java.lang.annotation.Native;
+import java.util.Map;
+
+import org.omg.CORBA.Environment;
+
+//import com.josericardojunior.Native.JNILoadLib.Architecture;
 
 public class MatrixProcessor {
 	
@@ -7,8 +13,8 @@ public class MatrixProcessor {
 	public native static float[] CPUMatMult(float m1[], 
 			float m2[], int rows1, int cols1, int cols2);
 	
-	public native static float[] BLASMatMult(float m1[], 
-			float m2[], int rows1, int cols1, int cols2);
+	//public native static float[] BLASMatMult(float m1[], 
+	//		float m2[], int rows1, int cols1, int cols2);
 	
 	public native static float[] GPUMatMult(float m1[], 
 			float m2[], int rows1, int cols1, int cols2);	
@@ -35,7 +41,7 @@ public class MatrixProcessor {
 	public native static boolean deleteMatrixData(long pointer);
 	public native static float getMin(long pointer);
 	public native static float getMax(long pointer);
-	public native static void mean(long pointer, long result, boolean useGPU);
+	public native static void meanSD(long pointer, long result, boolean useGPU);
 	public native static void standard_deviation(long pointer, long result, boolean useGPU);
 	public native static void standard_score(long pointer, long result, boolean useGPU);
 	
@@ -48,8 +54,24 @@ public class MatrixProcessor {
 	
 	
 	
-	static {
-		JNILoadLib.loadCUDART();
-		JNILoadLib.loadLibrary("MatrixProcessor");
+	static {		
+		//JNILoadLib.loadLibrary("armadillo.8");
+		//JNILoadLib.loadLibrary("cudart");
+		//JNILoadLib.loadLibrary("MatrixProcessor.jnilib");
+		//JNILoadLib.loadCUDART();
+		//JNILoadLib.loadLibrary("MatrixProcessor");
+		//JNILoadLib.loadLibrary("armadillo.8", "lib");
+		//JNILoadLib.loadLibrary("cudart.9.0", "lib");
+		//JNILoadLib.loadLibrary("MatrixProcessor", "JNI");
+		//Map<String, String> env = System.getenv();
+		//for (Map.Entry<String, String> entry : env.entrySet()) {
+		//	System.out.println("Key: " + entry.getKey() + " value: " + entry.getValue());
+		//}
+		//System.out.println(System.getProperty("java.library.path"));
+		//System.loadLibrary("sz.2");
+		//System.loadLibrary("hdf5.103");
+		//System.loadLibrary("armadillo.9");
+		//System.loadLibrary("cudart");
+		System.loadLibrary("MatrixProcessor");
 	}
 }

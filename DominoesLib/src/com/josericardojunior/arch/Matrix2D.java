@@ -309,5 +309,36 @@ public class Matrix2D implements IMatrix2D {
 		}
 		
 		return confidence;
+	}
+
+	@Override
+	public IMatrix2D meanAndSD(boolean useGPU) {
+		MatrixDescriptor _newDescriptor = new MatrixDescriptor(
+				this.matrixDescriptor.getColType(), 
+				this.matrixDescriptor.getRowType());
+		
+		_newDescriptor.AddRowDesc("MEAN");
+		_newDescriptor.AddRowDesc("SD");
+		
+		for (int i = 0; i < this.matrixDescriptor.getNumCols(); i++)
+			_newDescriptor.AddColDesc(this.matrixDescriptor.getColumnAt(i));
+		
+		Matrix2D meanSD = null;
+		
+	//	try {
+			// T
+	//		meanSD = new Matrix2D(_newDescriptor);
+	//		MatrixProcessor
+	//	}
+		
+		
+		// TODO Implement meanAndSD
+		return null;
+	}
+
+	@Override
+	public IMatrix2D standardScore(boolean useGPU) {
+		// TODO Implement standardScore
+		return null;
 	}		
 }

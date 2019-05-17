@@ -333,6 +333,13 @@ public class AreaMove extends Pane {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+        		} else if (((MenuItem) event.getTarget()).getText().equals(menuItemZScore.getText())) {
+        			try {
+						standardScore(group);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
         		}
             }
         });
@@ -918,6 +925,21 @@ public class AreaMove extends Pane {
             this.saveAndSendToList(piece);
         }
 
+    }
+    
+    private void standardScore(Group piece) throws IOException {
+        Color colorHistoric;
+        int index = this.pieces.indexOf(piece);
+        Dominoes toStandardScore = this.dominoes.get(index);
+        Dominoes domino = control.Controller.standardScore(toStandardScore);
+          
+        remove(index);
+        add(domino, piece.getTranslateX(), piece.getTranslateY() );
+        
+
+        if (Configuration.autoSave) {
+            this.saveAndSendToList(piece);
+        }
     }
 
     private void drawGraph(Dominoes domino) {

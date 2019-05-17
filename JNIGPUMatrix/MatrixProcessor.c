@@ -8,7 +8,7 @@
 #include "com_josericardojunior_Native_MatrixProcessor.h"
 #include <stdio.h>
 #include <Eigen/SparseCore>
-#include "armadillo"
+//#include "armadillo"
 #include <vector>
 
 typedef Eigen::SparseMatrix<float,Eigen::RowMajor> SpMatf;
@@ -49,7 +49,7 @@ extern "C" {
 
 
 
-using namespace arma;
+//using namespace arma;
 
 /*JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_GPUMatMult
   (JNIEnv *env, jclass obj, jfloatArray m1, jfloatArray m2, jint rows1, jint cols1, jint cols2)
@@ -83,7 +83,7 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_resetGP
 }  
   
 
-JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_BLASMatMult
+/*JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_BLASMatMult
   (JNIEnv *env, jclass obj, jfloatArray m1, jfloatArray m2, jint rows1, jint cols1, jint cols2)
 {
  	jfloat* _m1Data= env->GetFloatArrayElements(m1, NULL);
@@ -106,7 +106,7 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 	env->DeleteLocalRef(m2);
 	
 	return jres;
-}
+}*/
 
 
 JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_GPUStandardScore
@@ -173,6 +173,16 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 	delete result;
 	return jres;
  }
+
+
+JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_meanSD
+  (JNIEnv *env, jclass obj, jlong data, jlong result, jboolean useGPU) {
+
+	if (useGPU){
+
+	}
+
+}
 
 JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_GPUMeanSD
   (JNIEnv *env, jclass obj, jfloatArray data, jint rows, jint cols, jint depth, jboolean considerZeros){
@@ -648,7 +658,7 @@ JNIEXPORT void JNICALL Java_com_josericardojunior_Native_MatrixProcessor_setRowD
 }
 
 
-JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getRow
+/*JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getRow
   (JNIEnv *env, jclass obj, jlong pointer, jint row){
 
 	sp_fmat* _matrix = (sp_fmat*) pointer;
@@ -669,7 +679,7 @@ JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_
 
 	delete res;
 	return jres;
-}
+}*/
 
 JNIEXPORT jfloatArray JNICALL Java_com_josericardojunior_Native_MatrixProcessor_getData
   (JNIEnv *env, jclass obj, jlong pointer){

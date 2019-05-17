@@ -147,7 +147,7 @@ import com.josericardojunior.dao.DominoesSQLDao;
 							tw.getObjectId(0), null, ChangeType.ADD));
 					}
 				}
-				tw.release();
+				//tw.release();
 			} else {
 				RevCommit parent = rw.parseCommit(revCommit.getParent(0).getId());
 				DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);

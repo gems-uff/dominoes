@@ -133,8 +133,11 @@ public class ProjectInfoPane extends Pane {
 			public void handle(ActionEvent event) {
 				
 				FXMLLoader loader = new FXMLLoader();
+				// Works on JWS Version
+				//URL url = getClass().getResource("/resources/ImporterView.fxml");
 				
-				URL url = getClass().getResource("/resources/ImporterView.fxml");
+				// Works on Stand alone app
+				URL url = getClass().getResource("/ImporterView.fxml");
 				System.out.println(url);
 				loader.setLocation(url);
 	

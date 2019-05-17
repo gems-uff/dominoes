@@ -19,7 +19,7 @@ public class JNILoadLib {
 			OSX_64, OSX_PPC
 	}
 	private static Architecture architecture = Architecture.UNKNOWN;
-	private static final String LIB_BIN = "/resources/lib/";
+	private static final String LIB_BIN = "resources/lib/";
 	
 	
 	/**
@@ -105,7 +105,7 @@ public class JNILoadLib {
 		return architecture;
 	}
 	
-	public static void loadLibrary(String name){
+	public static void loadLibrary(String name, String type){
 	
 		String system_dir = "";
 		String extension = "";
@@ -114,13 +114,13 @@ public class JNILoadLib {
 		switch (getArchitecture()){
 		case OSX_64:
 			system_dir = "osx_64";
+			extension = type == "JNI" ? "jnilib" : "dylib";
 			beginning = "lib";
-			extension = "jnilib";
 			break;
 			
 		case LINUX_64:
 			system_dir = "linux_64";
-			beginning = "lib";
+			beginning = type == "JNI" ? "jnilib" : "lib";
 			extension = "so";
 			break;
 		}
@@ -128,9 +128,13 @@ public class JNILoadLib {
 		String finalName = beginning + name + "." + extension;
 		
 		InputStream in = JNILoadLib.class.getResourceAsStream(LIB_BIN + system_dir + "/" + finalName);
+		System.out.println(LIB_BIN + system_dir + "/" + finalName);
 	       
 		// always write to different location
 	    File fileOut = new File(System.getProperty("java.io.tmpdir") + "/" + "tmp" + LIB_BIN +
+	    		system_dir + "/" + finalName);
+	    
+	    System.out.println(System.getProperty("java.io.tmpdir") + "/" + "tmp" + LIB_BIN +
 	    		system_dir + "/" + finalName);
 	       
 	    OutputStream out;

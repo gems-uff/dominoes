@@ -26,6 +26,8 @@ import javafx.stage.Stage;
 import javax.swing.JFrame;
 
 import control.Controller;
+
+import com.josericardojunior.arch.Session;
 import com.josericardojunior.dao.DominoesSQLDao;
 import domain.Configuration;
 import com.josericardojunior.domain.Dominoes;
@@ -72,7 +74,6 @@ public class App extends Application {
 
 			App.menu = new DominoesMenuBar();
 
-			App.stage.show();
 			App.time = new TimePane();
 
 			App.set();
@@ -112,6 +113,8 @@ public class App extends Application {
 				App.load(Configuration.beginDate, Configuration.endDate);
 			}
 		});
+		
+		App.stage.show();
 
 	}
 
@@ -427,4 +430,27 @@ public class App extends Application {
 	static Stage getStage() {
 		return App.stage;
 	}
+	
+    public static void main(String args[]){
+    	Controller.args = args;
+        
+    	try {
+            // read the configuration file
+            control.Controller.loadConfiguration();
+            
+            if (Configuration.processingUnit == Configuration.GPU_DEVICE)
+            	Session.startSession(Configuration.gpuDevice);
+            
+            DominoesSQLDao.openDatabase(Configuration.database);
+            // call Application.launch()
+            launch(args);
+           
+            if (Configuration.processingUnit == Configuration.GPU_DEVICE)
+            	Session.closeSection();
+            
+           // DominoesSQLDao.closeDatabase();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
 }

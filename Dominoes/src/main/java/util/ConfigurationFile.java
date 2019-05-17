@@ -30,6 +30,7 @@ public class ConfigurationFile {
      */
     public void loadConfigurationFile() throws IOException, Exception {
 
+    	
         File file = new File(path);
 
         if (!file.exists()) {

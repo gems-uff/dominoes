@@ -16,7 +16,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/josericardo/Projects/dominoes/JNIGPUMatrix/jar/JNIGPUMatrix.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JNIGPUMatrix"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

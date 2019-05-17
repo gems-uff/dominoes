@@ -76,6 +76,8 @@ public class DominoesSQLDao {
 		
 		// Check if db exist
 		File db = new File(_database);
+		//System.out.println("DB Path: "+ db.getAbsolutePath());
+		
 		boolean needsToReestructure = false;
 		
 		if (!db.exists()){
@@ -189,7 +191,7 @@ public class DominoesSQLDao {
 				repos.put(rnode.getName(), rnode);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 		}
 		
